@@ -32,5 +32,11 @@
     <ClCompile Include="PocoLithp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scheme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>

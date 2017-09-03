@@ -3,3 +3,20 @@ Poco/1.7.8p3@pocoproject/stable
 
 [generators]
 visual_studio
+
+[options]
+#Poco:enable_crypto=False
+#Poco:enable_data=False
+#Poco:enable_data_sqlite=False
+#Poco:enable_mongodb=False
+#Poco:enable_net=False
+#Poco:enable_netssl=False
+#Poco:enable_netssl_win=False
+#Poco:enable_xml=False
+#Poco:enable_zip=False
+#Poco:force_openssl=False
+Poco:shared=True
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my "bin" folder
+lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my "bin" folder

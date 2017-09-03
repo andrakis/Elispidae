@@ -12,4 +12,6 @@
 
 
 
-// TODO: reference additional headers your program requires here
+#include <Poco/Dynamic/Var.h>
+#include <Poco/Dynamic/Pair.h>
+#include <Poco/Dynamic/Struct.h>
