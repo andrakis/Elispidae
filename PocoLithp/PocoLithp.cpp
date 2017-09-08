@@ -7,8 +7,12 @@ typedef Poco::Dynamic::Var PocoVar;
 typedef std::vector<PocoVar> PocoList;
 typedef std::map<PocoVar, PocoVar> PocoDict;
 
+typedef Poco::NumberParser NumberParser;
+
 namespace PocoLithp {
 	typedef Poco::InvalidArgumentException InvalidArgumentException;
+
+	const bool DEBUG = false;
 
 	enum LithpVarType {
 		Var,
@@ -156,7 +160,7 @@ namespace PocoLithp {
 			std::string spacer((child_env_delete_depth - 1) * 2, ' ');
 			for (; child_envs_it != child_envs.end(); ++child_envs_it) {
 				LithpEnvironment *child = *child_envs_it;
-				std::cerr << spacer << "Deleting child environment: " << child << std::endl;
+				//if(DEBUG) std::cerr << spacer << "Deleting child environment: " << child << std::endl;
 				delete child;
 			}
 			child_env_delete_depth--;
@@ -339,7 +343,7 @@ namespace PocoLithp {
 		// TODO: Only do this lookup with atoms
 		if (x.tag == Symbol) {
 			LithpCell &r = env->find(x.str())[x.str()];
-			std::cerr << to_string(x) << " => " << to_string(r) << std::endl;
+			if (DEBUG) std::cerr << to_string(x) << " => " << to_string(r) << std::endl;
 			return r;
 		}
 		// TODO: Variable lookup (must currently use Symbol)
@@ -398,7 +402,7 @@ namespace PocoLithp {
 		}
 		else if (proc.tag == Proc) {
 			LithpCell &r = proc.proc()(exps);
-			std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << std::endl;
+			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << std::endl;
 			return r;
 		}
 		throw InvalidArgumentException("Unhandled type");
@@ -407,18 +411,35 @@ namespace PocoLithp {
 	// Define the bare minimum set of primitives necessary to pass the unit tests
 	LithpCell proc_add(const LithpCells &c)
 	{
-		// TODO: use underlying number value instead of converting from string
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
-			n /= *i;
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			// Signedness promotion check
+			if (i->value.isSigned() == true && n.value.isSigned() == false) {
+#if defined(POCO_HAVE_INT64)
+				n = LithpCell(Var, i->value.convert<Poco::Int64>());
+#else
+				n = LithpCell(Var, i->value.convert<int>());
+#endif
+			}
+			n += *i;
+		}
 		return n;
 	}
 
 	LithpCell proc_sub(const LithpCells & c)
 	{
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			// Signedness promotion check
+			if (i->value.isSigned() == true && n.value.isSigned() == false) {
+#if defined(POCO_HAVE_INT64)
+				n = LithpCell(Var, i->value.convert<Poco::Int64>());
+#else
+				n = LithpCell(Var, i->value.convert<int>());
+#endif
+			}
 			n -= *i;
+		}
 		return n;
 	}
 
@@ -426,6 +447,14 @@ namespace PocoLithp {
 	{
 		LithpCell n(1);
 		for (LithpCells::const_iterator i = c.begin(); i != c.end(); ++i) {
+			// Signedness promotion check
+			if (i->value.isSigned() == true && n.value.isSigned() == false) {
+#if defined(POCO_HAVE_INT64)
+				n = LithpCell(Var, i->value.convert<Poco::Int64>());
+#else
+				n = LithpCell(Var, i->value.convert<int>());
+#endif
+			}
 			n *= *i;
 		}
 		return n;
@@ -434,8 +463,17 @@ namespace PocoLithp {
 	LithpCell proc_div(const LithpCells & c)
 	{
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			// Signedness promotion check
+			if (i->value.isSigned() == true && n.value.isSigned() == false) {
+#if defined(POCO_HAVE_INT64)
+				n = LithpCell(Var, i->value.convert<Poco::Int64>());
+#else
+				n = LithpCell(Var, i->value.convert<int>());
+#endif
+			}
 			n /= *i;
+		}
 		return n;
 	}
 
@@ -459,10 +497,9 @@ namespace PocoLithp {
 
 	LithpCell proc_less_equal(const LithpCells & c)
 	{
-		// TODO: use underlying number value instead of converting from string
-		long n(atol(c[0].c_str()));
+		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
-			if (n > atol(i->c_str()))
+			if (n > *i)
 				return false_sym;
 		return true_sym;
 	}
@@ -547,11 +584,63 @@ namespace PocoLithp {
 		return tokens;
 	}
 
+	PocoVar parseNumber(const std::string &token) {
+		// TODO: This is hacky
+
+		if (token.find('.', 0) != std::string::npos) {
+			// Float
+			return NumberParser::parseFloat(token);
+		} else {
+			// Integer or unsigned hex / october
+
+			// Signed
+			if (token[0] == '-')
+			{
+#if defined(POCO_HAVE_INT64)
+				Poco::Int64 i64;
+				if (NumberParser::tryParse64(token, i64))
+					return i64;
+#else
+				int i;
+				if (NumberParser::trytParse(token, i))
+					return i;
+#endif
+			} else {
+				// Unsigned (including hex and octal)
+#if defined(POCO_HAVE_INT64)
+				Poco::UInt64 ui64;
+				if (NumberParser::tryParseUnsigned64(token, ui64))
+					return ui64;
+				if (NumberParser::tryParseHex64(token, ui64))
+					return ui64;
+				if (NumberParser::tryParseOct64(token, ui64))
+					return ui64;
+#else
+				unsigned ui;
+				if (NumberParser::tryParseUnsigned(token, ui))
+					return ui;
+				if (NumberParser::tryParseHex(token, ui))
+					return ui;
+				if (NumberParser::tryParseOct(token, ui))
+					return ui;
+#endif
+			}
+		}
+		throw InvalidArgumentException("Not a number: " + token);
+	}
+
 	// numbers become Numbers; every other token is a Symbol
 	LithpCell atom(const std::string & token)
 	{
-		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1])))
-			return LithpCell(Var, atol(token.c_str()));
+		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
+			PocoVar V = parseNumber(token);
+			if (DEBUG) {
+				std::cerr << "atom(" << token << ") = " << to_string(V) << std::endl;
+				std::cerr << "    .isNumeric = " << V.isNumeric() << std::endl;
+				std::cerr << "    .isString = " << V.isString() << std::endl;
+			}
+			return LithpCell(Var, V);
+		}
 		return LithpCell(Symbol, token);
 	}
 
@@ -579,7 +668,7 @@ namespace PocoLithp {
 	{
 		std::list<std::string> tokens(tokenize(s));
 		LithpCell result = read_from(tokens);
-		std::cerr << "read_from() => " << to_string(result) << std::endl;
+		//std::cerr << "read_from() => " << to_string(result) << std::endl;
 		return result;
 	}
 
@@ -633,12 +722,11 @@ namespace PocoLithp {
 	unsigned g_test_count;      // count of number of unit tests executed
 	unsigned g_fault_count;     // count of number of unit tests that fail
 	template <typename T1, typename T2>
-	void test_equal_(const T1 & value, const T2 & expected_value, const char * file, int line)
+	void test_equal_(const T1 & value, const T2 & expected_value, const char * file, int line, const std::string &code)
 	{
 		++g_test_count;
 		std::cerr
-			//<< file
-			<< '(' << line << ") : "
+			<< code << " : "
 			<< " expected " << expected_value
 			<< ", got " << value;
 		if (value != expected_value) {
@@ -649,14 +737,14 @@ namespace PocoLithp {
 		}
 	}
 	// write a message to std::cout if value != expected_value
-	#define TEST_EQUAL(value, expected_value) test_equal_(value, expected_value, __FILE__, __LINE__)
+	#define TEST_EQUAL(value, expected_value, code) test_equal_(value, expected_value, __FILE__, __LINE__, code)
 	// evaluate the given Lisp expression and compare the result against the given expected_result
-	#define TEST(expr, expected_result) TEST_EQUAL(to_string(eval(read(expr), &global_env)), expected_result)
+	#define TEST(expr, expected_result) TEST_EQUAL(to_string(eval(read(expr), &global_env)), expected_result, expr)
 
 	unsigned plithp_complete_test() {
 		LithpEnvironment global_env; add_globals(global_env);
 		// the 29 unit tests for lis.py
-		//TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2.0) -3.14e159)");
+		TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2.0) -3.14e+159)");
 		TEST("(+ 2 2)", "4");
 		TEST("(+ (* 2 100) (* 1 10))", "210");
 		TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
@@ -675,8 +763,8 @@ namespace PocoLithp {
 		TEST("((repeat (repeat twice)) 5)", "80");
 		TEST("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))", "<Lambda>");
 		TEST("(fact 3)", "6");
-		//TEST("(fact 50)", "30414093201713378043612608166064768844377641568960512000000000000");
-		TEST("(fact 12)", "479001600"); // no bignums; this is as far as we go with 32 bits
+		TEST("(fact 50)", "30414093201713378043612608166064768844377641568960512000000000000");
+		TEST("(fact 12)", "479001600");
 		TEST("(define abs (lambda (n) ((if (> n 0) + -) 0 n)))", "<Lambda>");
 		TEST("(list (abs -3) (abs 0) (abs 3))", "(3 0 3)");
 		TEST("(define combine (lambda (f)"
