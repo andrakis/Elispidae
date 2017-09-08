@@ -11,7 +11,12 @@
 #include <tchar.h>
 
 
-
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
 #include <Poco/Dynamic/Var.h>
 #include <Poco/Dynamic/Pair.h>
 #include <Poco/Dynamic/Struct.h>

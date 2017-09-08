@@ -15,9 +15,14 @@ Building
 
 Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2017 or higher. Support for other compilers will be implemented in time.
 
+**NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
+
+
 1. Install the required packages:
 
     * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
+
+	* **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
 
     * ***Other build targets coming soon***
 
