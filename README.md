@@ -6,7 +6,7 @@ An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in 
 Why?
 ----
 
-An attempt at a much more lightweight implementation of a C++ Lithp (other attempt [Stackful](https://github.com/andrakis/Stackful) being rather more complicated than desired.
+An attempt at a much more lightweight implementation of a C++ Lithp (other attempt [Stackful](https://github.com/andrakis/Stackful) being rather more complicated than desired.)
 
 An improved version of the [90 line C++ Scheme interpreter](https://gist.github.com/ofan/721464) is included for experimentation and basis for the interpreter.
 
@@ -20,7 +20,7 @@ Status
 
 * Does not use strings for numbers and arithmatic. Results in large speed improvement.
 
-* No memory leaks! The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
+* No memory leaks! The basic types use the standard templates, avoiding manual memory management. The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
 
 Building
 --------

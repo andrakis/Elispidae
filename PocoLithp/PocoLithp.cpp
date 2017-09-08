@@ -591,7 +591,7 @@ namespace PocoLithp {
 			// Float
 			return NumberParser::parseFloat(token);
 		} else {
-			// Integer or unsigned hex / october
+			// Integer or unsigned hex / octal
 
 			// Signed
 			if (token[0] == '-')
