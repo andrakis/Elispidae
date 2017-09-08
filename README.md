@@ -32,16 +32,20 @@ Uses [Conan](https://www.conan.io/) package manager and currently requires Visua
 
 1. Open the `PocoLithp.sln` file in Visual Studio 2017 or higher.
 
-2. Install the required packages:
+2. Install the required packages depending on the build type you want:
+
+    * **NOTE:** Conan automatically determines the `arch` to build for based on your system, unless you override it. To simplify configuration, pick based on the profile you want to run.
 
     * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
 
 	* **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
 
-    * ***Other build targets coming soon***
+	* **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MDd`
+
+	* **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
 
 3. Open the Property Manager (`View -> Other Windows -> Property Manager` and add `conanbuildinfo.props` from the top level directory.
 
 4. Build or run normally
 
-**NOTE**: Switching build configurations requires performing steps 2 to 4 again to match the configuration.
+**NOTE:** Switching build configurations requires performing steps 2 to 4 again to match the configuration.
