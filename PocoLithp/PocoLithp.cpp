@@ -5,195 +5,9 @@
 
 #include "stdafx.h"
 
-typedef Poco::Dynamic::Var PocoVar;
-typedef std::vector<PocoVar> PocoList;
-typedef std::map<PocoVar, PocoVar> PocoDict;
-
-typedef Poco::NumberParser NumberParser;
-
 namespace PocoLithp {
-	typedef Poco::InvalidArgumentException InvalidArgumentException;
-
 	const bool DEBUG = false;
 
-	enum LithpVarType {
-		Var,
-		Dict,
-		Atom,
-		Tuple,
-		//OpChain, // AKA lambda
-		//Closure, // AKA environment
-
-		// scheme types
-		Symbol,
-		//Number, // Use Var instead
-		List,
-		Proc,
-		Lambda
-	};
-
-	struct LithpEnvironment;
-	struct LithpVar;
-
-	typedef LithpVar LithpCell;
-	typedef std::vector<LithpCell> LithpCells;
-	typedef LithpCells::const_iterator LithpCellIt;
-
-	struct LithpVar {
-		typedef LithpVar(*proc_type)(const LithpCells &);
-		LithpVarType tag;
-		PocoVar value;
-		LithpEnvironment *env;
-
-		LithpVar(LithpVarType _tag, PocoVar _value) : tag(_tag), value(_value), env(0) {}
-		LithpVar(const PocoVar &_value) : tag(Var), value(_value), env(0) {
-		}
-		LithpVar(const PocoVar &_value, const LithpVarType &_tag) : tag(_tag), value(_value), env(0) {
-		}
-		LithpVar(const LithpVar &copy) : value(copy.value), tag(copy.tag), env(copy.env) {
-		}
-		// Scheme constructors
-		LithpVar(LithpVarType _tag = Symbol) : tag(_tag), value(), env(0) {}
-		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
-
-		~LithpVar() {
-		}
-
-		std::string str() const {
-			switch (tag) {
-			case Var:
-				// TODO: Floats are getting truncated
-			case Symbol:
-				return value.toString();
-			case Lambda:
-				return "<Lambda>";
-			case List:
-				return "<List>";
-			case Proc:
-				return "<Proc>";
-			case Dict:
-				// TODO
-			case Atom:
-				// TODO
-			case Tuple:
-				// TODO
-			default:
-				throw InvalidArgumentException("Unknown type");
-			}
-		}
-		const char *c_str() const {
-			return str().c_str();
-		}
-
-		bool operator == (const LithpVar &other) const {
-			if (tag != other.tag)
-				return false;
-			return value == other.value;
-		}
-		bool operator != (const LithpVar &other) const {
-			return !(*this == other);
-		}
-		template<typename Callback>
-		static bool CompareWith(const LithpVar &a, const LithpVar &b, Callback cb) {
-			if (a.tag != b.tag)
-				return false;
-			if (a.tag != Var)
-				return false;
-			return cb(a.value, b.value);
-		}
-		bool operator < (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a < b; }); }
-		bool operator > (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a > b; }); }
-		bool operator <= (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a <= b; }); }
-		bool operator >= (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a >= b; }); }
-		bool operator && (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a && b; }); }
-		bool operator || (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a || b; }); }
-		const LithpVar operator + (const LithpVar &other) const;
-		const LithpVar operator - (const LithpVar &other) const;
-		const LithpVar operator / (const LithpVar &other) const;
-		const LithpVar operator * (const LithpVar &other) const;
-		const LithpVar operator << (const LithpVar &other) const;
-		const LithpVar operator >> (const LithpVar &other) const;
-		const LithpVar operator ^ (const LithpVar &other) const;
-		const LithpVar operator | (const LithpVar &other) const;
-		const LithpVar operator & (const LithpVar &other) const;
-		const LithpVar operator % (const LithpVar &other) const;
-		LithpVar& operator += (const LithpVar &other);
-		LithpVar& operator -= (const LithpVar &other);
-		LithpVar& operator /= (const LithpVar &other);
-		LithpVar& operator *= (const LithpVar &other);
-
-		// List related behaviours
-
-		// Read-only!
-		const LithpCells &list() const {
-			if (tag != List && tag != Lambda)
-				throw InvalidArgumentException("Not a list");
-			return value.extract<LithpCells>();
-		}
-
-		// Proc related behaviours
-		proc_type proc() {
-			if (tag != Proc)
-				throw InvalidArgumentException("Not a proc");
-			return value.extract<proc_type>();
-		}
-
-		bool is_nullp() const {
-			switch (tag) {
-			case List:
-			case Lambda:
-				return list().empty();
-			}
-			return true;
-		}
-	};
-
-	struct LithpEnvironment {
-		LithpEnvironment(LithpEnvironment *outer = 0) : outer_(outer) {}
-		LithpEnvironment(const LithpCells &params, const LithpCells &args, LithpEnvironment *outer)
-			: outer_(outer) {
-			LithpCellIt a = args.begin();
-			for (LithpCellIt p = params.begin(); p != params.end(); ++p)
-				env_[p->str()] = *a++;
-		}
-		~LithpEnvironment() {
-			// free child environments
-			child_env_map::const_iterator child_envs_it = child_envs.begin();
-			child_env_delete_depth++;
-			std::string spacer((child_env_delete_depth - 1) * 2, ' ');
-			for (; child_envs_it != child_envs.end(); ++child_envs_it) {
-				LithpEnvironment *child = *child_envs_it;
-				//if(DEBUG) std::cerr << spacer << "Deleting child environment: " << child << "\n";
-				delete child;
-			}
-			child_env_delete_depth--;
-			child_envs.clear();
-		}
-
-		// TODO: Map should be using an integer type for key, using atom integer value
-		typedef std::map<std::string, LithpCell> map;
-		map &find(const std::string &var) {
-			if (env_.find(var) != env_.end())
-				return env_;
-			if (outer_)
-				return outer_->find(var);
-			throw InvalidArgumentException("Unbound symbol: " + var);
-		}
-
-		LithpCell &operator[](const std::string &var) {
-			return env_[var];
-		}
-
-		typedef std::vector<LithpEnvironment*> child_env_map;
-		void remember_child_env(LithpEnvironment *e) {
-			child_envs.push_back(e);
-		}
-	private:
-		map env_;
-		LithpEnvironment *outer_;
-		child_env_map child_envs;   // Keep track of child environments
-		static int child_env_delete_depth;
-	};
 	int LithpEnvironment::child_env_delete_depth = 0;
 
 	const LithpVar LithpVar::operator + (const LithpVar &other) const {
@@ -404,7 +218,7 @@ namespace PocoLithp {
 			return eval(/*body*/proclist[2], child_env);
 		}
 		else if (proc.tag == Proc) {
-			LithpCell &r = proc.proc()(exps);
+			LithpCell &r = proc.proc()(exps, env);
 			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << "\n";
 			return r;
 		}
@@ -412,7 +226,7 @@ namespace PocoLithp {
 	}
 
 	// Define the bare minimum set of primitives necessary to pass the unit tests
-	LithpCell proc_add(const LithpCells &c)
+	LithpCell proc_add(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -429,7 +243,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_sub(const LithpCells & c)
+	LithpCell proc_sub(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -446,7 +260,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_mul(const LithpCells & c)
+	LithpCell proc_mul(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(1);
 		for (LithpCells::const_iterator i = c.begin(); i != c.end(); ++i) {
@@ -463,7 +277,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_div(const LithpCells & c)
+	LithpCell proc_div(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -480,7 +294,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_greater(const LithpCells & c)
+	LithpCell proc_greater(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
@@ -489,7 +303,7 @@ namespace PocoLithp {
 		return true_sym;
 	}
 
-	LithpCell proc_less(const LithpCells & c)
+	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
@@ -498,7 +312,7 @@ namespace PocoLithp {
 		return true_sym;
 	}
 
-	LithpCell proc_less_equal(const LithpCells & c)
+	LithpCell proc_less_equal(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
@@ -507,11 +321,11 @@ namespace PocoLithp {
 		return true_sym;
 	}
 
-	LithpCell proc_length(const LithpCells & c) { return LithpCell(Var, c[0].list().size()); }
-	LithpCell proc_nullp(const LithpCells & c) { return c[0].is_nullp() ? true_sym : false_sym; }
-	LithpCell proc_head(const LithpCells & c) { return c[0].list()[0]; }
+	LithpCell proc_length(const LithpCells &c, LithpEnvironment *env) { return LithpCell(Var, c[0].list().size()); }
+	LithpCell proc_nullp(const LithpCells &c, LithpEnvironment *env) { return c[0].is_nullp() ? true_sym : false_sym; }
+	LithpCell proc_head(const LithpCells &c, LithpEnvironment *env) { return c[0].list()[0]; }
 
-	LithpCell proc_tail(const LithpCells & c)
+	LithpCell proc_tail(const LithpCells &c, LithpEnvironment *env)
 	{
 		if (c[0].list().size() < 2)
 			return nil;
@@ -520,7 +334,7 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_append(const LithpCells & c)
+	LithpCell proc_append(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCells result = c[0].list();
 		const LithpCells &c1l = c[1].list();
@@ -529,7 +343,7 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_cons(const LithpCells & c)
+	LithpCell proc_cons(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCells result;
 		const LithpCells &c1l = c[1].list();
@@ -539,7 +353,7 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_list(const LithpCells & c)
+	LithpCell proc_list(const LithpCells &c, LithpEnvironment *env)
 	{
 //		LithpCell result(List); result.list = c;
 //		return result;
