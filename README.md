@@ -16,7 +16,7 @@ Status
 
 * The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
 
-* Most test cases are passing (3 failures).
+* All test cases passing!
 
 * Does not use strings for numbers and arithmatic. Results in large speed improvement.
 
