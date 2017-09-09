@@ -25,12 +25,16 @@ Status
 Building
 --------
 
-Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2017 or higher. Support for other compilers will be implemented in time.
+Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2015 or higher. Support for other compilers will be implemented in time.
 
 **NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
 
 
-1. Open the `PocoLithp.sln` file in Visual Studio 2017 or higher.
+1. Open the correct solution file:
+
+   * For Visual Studio 2017 or higher, open `PocoLithp.sln`
+
+   * For Visual Studio 2015, open `PocoLithp2015.sln`
 
 2. Install the required packages depending on the build type you want:
 
@@ -38,13 +42,13 @@ Uses [Conan](https://www.conan.io/) package manager and currently requires Visua
 
     * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
 
-	* **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
+    * **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
 
-	* **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MDd`
+    * **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MDd`
 
-	* **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
+    * **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
 
-3. Open the Property Manager (`View -> Other Windows -> Property Manager` and add `conanbuildinfo.props` from the top level directory.
+3. Open the Property Manager (`View -> Other Windows -> Property Manager` and `Add existing property sheet` using `conanbuildinfo.props` from the top level directory. (The icon next to the save icon in the Property Manager.)
 
 4. Build or run normally
 

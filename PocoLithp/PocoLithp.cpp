@@ -62,6 +62,7 @@ namespace PocoLithp {
 		std::string str() const {
 			switch (tag) {
 			case Var:
+				// TODO: Floats are getting truncated
 			case Symbol:
 				return value.toString();
 			case Lambda:
@@ -162,7 +163,7 @@ namespace PocoLithp {
 			std::string spacer((child_env_delete_depth - 1) * 2, ' ');
 			for (; child_envs_it != child_envs.end(); ++child_envs_it) {
 				LithpEnvironment *child = *child_envs_it;
-				//if(DEBUG) std::cerr << spacer << "Deleting child environment: " << child << std::endl;
+				//if(DEBUG) std::cerr << spacer << "Deleting child environment: " << child << "\n";
 				delete child;
 			}
 			child_env_delete_depth--;
@@ -345,7 +346,7 @@ namespace PocoLithp {
 		// TODO: Only do this lookup with atoms
 		if (x.tag == Symbol) {
 			LithpCell &r = env->find(x.str())[x.str()];
-			if (DEBUG) std::cerr << to_string(x) << " => " << to_string(r) << std::endl;
+			if (DEBUG) std::cerr << to_string(x) << " => " << to_string(r) << "\n";
 			return r;
 		}
 		// TODO: Variable lookup (must currently use Symbol)
@@ -404,7 +405,7 @@ namespace PocoLithp {
 		}
 		else if (proc.tag == Proc) {
 			LithpCell &r = proc.proc()(exps);
-			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << std::endl;
+			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << "\n";
 			return r;
 		}
 		throw InvalidArgumentException("Unhandled type");
@@ -636,9 +637,9 @@ namespace PocoLithp {
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
 			PocoVar V = parseNumber(token);
 			if (DEBUG) {
-				std::cerr << "atom(" << token << ") = " << to_string(V) << std::endl;
-				std::cerr << "    .isNumeric = " << V.isNumeric() << std::endl;
-				std::cerr << "    .isString = " << V.isString() << std::endl;
+				std::cerr << "atom(" << token << ") = " << to_string(V) << "\n";
+				std::cerr << "    .isNumeric = " << V.isNumeric() << "\n";
+				std::cerr << "    .isString = " << V.isString() << "\n";
 			}
 			return LithpCell(Var, V);
 		}
@@ -669,7 +670,7 @@ namespace PocoLithp {
 	{
 		std::list<std::string> tokens(tokenize(s));
 		LithpCell result = read_from(tokens);
-		//std::cerr << "read_from() => " << to_string(result) << std::endl;
+		//std::cerr << "read_from() => " << to_string(result) << "\n";
 		return result;
 	}
 
@@ -716,8 +717,17 @@ namespace PocoLithp {
 		eval(read("(define multiply-by (lambda (n) (lambda (y) (* y n))))"), env);
 		eval(read("(define doubler (multiply-by 2))"), env);
 		LithpCell result = eval(read("(doubler 4)"), env);
-		std::cout << to_string(result) << std::endl;
+		std::cout << to_string(result) << "\n";
 	}
+
+	void plithp_fac_test() {
+		std::string line;
+		LithpEnvironment _env, *env = &_env; add_globals(_env);
+		eval(read("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"), env);
+		LithpCell result = eval(read("(fact 50)"), env);
+		std::cout << "(fact 50) => " << to_string(result) << "\n";
+	}
+
 
 	////////////////////// unit tests
 	unsigned g_test_count;      // count of number of unit tests executed
@@ -754,6 +764,7 @@ namespace PocoLithp {
 		// the 29 unit tests for lis.py
 		TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2) -3.14e+159)");
 		TEST("(+ 2 2)", "4");
+		TEST("(+ 2.5 2)", "4.5");
 		TEST("(+ (* 2 100) (* 1 10))", "210");
 		TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
 		TEST("(if (< 6 5) (+ 1 1) (+ 2 2))", "4");
@@ -803,19 +814,12 @@ using namespace PocoLithp;
 
 int main()
 {
-	Poco::Dynamic::Struct<int> atomTable;
-
-	atomTable[0] = 1;
-	atomTable[5] = "??";
-
-	LithpVar a = 4, b = 2;
-	LithpVar c = a * b;
-	std::cout << "A: " << a.str() << ", B: " << b.str() << ", C: " << c.str() << std::endl;
 	//scheme_main();
 	//scheme_test();
 	//scheme_complete_test();
 	//plithp_test();
 	//plithp_abs_test();
+	plithp_fac_test();
 	plithp_complete_test();
 	//plithp_main();
     return 0;
