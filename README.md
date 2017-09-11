@@ -14,13 +14,22 @@ An improved version of the [90 line C++ Scheme interpreter](https://gist.github.
 Status
 ------
 
-* The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
+**Language compatibility level**: Scheme
+
+   Currently only supports a Scheme syntax. Lithp-specific types not implemented.
+
+* Fixed comparison operators (were using strings for comparisons), resulting in correct behaviour and speed improvements.
+
+* Speed is close to Lithp speed running on a web browser. About 20% slower than Lithp (aka V8 / JavaScript / Node.js)
+
+* No memory leaks! The basic types use the standard templates, avoiding manual memory management. The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
 
 * All test cases passing!
 
 * Does not use strings for numbers and arithmatic. Results in large speed improvement.
 
-* No memory leaks! The basic types use the standard templates, avoiding manual memory management. The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
+* The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
+
 
 Building
 --------
@@ -28,7 +37,6 @@ Building
 Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2015 or higher. Support for other compilers will be implemented in time.
 
 **NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
-
 
 1. Open the correct solution file:
 
@@ -40,11 +48,13 @@ Uses [Conan](https://www.conan.io/) package manager and currently requires Visua
 
     * **NOTE:** Conan automatically determines the `arch` to build for based on your system, unless you override it. To simplify configuration, pick based on the profile you want to run.
 
+	* **NOTE:** On Linux, remove the `-s compiler.runtime=...` parameter.
+
     * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
 
     * **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
 
-    * **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MDd`
+    * **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Debug -s compiler.runtime=MDd`
 
     * **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
 

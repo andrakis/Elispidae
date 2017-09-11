@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdafx.h"
+
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
 	typedef std::vector<PocoVar> PocoList;
@@ -9,6 +11,14 @@ namespace PocoLithp {
 
 	typedef Poco::InvalidArgumentException InvalidArgumentException;
 	typedef unsigned AtomType;
+
+#if defined(POCO_HAVE_INT64)
+	typedef Poco::Int64 SignedInteger;
+	typedef Poco::UInt64 UnsignedInteger;
+#else
+	typedef long SignedInteger;
+	typedef unsigned long UnsignedInteger;
+#endif
 
 	enum LithpVarType {
 		Var,
@@ -79,11 +89,6 @@ namespace PocoLithp {
 			return str().c_str();
 		}
 
-		bool operator == (const LithpVar &other) const {
-			if (tag != other.tag)
-				return false;
-			return value == other.value;
-		}
 		bool operator != (const LithpVar &other) const {
 			return !(*this == other);
 		}
@@ -93,8 +98,19 @@ namespace PocoLithp {
 				return false;
 			if (a.tag != Var)
 				return false;
+			const std::type_info &rtti = a.value.type();
+			if (rtti == typeid(double) || rtti == typeid(float)) {
+				return cb(a.value.convert<double>(), b.value.convert<double>());
+			} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
+				return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
+			} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
+				return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
+			} else if (rtti == typeid(bool)) {
+				return cb(a.value.extract<bool>(), b.value.convert<bool>());
+			}
 			return cb(a.value, b.value);
 		}
+		bool operator == (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a == b; }); }
 		bool operator < (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a < b; }); }
 		bool operator > (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a > b; }); }
 		bool operator <= (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a <= b; }); }

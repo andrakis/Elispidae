@@ -9,6 +9,7 @@ namespace PocoLithp {
 	const bool DEBUG = false;
 
 	int LithpEnvironment::child_env_delete_depth = 0;
+	std::string to_string(const LithpCell & exp);
 
 	const LithpVar LithpVar::operator + (const LithpVar &other) const {
 		switch (tag) {
@@ -218,7 +219,7 @@ namespace PocoLithp {
 			return eval(/*body*/proclist[2], child_env);
 		}
 		else if (proc.tag == Proc) {
-			LithpCell &r = proc.proc()(exps, env);
+			const LithpCell &r = proc.proc()(exps, env);
 			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << "\n";
 			return r;
 		}
@@ -232,11 +233,7 @@ namespace PocoLithp {
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			// Signedness promotion check
 			if (i->value.isSigned() == true && n.value.isSigned() == false) {
-#if defined(POCO_HAVE_INT64)
-				n.value = n.value.convert<Poco::Int64>();
-#else
-				n.value = n.value.convert<long>();
-#endif
+				n.value = n.value.convert<SignedInteger>();
 			}
 			n += *i;
 		}
@@ -249,11 +246,7 @@ namespace PocoLithp {
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			// Signedness promotion check
 			if (i->value.isSigned() == true && n.value.isSigned() == false) {
-#if defined(POCO_HAVE_INT64)
-				n.value = n.value.convert<Poco::Int64>();
-#else
-				n.value = n.value.convert<long>();
-#endif
+				n.value = n.value.convert<SignedInteger>();
 			}
 			n -= *i;
 		}
@@ -266,11 +259,7 @@ namespace PocoLithp {
 		for (LithpCells::const_iterator i = c.begin(); i != c.end(); ++i) {
 			// Signedness promotion check
 			if (i->value.isSigned() == true && n.value.isSigned() == false) {
-#if defined(POCO_HAVE_INT64)
-				n.value = n.value.convert<Poco::Int64>();
-#else
-				n.value = n.value.convert<long>();
-#endif
+				n.value = n.value.convert<SignedInteger>();
 			}
 			n *= *i;
 		}
@@ -283,11 +272,7 @@ namespace PocoLithp {
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			// Signedness promotion check
 			if (i->value.isSigned() == true && n.value.isSigned() == false) {
-#if defined(POCO_HAVE_INT64)
-				n.value = n.value.convert<Poco::Int64>();
-#else
-				n.value = n.value.convert<long>();
-#endif
+				n.value = n.value.convert<SignedInteger>();
 			}
 			n /= *i;
 		}
@@ -298,26 +283,28 @@ namespace PocoLithp {
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
-			if (n <= *i)
-				return false_sym;
-		return true_sym;
+			if (n > *i)
+				return true_sym;
+		return false_sym;
 	}
 
 	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
-			if (n >= *i)
-				return false_sym;
-		return true_sym;
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			if (n < *i)
+				return true_sym;
+		}
+		return false_sym;
 	}
 
 	LithpCell proc_less_equal(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			if (n > *i)
 				return false_sym;
+		}
 		return true_sym;
 	}
 
@@ -449,13 +436,17 @@ namespace PocoLithp {
 	LithpCell atom(const std::string & token)
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
-			PocoVar V = parseNumber(token);
-			if (DEBUG) {
+			LithpCell V = LithpCell(Var, parseNumber(token));
+			if (1 && DEBUG) {
 				std::cerr << "atom(" << token << ") = " << to_string(V) << "\n";
-				std::cerr << "    .isNumeric = " << V.isNumeric() << "\n";
-				std::cerr << "    .isString = " << V.isString() << "\n";
+				std::cerr << "    .isNumeric = " << V.value.isNumeric() << "\n";
+				std::cerr << "    .isString = " << V.value.isString() << "\n";
+				PocoVar two = 2;
+				std::cerr << "    .< 2 = " << (V.value < two ? "true" : "false") << "\n";
+				std::cerr << "    .= 2 = " << (V.value == two ? "true" : "false") << "\n";
+				std::cerr << "    .> 2 = " << (V.value > two ? "true" : "false") << "\n";
 			}
-			return LithpCell(Var, V);
+			return V;
 		}
 		return LithpCell(Symbol, token);
 	}
@@ -542,7 +533,29 @@ namespace PocoLithp {
 		std::cout << "(fact 50) => " << to_string(result) << "\n";
 	}
 
-
+	void plithp_fib_test() {
+		// Test a fibonacci function
+		// ((def fib #N :: (
+		//    (if (< N 2) (
+		//      (1)
+		//    ) (else (
+		//      (+ (fib (- N 1)) (fib (- N 2)))
+		//    )))
+		//  ))
+		//  (var X 10)
+		//  (print "Fac of" (get X) (fac (get X)))
+		// )
+		std::string line;
+		auto start = std::chrono::steady_clock::now();
+		LithpEnvironment _env, *env = &_env; add_globals(_env);
+		eval(read("(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"), env);
+		auto step1 = std::chrono::steady_clock::now();
+		LithpCell result = eval(read("(fib 20)"), env);
+		auto step2 = std::chrono::steady_clock::now();
+		std::cout << "(fib 20) => " << to_string(result) << "\n";
+		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
+		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
+	}
 	////////////////////// unit tests
 	unsigned g_test_count;      // count of number of unit tests executed
 	unsigned g_fault_count;     // count of number of unit tests that fail
@@ -580,6 +593,10 @@ namespace PocoLithp {
 		TEST("(+ 2 2)", "4");
 		TEST("(+ 2.5 2)", "4.5");
 		TEST("(+ (* 2 100) (* 1 10))", "210");
+		TEST("(> 6 5)", "#t");
+		TEST("(< 6 5)", "#f");
+		TEST("(< 10 2)", "#f");
+		TEST("(<= 10 2)", "#f");
 		TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
 		TEST("(if (< 6 5) (+ 1 1) (+ 2 2))", "4");
 		TEST("(define x 3)", "3");
@@ -633,7 +650,8 @@ int main()
 	//scheme_complete_test();
 	//plithp_test();
 	//plithp_abs_test();
-	plithp_fac_test();
+	//plithp_fac_test();
+	plithp_fib_test();
 	plithp_complete_test();
 	//plithp_main();
     return 0;
