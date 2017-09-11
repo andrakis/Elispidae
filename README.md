@@ -38,6 +38,9 @@ Uses [Conan](https://www.conan.io/) package manager and currently requires Visua
 
 **NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
 
+On Visual Studio:
+-----------------
+
 1. Open the correct solution file:
 
    * For Visual Studio 2017 or higher, open `PocoLithp.sln`
@@ -63,3 +66,10 @@ Uses [Conan](https://www.conan.io/) package manager and currently requires Visua
 4. Build or run normally
 
 **NOTE:** Switching build configurations requires performing steps 2 to 4 again to match the configuration.
+
+On Linux:
+---------
+
+1. Install dependencies: `conan install -s compiler=gcc -s compiler.version=5.3 -s compiler.libcxx=libstdc++11 --build=missing`
+
+2. Run: <code>make CXXFLAGS=`cat conanbuildinfo.gcc`</code>
