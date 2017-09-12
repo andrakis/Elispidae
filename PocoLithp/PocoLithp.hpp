@@ -43,13 +43,27 @@ namespace PocoLithp {
 	typedef std::vector<LithpCell> LithpCells;
 	typedef LithpCells::const_iterator LithpCellIt;
 
+	typedef uint32_t atomId;
+	typedef std::map<atomId, std::string> AtomMapById_t;
+	typedef std::map<std::string, atomId> AtomMapByName_t;
+	std::string getAtomById(const atomId id);
+	// Declare an atom to exist and get its id
+	atomId getAtomId(const std::string &);
+	// Declare an atom to exist and get it as a cell
+	LithpCell getAtom(const std::string &);
+
 	struct LithpVar {
 		typedef LithpVar(*proc_type)(const LithpCells &, LithpEnvironment *);
 		LithpVarType tag;
 		PocoVar value;
 		LithpEnvironment *env;
 
-		LithpVar(LithpVarType _tag, PocoVar _value) : tag(_tag), value(_value), env(0) {}
+		LithpVar(LithpVarType _tag, PocoVar _value) : tag(_tag), value(_value), env(0) {
+			if (_tag == Atom && _value.isString()) {
+				// Convert from string to atom
+				value = getAtomId(_value.toString());
+			}
+		}
 		LithpVar(const PocoVar &_value) : tag(Var), value(_value), env(0) {
 		}
 		LithpVar(const PocoVar &_value, const LithpVarType &_tag) : tag(_tag), value(_value), env(0) {
@@ -78,7 +92,7 @@ namespace PocoLithp {
 			case Dict:
 				// TODO
 			case Atom:
-				// TODO
+				return getAtomById(atomid());
 			case Tuple:
 				// TODO
 			default:
@@ -96,17 +110,19 @@ namespace PocoLithp {
 		static bool CompareWith(const LithpVar &a, const LithpVar &b, Callback cb) {
 			if (a.tag != b.tag)
 				return false;
-			if (a.tag != Var)
+			if (a.tag != Var && a.tag != Atom)
 				return false;
 			const std::type_info &rtti = a.value.type();
-			if (rtti == typeid(double) || rtti == typeid(float)) {
-				return cb(a.value.convert<double>(), b.value.convert<double>());
-			} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
-				return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
+			if (rtti == typeid(atomId)) {
+				return cb(a.atomid(), b.atomid());
 			} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
 				return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
+			} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
+				return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
 			} else if (rtti == typeid(bool)) {
 				return cb(a.value.extract<bool>(), b.value.convert<bool>());
+			} else if (rtti == typeid(double) || rtti == typeid(float)) {
+				return cb(a.value.convert<double>(), b.value.convert<double>());
 			}
 			return cb(a.value, b.value);
 		}
@@ -148,6 +164,13 @@ namespace PocoLithp {
 			return value.extract<proc_type>();
 		}
 
+		// Atom behaviours
+		const atomId atomid() const {
+			if (tag != Atom)
+				throw InvalidArgumentException("Not an atom");
+			return value.extract<atomId>();
+		}
+
 		bool is_nullp() const {
 			switch (tag) {
 			case List:
@@ -164,7 +187,7 @@ namespace PocoLithp {
 			: outer_(outer) {
 			LithpCellIt a = args.begin();
 			for (LithpCellIt p = params.begin(); p != params.end(); ++p)
-				env_[p->str()] = *a++;
+				env_[p->atomid()] = *a++;
 		}
 		~LithpEnvironment() {
 			// free child environments
@@ -180,9 +203,8 @@ namespace PocoLithp {
 			child_envs.clear();
 		}
 
-		// TODO: Map should be using an integer type for key, using atom integer value
-		typedef std::map<std::string, LithpCell> map;
-		map &find(const std::string &var) {
+		typedef std::map<atomId, LithpCell> map;
+		map &find(const atomId var) {
 			if (env_.find(var) != env_.end())
 				return env_;
 			if (outer_)
@@ -190,8 +212,11 @@ namespace PocoLithp {
 			throw InvalidArgumentException("Unbound symbol: " + var);
 		}
 
-		LithpCell &operator[](const std::string &var) {
+		LithpCell &operator[](const atomId var) {
 			return env_[var];
+		}
+		LithpCell &operator[](const std::string &name) {
+			return env_[getAtomId(name)];
 		}
 
 		typedef std::vector<LithpEnvironment*> child_env_map;

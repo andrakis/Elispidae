@@ -16,7 +16,9 @@ Status
 
 **Language compatibility level**: Scheme
 
-   Currently only supports a Scheme syntax. Lithp-specific types not implemented.
+    Currently only supports a Scheme syntax. Most Lithp-specific types not implemented.
+
+* Implemented Atom type. All Symbols are now Atoms, uint32 instead of strings, making comparisons much quicker.
 
 * Fixed comparison operators (were using strings for comparisons), resulting in correct behaviour and speed improvements.
 

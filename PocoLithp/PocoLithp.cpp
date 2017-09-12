@@ -5,11 +5,31 @@
 
 #include "stdafx.h"
 
+PocoLithp::AtomMapById_t atomMapById;
+PocoLithp::AtomMapByName_t atomMapByName;
+
 namespace PocoLithp {
 	const bool DEBUG = false;
 
 	int LithpEnvironment::child_env_delete_depth = 0;
 	std::string to_string(const LithpCell & exp);
+
+	std::string getAtomById(atomId id) {
+		return atomMapById[id];
+	}
+
+	atomId getAtomId(const std::string &name) {
+		AtomMapByName_t::const_iterator it = atomMapByName.find(name);
+		if (it != atomMapByName.end())
+			return it->second;
+		atomId id = atomMapByName.size();
+		atomMapByName.emplace(name, id);
+		atomMapById.emplace(id, name);
+		return id;
+	}
+	LithpCell getAtom(const std::string &name) {
+		return LithpCell(Atom, getAtomId(name));
+	}
 
 	const LithpVar LithpVar::operator + (const LithpVar &other) const {
 		switch (tag) {
@@ -151,20 +171,24 @@ namespace PocoLithp {
 		}
 	}
 
-	// TODO: These should be atoms?
-	const LithpCell false_sym(Symbol, "#f");
-	const LithpCell true_sym(Symbol, "#t");
-	const LithpCell nil(Symbol, "nil");
+	const LithpCell sym_false(Atom, "#f");
+	const LithpCell sym_true(Atom, "#t");
+	const LithpCell sym_nil(Atom, "nil");
+	const LithpCell sym_quote(Atom, "quote");
+	const LithpCell sym_if(Atom, "if");
+	const LithpCell sym_set(Atom, "set!");
+	const LithpCell sym_define(Atom, "define");
+	const LithpCell sym_lambda(Atom, "lambda");
+	const LithpCell sym_begin(Atom, "begin");
 	std::string to_string(const LithpCell & exp);
 
 	LithpCell eval(LithpCell x, LithpEnvironment *env) {
-		// TODO: Only do this lookup with atoms
-		if (x.tag == Symbol) {
-			LithpCell &r = env->find(x.str())[x.str()];
+		if (x.tag == Atom) {
+			LithpCell &r = env->find(x.atomid())[x.atomid()];
 			if (DEBUG) std::cerr << to_string(x) << " => " << to_string(r) << "\n";
 			return r;
 		}
-		// TODO: Variable lookup (must currently use Symbol)
+		// TODO: Variable lookup (must currently use Atom)
 
 		// Vars can be returned as is
 		if (x.tag == Var)
@@ -172,19 +196,19 @@ namespace PocoLithp {
 		// TODO: Differentiate between list and opchain? Current implementation assumes list and
 		// determines type
 		if (!x.value.isArray() || x.value.size() == 0)
-			return nil;
+			return sym_nil;
 		const LithpCells &xl = x.list();
 		const LithpCell &xl0 = xl[0];
-		if (xl0.tag == Symbol) {
-			if (xl0.value == "quote")      // (quote exp)
+		if (xl0.tag == Atom) {
+			if (xl0 == sym_quote)      // (quote exp)
 				return xl[1];
-			if (xl0.value == "if")         // (if test conseq [alt])
-				return eval(eval(xl[1], env).value == "#f" ? (xl.size() < 4 ? nil : xl[3]) : xl[2], env);
-			if (xl0.value == "set!")       // (set! var exp)
-				return env->find(xl[1].str())[xl[1].str()] = eval(xl[2], env);
-			if (xl0.value == "define")     // (define var exp)
-				return (*env)[xl[1].str()] = eval(xl[2], env);
-			if (xl0.value == "lambda") {   // (lambda (var*) exp)
+			if (xl0 == sym_if)         // (if test conseq [alt])
+				return eval(eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2], env);
+			if (xl0 == sym_set)       // (set! var exp)
+				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
+			if (xl0 == sym_define)     // (define var exp)
+				return (*env)[xl[1].atomid()] = eval(xl[2], env);
+			if (xl0 == sym_lambda) {   // (lambda (var*) exp)
 				x.tag = Lambda;
 				// Keep a reference to the environment that exists now (when the
 				// lambda is being defined) because that's the outer environment
@@ -192,7 +216,7 @@ namespace PocoLithp {
 				x.env = env;
 				return x;
 			}
-			if (xl0.value == "begin") {     // (begin exp*)
+			if (xl0 == sym_begin) {     // (begin exp*)
 				// TODO: This is the OpChain run section
 				for (size_t i = 1; i < xl.size() - 1; ++i)
 					eval(xl[i], env);
@@ -284,8 +308,8 @@ namespace PocoLithp {
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
 			if (n > *i)
-				return true_sym;
-		return false_sym;
+				return sym_true;
+		return sym_false;
 	}
 
 	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
@@ -293,9 +317,9 @@ namespace PocoLithp {
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			if (n < *i)
-				return true_sym;
+				return sym_true;
 		}
-		return false_sym;
+		return sym_false;
 	}
 
 	LithpCell proc_less_equal(const LithpCells &c, LithpEnvironment *env)
@@ -303,19 +327,19 @@ namespace PocoLithp {
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			if (n > *i)
-				return false_sym;
+				return sym_false;
 		}
-		return true_sym;
+		return sym_true;
 	}
 
 	LithpCell proc_length(const LithpCells &c, LithpEnvironment *env) { return LithpCell(Var, c[0].list().size()); }
-	LithpCell proc_nullp(const LithpCells &c, LithpEnvironment *env) { return c[0].is_nullp() ? true_sym : false_sym; }
+	LithpCell proc_nullp(const LithpCells &c, LithpEnvironment *env) { return c[0].is_nullp() ? sym_true : sym_false; }
 	LithpCell proc_head(const LithpCells &c, LithpEnvironment *env) { return c[0].list()[0]; }
 
 	LithpCell proc_tail(const LithpCells &c, LithpEnvironment *env)
 	{
 		if (c[0].list().size() < 2)
-			return nil;
+			return sym_nil;
 		LithpCells result = c[0].list();
 		result.erase(result.begin());
 		return LithpCell(List, result);
@@ -350,7 +374,7 @@ namespace PocoLithp {
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
-		env["nil"] = nil;   env["#f"] = false_sym;  env["#t"] = true_sym;
+		env["nil"] = sym_nil;   env["#f"] = sym_false;  env["#t"] = sym_true;
 		env["append"] = LithpCell(&proc_append);   env["head"] = LithpCell(&proc_head);
 		env["tail"] = LithpCell(&proc_tail);      env["cons"] = LithpCell(&proc_cons);
 		env["length"] = LithpCell(&proc_length);   env["list"] = LithpCell(&proc_list);
@@ -432,8 +456,8 @@ namespace PocoLithp {
 		throw InvalidArgumentException("Not a number: " + token);
 	}
 
-	// numbers become Numbers; every other token is a Symbol
-	LithpCell atom(const std::string & token)
+	// numbers become Numbers; every other token is an Atom
+	LithpCell atom(const std::string &token)
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
 			LithpCell V = LithpCell(Var, parseNumber(token));
@@ -448,7 +472,7 @@ namespace PocoLithp {
 			}
 			return V;
 		}
-		return LithpCell(Symbol, token);
+		return LithpCell(Atom, token);
 	}
 
 	// return the Lisp expression in the given tokens
@@ -588,6 +612,7 @@ namespace PocoLithp {
 
 	unsigned plithp_complete_test() {
 		LithpEnvironment global_env; add_globals(global_env);
+		auto start = std::chrono::steady_clock::now();
 		// the 29 unit tests for lis.py
 		TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2) -3.14e+159)");
 		TEST("(+ 2 2)", "4");
@@ -633,10 +658,11 @@ namespace PocoLithp {
 		TEST("(riff-shuffle (list 1 2 3 4 5 6 7 8))", "(1 5 2 6 3 7 4 8)");
 		TEST("((repeat riff-shuffle) (list 1 2 3 4 5 6 7 8))", "(1 3 5 7 2 4 6 8)");
 		TEST("(riff-shuffle (riff-shuffle (riff-shuffle (list 1 2 3 4 5 6 7 8))))", "(1 2 3 4 5 6 7 8)");
+		auto end = std::chrono::steady_clock::now();
 		std::cout
 			<< "total tests " << g_test_count
 			<< ", total failures " << g_fault_count
-			<< "\n";
+			<< ", run in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
 		return g_fault_count ? EXIT_FAILURE : EXIT_SUCCESS;
 	}
 }
@@ -651,7 +677,7 @@ int main()
 	//plithp_test();
 	//plithp_abs_test();
 	//plithp_fac_test();
-	plithp_fib_test();
+	//plithp_fib_test();
 	plithp_complete_test();
 	//plithp_main();
     return 0;
