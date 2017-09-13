@@ -18,6 +18,10 @@ Status
 
     Currently only supports a Scheme syntax. Most Lithp-specific types not implemented.
 
+* Implements <code>"strings"</code> and <code>'extended atom syntax'</code>
+
+* Displays eval and parse times
+
 * Implemented Atom type. All Symbols are now Atoms, uint32 instead of strings, making comparisons much quicker.
 
 * Fixed comparison operators (were using strings for comparisons), resulting in correct behaviour and speed improvements.

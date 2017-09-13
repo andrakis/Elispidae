@@ -573,18 +573,28 @@ namespace PocoLithp {
 	void plithp_test() {
 		std::string line;
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
+		auto start = std::chrono::steady_clock::now();
 		evalTimed(read("(define multiply-by (lambda (n) (lambda (y) (* y n))))"), env);
 		evalTimed(read("(define doubler (multiply-by 2))"), env);
+		auto step1 = std::chrono::steady_clock::now();
 		LithpCell result = evalTimed(read("(doubler 4)"), env);
+		auto step2 = std::chrono::steady_clock::now();
 		std::cout << to_string(result) << "\n";
+		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
+		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
 	}
 
 	void plithp_fac_test() {
 		std::string line;
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
+		auto start = std::chrono::steady_clock::now();
 		evalTimed(read("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"), env);
+		auto step1 = std::chrono::steady_clock::now();
 		LithpCell result = evalTimed(read("(fact 50)"), env);
+		auto step2 = std::chrono::steady_clock::now();
 		std::cout << "(fact 50) => " << to_string(result) << "\n";
+		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
+		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
 	}
 
 	void plithp_fib_test() {
@@ -604,9 +614,9 @@ namespace PocoLithp {
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
 		evalTimed(read("(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"), env);
 		auto step1 = std::chrono::steady_clock::now();
-		LithpCell result = evalTimed(read("(fib 20)"), env);
+		LithpCell result = evalTimed(read("(fib 15)"), env);
 		auto step2 = std::chrono::steady_clock::now();
-		std::cout << "(fib 20) => " << to_string(result) << "\n";
+		std::cout << "(fib 15) => " << to_string(result) << "\n";
 		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
 		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
 	}
@@ -708,8 +718,8 @@ int main()
 	//scheme_complete_test();
 	//plithp_test();
 	//plithp_abs_test();
-	//plithp_fac_test();
-	//plithp_fib_test();
+	plithp_fac_test();
+	plithp_fib_test();
 	plithp_complete_test();
 	//plithp_main();
 	std::cout << "Total eval time: " << evalTime << "ms, parse time: " << parseTime << "ms\n";
