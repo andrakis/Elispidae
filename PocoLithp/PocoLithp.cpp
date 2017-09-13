@@ -395,14 +395,28 @@ namespace PocoLithp {
 	std::list<std::string> tokenize(const std::string & str)
 	{
 		std::list<std::string> tokens;
-		const char * s = str.c_str();
+		const char *s = str.c_str();
 		while (*s) {
 			while (*s == ' ')
 				++s;
-			if (*s == '(' || *s == ')')
+			if (*s == '\'' || *s == '"') {
+				// Read a string
+				const char *t = s, sp = *s;
+				unsigned escape = 0;
+				do {
+					++t;
+					if (escape)
+						escape--;
+					if (*t == '\\')
+						escape = 2;
+				} while (*t && (escape != 0 || *t != sp));
+				++t;
+				tokens.push_back(std::string(s, t));
+				s = t;
+			} else if (*s == '(' || *s == ')') {
 				tokens.push_back(*s++ == '(' ? "(" : ")");
-			else {
-				const char * t = s;
+			}  else {
+				const char *t = s;
 				while (*t && *t != ' ' && *t != '(' && *t != ')')
 					++t;
 				tokens.push_back(std::string(s, t));
@@ -471,6 +485,10 @@ namespace PocoLithp {
 				std::cerr << "    .> 2 = " << (V.value > two ? "true" : "false") << "\n";
 			}
 			return V;
+		} else if (token[0] == '\'') {
+			return LithpCell(Atom, token.substr(1, token.size() - 2));
+		} else if (token[0] == '"') {
+			return LithpCell(Var, token.substr(1, token.size() - 2));
 		}
 		return LithpCell(Atom, token);
 	}
@@ -614,6 +632,8 @@ namespace PocoLithp {
 		LithpEnvironment global_env; add_globals(global_env);
 		auto start = std::chrono::steady_clock::now();
 		// the 29 unit tests for lis.py
+		TEST("(quote \"f\\\"oo\")", "f\\\"oo");
+		TEST("(quote \"foo\")", "foo");
 		TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2) -3.14e+159)");
 		TEST("(+ 2 2)", "4");
 		TEST("(+ 2.5 2)", "4.5");

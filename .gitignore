@@ -262,3 +262,4 @@ __pycache__/
 /conanbuildinfo.props
 /conaninfo.txt
 /conan_imports_manifest.txt
+/conanbuildinfo.gcc
