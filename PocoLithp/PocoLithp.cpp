@@ -588,13 +588,14 @@ namespace PocoLithp {
 		std::string line;
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
 		auto start = std::chrono::steady_clock::now();
-		evalTimed(read("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"), env);
+		LithpCell result = evalTimed(read(
+			"(begin "
+			"  (define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"
+		    "  (fact 50)"
+			")"), env);
 		auto step1 = std::chrono::steady_clock::now();
-		LithpCell result = evalTimed(read("(fact 50)"), env);
-		auto step2 = std::chrono::steady_clock::now();
 		std::cout << "(fact 50) => " << to_string(result) << "\n";
-		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
-		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
+		std::cout << "  fact run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
 	}
 
 	void plithp_fib_test() {
@@ -612,13 +613,14 @@ namespace PocoLithp {
 		std::string line;
 		auto start = std::chrono::steady_clock::now();
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
-		evalTimed(read("(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"), env);
+		const LithpCell &result = evalTimed(read(
+			"(begin "
+			"  (define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"
+		    "  (fib 12)"
+			")"), env);
 		auto step1 = std::chrono::steady_clock::now();
-		LithpCell result = evalTimed(read("(fib 15)"), env);
-		auto step2 = std::chrono::steady_clock::now();
-		std::cout << "(fib 15) => " << to_string(result) << "\n";
-		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
-		std::cout << "run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step2 - step1).count() << "ms\n";
+		std::cout << "(fib 12) => " << to_string(result) << "\n";
+		std::cout << "  fib run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
 	}
 	////////////////////// unit tests
 	unsigned g_test_count;      // count of number of unit tests executed
