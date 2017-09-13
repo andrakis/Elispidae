@@ -11,6 +11,8 @@ PocoLithp::AtomMapByName_t atomMapByName;
 namespace PocoLithp {
 	const bool DEBUG = false;
 
+	UnsignedInteger parseTime = 0, evalTime = 0;
+
 	int LithpEnvironment::child_env_delete_depth = 0;
 	std::string to_string(const LithpCell & exp);
 
@@ -248,6 +250,13 @@ namespace PocoLithp {
 			return r;
 		}
 		throw InvalidArgumentException("Unhandled type");
+	}
+	LithpCell evalTimed(const LithpCell &x, LithpEnvironment *env) {
+		auto start = std::chrono::steady_clock::now();
+		const LithpCell &result = eval(x, env);
+		auto end = std::chrono::steady_clock::now();
+		evalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		return result;
 	}
 
 	// Define the bare minimum set of primitives necessary to pass the unit tests
@@ -515,8 +524,11 @@ namespace PocoLithp {
 	// return the Lisp expression represented by the given string
 	LithpCell read(const std::string & s)
 	{
+		auto start = std::chrono::steady_clock::now();
 		std::list<std::string> tokens(tokenize(s));
 		LithpCell result = read_from(tokens);
+		auto end = std::chrono::steady_clock::now();
+		parseTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		//std::cerr << "read_from() => " << to_string(result) << "\n";
 		return result;
 	}
@@ -547,7 +559,7 @@ namespace PocoLithp {
 		for (;;) {
 			std::cout << prompt;
 			std::string line; std::getline(std::cin, line);
-			std::cout << to_string(eval(read(line), env)) << '\n';
+			std::cout << to_string(evalTimed(read(line), env)) << '\n';
 		}
 	}
 
@@ -561,17 +573,17 @@ namespace PocoLithp {
 	void plithp_test() {
 		std::string line;
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
-		eval(read("(define multiply-by (lambda (n) (lambda (y) (* y n))))"), env);
-		eval(read("(define doubler (multiply-by 2))"), env);
-		LithpCell result = eval(read("(doubler 4)"), env);
+		evalTimed(read("(define multiply-by (lambda (n) (lambda (y) (* y n))))"), env);
+		evalTimed(read("(define doubler (multiply-by 2))"), env);
+		LithpCell result = evalTimed(read("(doubler 4)"), env);
 		std::cout << to_string(result) << "\n";
 	}
 
 	void plithp_fac_test() {
 		std::string line;
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
-		eval(read("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"), env);
-		LithpCell result = eval(read("(fact 50)"), env);
+		evalTimed(read("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"), env);
+		LithpCell result = evalTimed(read("(fact 50)"), env);
 		std::cout << "(fact 50) => " << to_string(result) << "\n";
 	}
 
@@ -590,9 +602,9 @@ namespace PocoLithp {
 		std::string line;
 		auto start = std::chrono::steady_clock::now();
 		LithpEnvironment _env, *env = &_env; add_globals(_env);
-		eval(read("(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"), env);
+		evalTimed(read("(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"), env);
 		auto step1 = std::chrono::steady_clock::now();
-		LithpCell result = eval(read("(fib 20)"), env);
+		LithpCell result = evalTimed(read("(fib 20)"), env);
 		auto step2 = std::chrono::steady_clock::now();
 		std::cout << "(fib 20) => " << to_string(result) << "\n";
 		std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::milliseconds>(step1 - start).count() << "ms\n";
@@ -618,8 +630,8 @@ namespace PocoLithp {
 	}
 	// write a message to std::cout if value != expected_value
 	#define TEST_EQUAL(value, expected_value, code) test_equal_(value, expected_value, __FILE__, __LINE__, code)
-	// evaluate the given Lisp expression and compare the result against the given expected_result
-	#define TEST(expr, expected_result) TEST_EQUAL(to_string(eval(read(expr), &global_env)), expected_result, expr)
+	// evalTimeduate the given Lisp expression and compare the result against the given expected_result
+	#define TEST(expr, expected_result) TEST_EQUAL(to_string(evalTimed(read(expr), &global_env)), expected_result, expr)
 
 	unsigned plithp_abs_test() {
 		LithpEnvironment global_env; add_globals(global_env);
@@ -700,6 +712,7 @@ int main()
 	//plithp_fib_test();
 	plithp_complete_test();
 	//plithp_main();
+	std::cout << "Total eval time: " << evalTime << "ms, parse time: " << parseTime << "ms\n";
     return 0;
 }
 
