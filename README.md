@@ -1,7 +1,7 @@
 PocoLithp
 =========
 
-An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++ and using the [Poco](https://procoproject.org) library.
+An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++14 and using the [Poco](https://procoproject.org) library.
 
 Why?
 ----
@@ -17,6 +17,8 @@ Status
 **Language compatibility level**: Scheme
 
     Currently only supports a Scheme syntax. Most Lithp-specific types not implemented.
+
+* Now compiles on Linux under G++ (4.9.1 or higher, C++14 support required.) without need for Conan.
 
 * Implements <code>"strings"</code> and <code>'extended atom syntax'</code>
 
@@ -37,8 +39,8 @@ Status
 * The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
 
 
-Building
---------
+Building (Conan / Visual Studio)
+--------------------------------
 
 Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2015 or higher. Support for other compilers will be implemented in time.
 
@@ -73,9 +75,22 @@ On Visual Studio:
 
 **NOTE:** Switching build configurations requires performing steps 2 to 4 again to match the configuration.
 
-On Linux:
----------
+Building (Linux):
+-----------------
 
-1. Install dependencies: `conan install -s compiler=gcc -s compiler.version=5.3 -s compiler.libcxx=libstdc++11 --build=missing`
+This section needs work.
 
-2. Run: <code>make CXXFLAGS=`cat conanbuildinfo.gcc`</code>
+1. Update submodules: `git submodule update --init`
+
+2. Use `make`:
+
+   For building on most systems:
+
+    make CONF=Release
+
+    make CONF=Debug
+
+  For building on OpenRISC 1000:
+
+    make CONF=Release CC=or1k-linux-musl-gcc CXX=or1k-linux-musl-g++ CXXFLAGS=-DPOCO_ARCH_OR1000=0x10 -DPOCO_ARCH=POCO_ARCH_OR1000 -DPOCO_ARCH_LITTLE_ENDIAN=1 -D__EMSCRIPTEN__
+

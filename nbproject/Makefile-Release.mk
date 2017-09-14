@@ -21,8 +21,8 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=MinGW-Windows
-CND_DLIB_EXT=dll
+CND_PLATFORM=GNU-Linux
+CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -36,15 +36,74 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/PocoLithp/PocoLithp.o \
-	${OBJECTDIR}/PocoLithp/stdafx.o
+	${OBJECTDIR}/PocoLithp/stdafx.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Format.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Var.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_byte_order.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_chartables.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_compile.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_config.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_dfa_exec.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_exec.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_fullinfo.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_get.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_globals.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_jit_compile.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_maketables.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_newline.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ord2utf8.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_refcount.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_string_utils.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_study.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_tables.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ucd.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_valid_utf8.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_version.o \
+	${OBJECTDIR}/contrib/poco/Foundation/src/pcre_xclass.o
 
 
 # C Compiler Flags
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-flto
+CXXFLAGS=-flto
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -57,20 +116,316 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin/plithp
 
-bin.exe: ${OBJECTFILES}
-	${LINK.cc} -o bin ${OBJECTFILES} ${LDLIBSOPTIONS}
+bin/plithp: ${OBJECTFILES}
+	${MKDIR} -p bin
+	${LINK.cc} -o bin/plithp ${OBJECTFILES} ${LDLIBSOPTIONS} -pthread
 
 ${OBJECTDIR}/PocoLithp/PocoLithp.o: PocoLithp/PocoLithp.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PocoLithp.o PocoLithp/PocoLithp.cpp
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PocoLithp.o PocoLithp/PocoLithp.cpp
 
 ${OBJECTDIR}/PocoLithp/stdafx.o: PocoLithp/stdafx.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdafx.o PocoLithp/stdafx.cpp
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdafx.o PocoLithp/stdafx.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o: contrib/poco/Foundation/src/ASCIIEncoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o contrib/poco/Foundation/src/ASCIIEncoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o: contrib/poco/Foundation/src/Ascii.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o contrib/poco/Foundation/src/Ascii.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o: contrib/poco/Foundation/src/AtomicCounter.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o contrib/poco/Foundation/src/AtomicCounter.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o: contrib/poco/Foundation/src/Bugcheck.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o contrib/poco/Foundation/src/Bugcheck.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o: contrib/poco/Foundation/src/DateTime.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o contrib/poco/Foundation/src/DateTime.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o: contrib/poco/Foundation/src/DateTimeFormat.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o contrib/poco/Foundation/src/DateTimeFormat.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o: contrib/poco/Foundation/src/DateTimeParser.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o contrib/poco/Foundation/src/DateTimeParser.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o: contrib/poco/Foundation/src/Debugger.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o contrib/poco/Foundation/src/Debugger.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o: contrib/poco/Foundation/src/Exception.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o contrib/poco/Foundation/src/Exception.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Format.o: contrib/poco/Foundation/src/Format.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Format.o contrib/poco/Foundation/src/Format.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o: contrib/poco/Foundation/src/Latin1Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o contrib/poco/Foundation/src/Latin1Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o: contrib/poco/Foundation/src/Latin2Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o contrib/poco/Foundation/src/Latin2Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o: contrib/poco/Foundation/src/Latin9Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o contrib/poco/Foundation/src/Latin9Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o: contrib/poco/Foundation/src/LocalDateTime.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o contrib/poco/Foundation/src/LocalDateTime.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o: contrib/poco/Foundation/src/Mutex.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o contrib/poco/Foundation/src/Mutex.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o: contrib/poco/Foundation/src/NumberFormatter.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o contrib/poco/Foundation/src/NumberFormatter.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o: contrib/poco/Foundation/src/NumberParser.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o contrib/poco/Foundation/src/NumberParser.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o: contrib/poco/Foundation/src/NumericString.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o contrib/poco/Foundation/src/NumericString.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o: contrib/poco/Foundation/src/RWLock.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o contrib/poco/Foundation/src/RWLock.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o: contrib/poco/Foundation/src/RefCountedObject.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o contrib/poco/Foundation/src/RefCountedObject.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o: contrib/poco/Foundation/src/TextConverter.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o contrib/poco/Foundation/src/TextConverter.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o: contrib/poco/Foundation/src/TextEncoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o contrib/poco/Foundation/src/TextEncoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o: contrib/poco/Foundation/src/TextIterator.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o contrib/poco/Foundation/src/TextIterator.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o: contrib/poco/Foundation/src/Timespan.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o contrib/poco/Foundation/src/Timespan.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o: contrib/poco/Foundation/src/Timestamp.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o contrib/poco/Foundation/src/Timestamp.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o: contrib/poco/Foundation/src/Timezone.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o contrib/poco/Foundation/src/Timezone.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o: contrib/poco/Foundation/src/UTF16Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o contrib/poco/Foundation/src/UTF16Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o: contrib/poco/Foundation/src/UTF32Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o contrib/poco/Foundation/src/UTF32Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o: contrib/poco/Foundation/src/UTF8Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o contrib/poco/Foundation/src/UTF8Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o: contrib/poco/Foundation/src/UTF8String.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o contrib/poco/Foundation/src/UTF8String.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o: contrib/poco/Foundation/src/Unicode.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o contrib/poco/Foundation/src/Unicode.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o: contrib/poco/Foundation/src/UnicodeConverter.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o contrib/poco/Foundation/src/UnicodeConverter.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Var.o: contrib/poco/Foundation/src/Var.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Var.o contrib/poco/Foundation/src/Var.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o: contrib/poco/Foundation/src/VarHolder.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o contrib/poco/Foundation/src/VarHolder.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o: contrib/poco/Foundation/src/VarIterator.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o contrib/poco/Foundation/src/VarIterator.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o: contrib/poco/Foundation/src/Windows1250Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o contrib/poco/Foundation/src/Windows1250Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o: contrib/poco/Foundation/src/Windows1251Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o contrib/poco/Foundation/src/Windows1251Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o: contrib/poco/Foundation/src/Windows1252Encoding.cpp
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o contrib/poco/Foundation/src/Windows1252Encoding.cpp
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_byte_order.o: contrib/poco/Foundation/src/pcre_byte_order.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_byte_order.o contrib/poco/Foundation/src/pcre_byte_order.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_chartables.o: contrib/poco/Foundation/src/pcre_chartables.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_chartables.o contrib/poco/Foundation/src/pcre_chartables.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_compile.o: contrib/poco/Foundation/src/pcre_compile.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_compile.o contrib/poco/Foundation/src/pcre_compile.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_config.o: contrib/poco/Foundation/src/pcre_config.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_config.o contrib/poco/Foundation/src/pcre_config.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_dfa_exec.o: contrib/poco/Foundation/src/pcre_dfa_exec.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_dfa_exec.o contrib/poco/Foundation/src/pcre_dfa_exec.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_exec.o: contrib/poco/Foundation/src/pcre_exec.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_exec.o contrib/poco/Foundation/src/pcre_exec.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_fullinfo.o: contrib/poco/Foundation/src/pcre_fullinfo.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_fullinfo.o contrib/poco/Foundation/src/pcre_fullinfo.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_get.o: contrib/poco/Foundation/src/pcre_get.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_get.o contrib/poco/Foundation/src/pcre_get.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_globals.o: contrib/poco/Foundation/src/pcre_globals.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_globals.o contrib/poco/Foundation/src/pcre_globals.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_jit_compile.o: contrib/poco/Foundation/src/pcre_jit_compile.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_jit_compile.o contrib/poco/Foundation/src/pcre_jit_compile.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_maketables.o: contrib/poco/Foundation/src/pcre_maketables.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_maketables.o contrib/poco/Foundation/src/pcre_maketables.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_newline.o: contrib/poco/Foundation/src/pcre_newline.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_newline.o contrib/poco/Foundation/src/pcre_newline.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ord2utf8.o: contrib/poco/Foundation/src/pcre_ord2utf8.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ord2utf8.o contrib/poco/Foundation/src/pcre_ord2utf8.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_refcount.o: contrib/poco/Foundation/src/pcre_refcount.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_refcount.o contrib/poco/Foundation/src/pcre_refcount.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_string_utils.o: contrib/poco/Foundation/src/pcre_string_utils.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_string_utils.o contrib/poco/Foundation/src/pcre_string_utils.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_study.o: contrib/poco/Foundation/src/pcre_study.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_study.o contrib/poco/Foundation/src/pcre_study.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_tables.o: contrib/poco/Foundation/src/pcre_tables.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_tables.o contrib/poco/Foundation/src/pcre_tables.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ucd.o: contrib/poco/Foundation/src/pcre_ucd.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_ucd.o contrib/poco/Foundation/src/pcre_ucd.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_valid_utf8.o: contrib/poco/Foundation/src/pcre_valid_utf8.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_valid_utf8.o contrib/poco/Foundation/src/pcre_valid_utf8.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_version.o: contrib/poco/Foundation/src/pcre_version.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_version.o contrib/poco/Foundation/src/pcre_version.c
+
+${OBJECTDIR}/contrib/poco/Foundation/src/pcre_xclass.o: contrib/poco/Foundation/src/pcre_xclass.c
+	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_xclass.o contrib/poco/Foundation/src/pcre_xclass.c
 
 # Subprojects
 .build-subprojects:

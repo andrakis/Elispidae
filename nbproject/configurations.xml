@@ -15,6 +15,67 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f1" displayName="Poco" projectFiles="true">
+        <itemPath>contrib/poco/Foundation/src/ASCIIEncoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Ascii.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/AtomicCounter.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Bugcheck.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/DateTime.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/DateTimeFormat.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/DateTimeParser.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Debugger.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Exception.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Format.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Latin1Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Latin2Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Latin9Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/LocalDateTime.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Mutex.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/NumberFormatter.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/NumberParser.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/NumericString.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/RWLock.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/RefCountedObject.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/TextConverter.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/TextEncoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/TextIterator.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Timespan.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Timestamp.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Timezone.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/UTF16Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/UTF32Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/UTF8Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/UTF8String.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Unicode.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/UnicodeConverter.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Var.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/VarHolder.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/VarIterator.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Windows1250Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Windows1251Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/Windows1252Encoding.cpp</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_byte_order.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_chartables.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_compile.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_config.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_dfa_exec.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_exec.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_fullinfo.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_get.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_globals.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_jit_compile.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_maketables.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_newline.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_ord2utf8.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_refcount.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_string_utils.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_study.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_tables.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_ucd.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_valid_utf8.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_version.c</itemPath>
+        <itemPath>contrib/poco/Foundation/src/pcre_xclass.c</itemPath>
+      </logicalFolder>
       <itemPath>PocoLithp/PocoLithp.cpp</itemPath>
       <itemPath>PocoLithp/stdafx.cpp</itemPath>
     </logicalFolder>
@@ -41,9 +102,17 @@
       <compileType>
         <ccTool>
           <standard>11</standard>
+          <incDir>
+            <pElem>contrib/poco/Foundation/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_DEBUG</Elem>
+          </preprocessorList>
         </ccTool>
         <linkerTool>
-          <output>bin</output>
+          <output>bin/plithp</output>
+          <stripSymbols>true</stripSymbols>
+          <commandLine>-pthread</commandLine>
         </linkerTool>
       </compileType>
       <item path="PocoLithp/PocoLithp.cpp" ex="false" tool="1" flavor2="0">
@@ -55,6 +124,301 @@
       <item path="PocoLithp/stdafx.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/ASCIIEncoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Ascii.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/AtomicCounter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Bugcheck.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTime.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTimeFormat.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTimeParser.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Debugger.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Exception.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Format.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin1Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin2Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin9Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/LocalDateTime.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Mutex.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumberFormatter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumberParser.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumericString.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/RWLock.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/RefCountedObject.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextConverter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextEncoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextIterator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timespan.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timestamp.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timezone.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF16Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF32Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF8Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF8String.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Unicode.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UnicodeConverter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Var.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/VarHolder.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/VarIterator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1250Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1251Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1252Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_byte_order.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_chartables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_compile.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_config.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_dfa_exec.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_exec.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_fullinfo.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_get.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_globals.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_jit_compile.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_maketables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_newline.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_ord2utf8.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_refcount.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_string_utils.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_study.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_tables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_ucd.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_valid_utf8.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_version.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_xclass.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -69,7 +433,14 @@
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
-          <standard>8</standard>
+          <standard>11</standard>
+          <incDir>
+            <pElem>contrib/poco/Foundation/include</pElem>
+          </incDir>
+          <commandLine>-flto</commandLine>
+          <preprocessorList>
+            <Elem>_RELEASE</Elem>
+          </preprocessorList>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -78,7 +449,8 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <linkerTool>
-          <output>bin</output>
+          <output>bin/plithp</output>
+          <commandLine>-pthread</commandLine>
         </linkerTool>
       </compileType>
       <item path="PocoLithp/PocoLithp.cpp" ex="false" tool="1" flavor2="0">
@@ -90,6 +462,301 @@
       <item path="PocoLithp/stdafx.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/ASCIIEncoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Ascii.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/AtomicCounter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Bugcheck.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTime.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTimeFormat.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/DateTimeParser.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Debugger.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Exception.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Format.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin1Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin2Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Latin9Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/LocalDateTime.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Mutex.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumberFormatter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumberParser.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/NumericString.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/RWLock.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/RefCountedObject.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextConverter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextEncoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/TextIterator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timespan.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timestamp.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Timezone.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF16Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF32Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF8Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UTF8String.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Unicode.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/UnicodeConverter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Var.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/VarHolder.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/VarIterator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1250Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1251Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/Windows1252Encoding.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_byte_order.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_chartables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_compile.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_config.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_dfa_exec.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_exec.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_fullinfo.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_get.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_globals.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_jit_compile.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_maketables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_newline.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_ord2utf8.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_refcount.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_string_utils.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_study.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_tables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_ucd.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_valid_utf8.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_version.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="contrib/poco/Foundation/src/pcre_xclass.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
     </conf>
   </confs>
