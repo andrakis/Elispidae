@@ -324,16 +324,16 @@ namespace PocoLithp {
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
-			if (n > *i)
-				return sym_true;
-		return sym_false;
+			if (n <= *i)
+				return sym_false;
+		return sym_true;
 	}
 
 	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
-			if (n < *i)
+			if (n >= *i)
 				return sym_true;
 		}
 		return sym_false;
@@ -343,7 +343,7 @@ namespace PocoLithp {
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
-			if (n < *i)
+			if (n > *i)
 				return sym_false;
 		}
 		return sym_true;
