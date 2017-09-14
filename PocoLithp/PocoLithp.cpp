@@ -530,15 +530,6 @@ namespace PocoLithp {
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
 			LithpCell V = LithpCell(Var, parseNumber(token));
-			if (1 && DEBUG) {
-				std::cerr << "atom(" << token << ") = " << to_string(V) << "\n";
-				std::cerr << "    .isNumeric = " << V.value.isNumeric() << "\n";
-				std::cerr << "    .isString = " << V.value.isString() << "\n";
-				PocoVar two = 2;
-				std::cerr << "    .< 2 = " << (V.value < two ? "true" : "false") << "\n";
-				std::cerr << "    .= 2 = " << (V.value == two ? "true" : "false") << "\n";
-				std::cerr << "    .> 2 = " << (V.value > two ? "true" : "false") << "\n";
-			}
 			return V;
 		} else if (token[0] == '\'') {
 			return LithpCell(Atom, token.substr(1, token.size() - 2));
