@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{F44FFAB2-37AB-409D-8C51-D42D08DA6CBC}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MinimalFoundation</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>POCO_STATIC ;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\poco\Foundation\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>POCO_STATIC ;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\poco\Foundation\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>POCO_STATIC ;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\poco\Foundation\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>POCO_STATIC ;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\poco\Foundation\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\poco\Foundation\src\Ascii.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\ASCIIEncoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\AtomicCounter.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Bugcheck.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\DateTime.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\DateTimeFormat.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\DateTimeFormatter.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\DateTimeParser.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Debugger.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\ErrorHandler.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Event.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Exception.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Format.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Latin1Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Latin2Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Latin9Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\LocalDateTime.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Mutex.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\NamedEvent_WIN32.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\NamedMutex_WIN32.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\NumberFormatter.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\NumberParser.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\NumericString.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_byte_order.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_chartables.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_compile.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_config.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_dfa_exec.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_exec.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_fullinfo.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_get.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_globals.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_jit_compile.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_maketables.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_newline.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_ord2utf8.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_refcount.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_string_utils.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_study.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_tables.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_ucd.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_valid_utf8.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_version.c" />
+    <ClCompile Include="..\poco\Foundation\src\pcre_xclass.c" />
+    <ClCompile Include="..\poco\Foundation\src\RefCountedObject.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Runnable.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\RWLock.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\TextConverter.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\TextEncoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\TextIterator.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Thread.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\ThreadLocal.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Timespan.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Timestamp.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Timezone.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Unicode.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\UnicodeConverter.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\UTF16Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\UTF32Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\UTF8Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\UTF8String.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Var.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\VarHolder.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\VarIterator.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Windows1250Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Windows1251Encoding.cpp" />
+    <ClCompile Include="..\poco\Foundation\src\Windows1252Encoding.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

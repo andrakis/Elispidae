@@ -3,12 +3,44 @@ PocoLithp
 
 An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++14 and using the [Poco](https://procoproject.org) library.
 
+It is extremely fast owing to its dynamic runtime types and reliance on atoms rather than strings.
+
+No memory leaks have been detected.
+
 Why?
 ----
 
 An attempt at a much more lightweight implementation of a C++ Lithp (other attempt [Stackful](https://github.com/andrakis/Stackful) being rather more complicated than desired.)
 
 An improved version of the [90 line C++ Scheme interpreter](https://gist.github.com/ofan/721464) is included for experimentation and basis for the interpreter.
+
+What?
+-----
+
+PocoLithp implements a working and extremely fast Scheme-based interpreter. See the [tests](https://github.com/andrakis/PocoLithp/blob/master/PocoLithp/PLtests.cpp) for syntax examples.
+
+It supports most modern types:
+
+   * **Numbers:** `1`, `2.34`, `0xDEADBEEF`
+
+   * **Atoms:** `most` `symbols` `are` `atoms`, additionally an `'extended atom syntax'` is available.
+
+   * **Strings:** "Strings are supported"
+
+   * **Lists:** `(a 1 (2 b (3 c)))`
+
+   * **Lambdas:** `(lambda (a b c) (+ a b c))`, `(lambda (n) (begin (test) (+ n 1)))`
+
+   * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args, LithpEnvironment *env)`
+
+How?
+----
+
+   * Uses atoms for most features (builtins, standard library functions) instead of strings. An atom is a 32 bit integer, much quicker to lookup than a string.
+
+   * [Poco](https://procoproject.org) library is used for the underlying dynamic type. Some extensions to this allow for minimal coding and maximum support.
+
+   * Memory is almost universally managed by the standard template library and restricting the use of pointers in code. The only object using pointers is the environment, and this is managed properly and correctly deallocated when no longer in use.
 
 
 Status
@@ -47,41 +79,14 @@ Status
 * The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
 
 
-Building (Conan / Visual Studio)
---------------------------------
+Building (Visual Studio)
+------------------------
 
-Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2015 or higher. Support for other compilers will be implemented in time.
+This solution does not use Conan, and is the recommended way forward. It does require the large Poco library as a submodule though.
 
-**NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
+1. Update submodules: `git submodule update --init`
 
-On Visual Studio:
------------------
-
-1. Open the correct solution file:
-
-   * For Visual Studio 2017 or higher, open `PocoLithp.sln`
-
-   * For Visual Studio 2015, open `PocoLithp2015.sln`
-
-2. Install the required packages depending on the build type you want:
-
-    * **NOTE:** Conan automatically determines the `arch` to build for based on your system, unless you override it. To simplify configuration, pick based on the profile you want to run.
-
-	* **NOTE:** On Linux, remove the `-s compiler.runtime=...` parameter.
-
-    * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
-
-    * **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
-
-    * **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Debug -s compiler.runtime=MDd`
-
-    * **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
-
-3. Open the Property Manager (`View -> Other Windows -> Property Manager` and `Add existing property sheet` using `conanbuildinfo.props` from the top level directory. (The icon next to the save icon in the Property Manager.)
-
-4. Build or run normally
-
-**NOTE:** Switching build configurations requires performing steps 2 to 4 again to match the configuration.
+2. Open the solution `PocoLithpContrib` and compile.
 
 Building (Linux):
 -----------------
@@ -105,3 +110,40 @@ This section needs work.
      **Note:** POCO does not currently support OpenRISC 1000, however we can fake enough with the above flags that it compiles and runs successfully.
 
      **Note:** The `-static` flag is required when building with anything other than GCC 4.9.1.
+
+Building (Conan / Visual Studio) (DEPRECATED)
+---------------------------------------------
+
+**NOTE:** Due to the complexity of this method, it is now deprecated in favour of the `PocoLithpContrib` solution.
+
+Uses [Conan](https://www.conan.io/) package manager and currently requires Visual Studio 2015 or higher. Support for other compilers will be implemented in time.
+
+**NOTE:** Please ensure you select the appropriate build configuration in Visual Studio, according to your system settings.
+
+On Visual Studio:
+-----------------
+
+1. Open the correct solution file:
+
+   * For Visual Studio 2017 or higher, open `PocoLithp.sln`
+
+   * For Visual Studio 2015, open `PocoLithp2015.sln`
+
+2. Install the required packages depending on the build type you want:
+
+    * **NOTE:** Conan automatically determines the `arch` to build for based on your system, unless you override it. To simplify configuration, pick based on the profile you want to run.
+
+    * **Debug/x86**: `conan install -s arch=x86 -s build_type=Debug -s compiler.runtime=MDd`
+
+    * **Release/x86**: `conan install -s arch=x86 -s build_type=Release -s compiler.runtime=MD`
+
+    * **Debug/x64**: `conan install -s arch=x86_64 -s build_type=Debug -s compiler.runtime=MDd`
+
+    * **Release/x64**: `conan install -s arch=x86_64 -s build_type=Release -s compiler.runtime=MD`
+
+3. Open the Property Manager (`View -> Other Windows -> Property Manager` and `Add existing property sheet` using `conanbuildinfo.props` from the top level directory. (The icon next to the save icon in the Property Manager.)
+
+4. Build or run normally
+
+**NOTE:** Switching build configurations requires performing steps 2 to 4 again to match the configuration.
+

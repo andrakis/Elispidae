@@ -263,3 +263,4 @@ __pycache__/
 /conaninfo.txt
 /conan_imports_manifest.txt
 /conanbuildinfo.gcc
+*.swp

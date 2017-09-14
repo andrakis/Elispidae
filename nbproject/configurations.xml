@@ -76,6 +76,11 @@
         <itemPath>contrib/poco/Foundation/src/pcre_version.c</itemPath>
         <itemPath>contrib/poco/Foundation/src/pcre_xclass.c</itemPath>
       </logicalFolder>
+      <itemPath>PocoLithp/PLglobals.cpp</itemPath>
+      <itemPath>PocoLithp/PLinterpreter.cpp</itemPath>
+      <itemPath>PocoLithp/PLparser.cpp</itemPath>
+      <itemPath>PocoLithp/PLtests.cpp</itemPath>
+      <itemPath>PocoLithp/PLtypes.cpp</itemPath>
       <itemPath>PocoLithp/PocoLithp.cpp</itemPath>
       <itemPath>PocoLithp/stdafx.cpp</itemPath>
     </logicalFolder>
@@ -115,6 +120,16 @@
           <commandLine>-pthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLparser.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLtests.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLtypes.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="PocoLithp/PocoLithp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PocoLithp.hpp" ex="false" tool="3" flavor2="0">
@@ -453,6 +468,16 @@
           <commandLine>-pthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLparser.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLtests.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLtypes.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="PocoLithp/PocoLithp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PocoLithp.hpp" ex="false" tool="3" flavor2="0">

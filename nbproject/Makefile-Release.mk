@@ -21,8 +21,8 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-Linux
-CND_DLIB_EXT=so
+CND_PLATFORM=MinGW-Windows
+CND_DLIB_EXT=dll
 CND_CONF=Release
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -35,6 +35,11 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/PocoLithp/PLglobals.o \
+	${OBJECTDIR}/PocoLithp/PLinterpreter.o \
+	${OBJECTDIR}/PocoLithp/PLparser.o \
+	${OBJECTDIR}/PocoLithp/PLtests.o \
+	${OBJECTDIR}/PocoLithp/PLtypes.o \
 	${OBJECTDIR}/PocoLithp/PocoLithp.o \
 	${OBJECTDIR}/PocoLithp/stdafx.o \
 	${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o \
@@ -116,11 +121,36 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin/plithp
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin/plithp.exe
 
-bin/plithp: ${OBJECTFILES}
+bin/plithp.exe: ${OBJECTFILES}
 	${MKDIR} -p bin
 	${LINK.cc} -o bin/plithp ${OBJECTFILES} ${LDLIBSOPTIONS} -pthread
+
+${OBJECTDIR}/PocoLithp/PLglobals.o: PocoLithp/PLglobals.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
+
+${OBJECTDIR}/PocoLithp/PLinterpreter.o: PocoLithp/PLinterpreter.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLinterpreter.o PocoLithp/PLinterpreter.cpp
+
+${OBJECTDIR}/PocoLithp/PLparser.o: PocoLithp/PLparser.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLparser.o PocoLithp/PLparser.cpp
+
+${OBJECTDIR}/PocoLithp/PLtests.o: PocoLithp/PLtests.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtests.o PocoLithp/PLtests.cpp
+
+${OBJECTDIR}/PocoLithp/PLtypes.o: PocoLithp/PLtypes.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -D_RELEASE -Icontrib/poco/Foundation/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtypes.o PocoLithp/PLtypes.cpp
 
 ${OBJECTDIR}/PocoLithp/PocoLithp.o: PocoLithp/PocoLithp.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
