@@ -31,7 +31,7 @@ namespace PocoLithp {
 				return xl[1];
 			if (xl0 == sym_if)         // (if test conseq [alt])
 				return eval(eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2], env);
-			if (xl0 == sym_set)       // (set! var exp)
+			if (xl0 == sym_set)        // (set! var exp)
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
 			if (xl0 == sym_define)     // (define var exp)
 				return (*env)[xl[1].atomid()] = eval(xl[2], env);
@@ -108,9 +108,9 @@ namespace PocoLithp {
 
 		while(!QUIT) {
 			if (partialBuffer.length() == 0) {
-				std::cout << prompt;
+				std::cerr << prompt;
 			} else {
-				std::cout << "> ";
+				std::cerr << "> ";
 			}
 			std::string line; std::getline(std::cin, line);
 			try {
@@ -122,7 +122,7 @@ namespace PocoLithp {
 				std::cout << to_string(evalTimed(read(line), env)) << '\n';
 				if (TIMING) {
 					auto end = std::chrono::steady_clock::now();
-					std::cout << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+					std::cerr << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 				}
 			} catch (const SyntaxException) {
 				partialBuffer += line;

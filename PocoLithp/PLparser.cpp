@@ -16,7 +16,9 @@ namespace PocoLithp {
 		while (*s) {
 			while (*s == ' ')
 				++s;
-			if (*s == '\'' || *s == '"') {
+			if (*s == '\t')
+				++s;
+			else if (*s == '\'' || *s == '"') {
 				// Read a string
 				const char *t = s, sp = *s;
 				unsigned escape = 0;

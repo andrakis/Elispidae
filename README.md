@@ -46,38 +46,11 @@ How?
 Status
 ------
 
-**Version: 0.20**
+**Version: 0.24**
 
 **Language compatibility level:** Scheme
 
-    Currently only supports a Scheme syntax. Most Lithp-specific types not implemented.
-
-* The REPL is now the standard mode of operation.
-
-* Added comparison operators `=` (or `==`), `!=`.
-
-* Added exception handling.
-
-* Now compiles on Linux under G++ (4.9.1 or higher, C++14 support required.) without need for Conan.
-
-* Implements <code>"strings"</code> and <code>'extended atom syntax'</code>
-
-* Displays eval and parse times
-
-* Implemented Atom type. All Symbols are now Atoms, uint32 instead of strings, making comparisons much quicker.
-
-* Fixed comparison operators (were using strings for comparisons), resulting in correct behaviour and speed improvements.
-
-* Speed is close to Lithp speed running on a web browser. About 20% slower than Lithp (aka V8 / JavaScript / Node.js)
-
-* No memory leaks! The basic types use the standard templates, avoiding manual memory management. The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
-
-* All test cases passing!
-
-* Does not use strings for numbers and arithmatic. Results in large speed improvement.
-
-* The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
-
+    Mainly Scheme syntax, but strings are also supported.
 
 Building (Visual Studio)
 ------------------------
@@ -110,6 +83,62 @@ This section needs work.
      **Note:** POCO does not currently support OpenRISC 1000, however we can fake enough with the above flags that it compiles and runs successfully.
 
      **Note:** The `-static` flag is required when building with anything other than GCC 4.9.1.
+
+Running
+-------
+
+The executable is found in the following location:
+
+* **Windows:** `bin/PocoLithp.exe` or `bin/PocoLithpContrib.exe` depending on your project.
+
+* **Linux:** `bin/plithp`
+
+Two methods are available:
+
+* **REPL:** Run the executable
+
+      bin\PocoLithp.exe
+	  bin\PocoLithpContrib.exe
+	  bin\plithp
+
+* **Run a file:** Run the executable
+
+      bin\PocoLithp.exe samples\fac_recursive.lithp
+      bin\PocoLithpContrib.exe samples\fac_recursive.lithp
+      bin\plithp samples\fac_recursive.lithp
+
+Notable Milestones
+------------------
+
+* Can now run sample files via command line argument.
+
+* Adds multi-line support, tabs no longer result in invalid code.
+
+* The REPL is now the standard mode of operation.
+
+* Added comparison operators `=` (or `==`), `!=`.
+
+* Added exception handling.
+
+* Now compiles on Linux under G++ (4.9.1 or higher, C++14 support required.) without need for Conan.
+
+* Implements <code>"strings"</code> and <code>'extended atom syntax'</code>
+
+* Displays eval and parse times
+
+* Implemented Atom type. All Symbols are now Atoms, uint32 instead of strings, making comparisons much quicker.
+
+* Fixed comparison operators (were using strings for comparisons), resulting in correct behaviour and speed improvements.
+
+* Speed is close to Lithp speed running on a web browser. About 20% slower than Lithp (aka V8 / JavaScript / Node.js)
+
+* No memory leaks! The basic types use the standard templates, avoiding manual memory management. The only leakable type is the environment, but this is managed by the parent environment such that when the global environment dies, all child environments are cleared.
+
+* All test cases passing!
+
+* Does not use strings for numbers and arithmatic. Results in large speed improvement.
+
+* The basic scheme parser and interpreter is implemented using the Poco Dynamic Var as the underlying type.
 
 Building (Conan / Visual Studio) (DEPRECATED)
 ---------------------------------------------
