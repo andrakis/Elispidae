@@ -86,11 +86,14 @@ This section needs work.
 
    For building on most systems:
 
-    make CONF=Release
+     `make CONF=Release`
 
-    make CONF=Debug
+     `make CONF=Debug`
 
-  For building on OpenRISC 1000:
+   For building on OpenRISC 1000:
 
-    make CONF=Release CC=or1k-linux-musl-gcc CXX=or1k-linux-musl-g++ CXXFLAGS=-DPOCO_ARCH_OR1000=0x10 -DPOCO_ARCH=POCO_ARCH_OR1000 -DPOCO_ARCH_LITTLE_ENDIAN=1 -D__EMSCRIPTEN__
+     `make CONF=Release CC=or1k-linux-musl-gcc CXX=or1k-linux-musl-g++ CXXFLAGS="-DPOCO_ARCH_OR1000=0x10 -DPOCO_ARCH=POCO_ARCH_OR1000 -DPOCO_ARCH_LITTLE_ENDIAN=1 -D__EMSCRIPTEN__ -static" CCFLAGS="-static"`
 
+     **Note:** POCO does not currently support OpenRISC 1000, however we can fake enough with the above flags that it compiles and runs successfully.
+
+     **Note:** The `-static` flag is required when building with anything other than GCC 4.9.1.
