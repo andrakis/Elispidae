@@ -14,9 +14,17 @@ An improved version of the [90 line C++ Scheme interpreter](https://gist.github.
 Status
 ------
 
-**Language compatibility level**: Scheme
+**Version: 0.20**
+
+**Language compatibility level:** Scheme
 
     Currently only supports a Scheme syntax. Most Lithp-specific types not implemented.
+
+* The REPL is now the standard mode of operation.
+
+* Added comparison operators `=` (or `==`), `!=`.
+
+* Added exception handling.
 
 * Now compiles on Linux under G++ (4.9.1 or higher, C++14 support required.) without need for Conan.
 

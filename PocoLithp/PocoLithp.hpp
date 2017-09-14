@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+#define PLITHP_VERSION "0.20"
+
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
 	typedef std::vector<PocoVar> PocoList;
@@ -9,15 +11,33 @@ namespace PocoLithp {
 
 	typedef Poco::NumberParser NumberParser;
 
-	typedef Poco::InvalidArgumentException InvalidArgumentException;
 	typedef unsigned AtomType;
 
+	class InvalidArgumentException : public std::exception {
+		std::string reason;
+	public:
+		const char *what() const throw() {
+			return reason.c_str();
+		}
+		InvalidArgumentException() : reason("Invalid argument: no reason given") {
+		}
+		InvalidArgumentException(const std::string &_reason)
+			: reason("Invalid argument: " + _reason) {
+		}
+	};
+
 #if defined(POCO_HAVE_INT64)
+#define PLITHP_INT64
+#endif
+
+#ifdef PLITHP_INT64
 	typedef Poco::Int64 SignedInteger;
 	typedef Poco::UInt64 UnsignedInteger;
+	const std::string PLITHP_ARCH = "x64";
 #else
 	typedef long SignedInteger;
 	typedef unsigned long UnsignedInteger;
+	const std::string PLITHP_ARCH = "x32";
 #endif
 
 	enum LithpVarType {
@@ -209,7 +229,7 @@ namespace PocoLithp {
 				return env_;
 			if (outer_)
 				return outer_->find(var);
-			throw InvalidArgumentException("Unbound symbol: " + var);
+			throw InvalidArgumentException("Unbound symbol '" + getAtomById(var) + "'");
 		}
 
 		LithpCell &operator[](const atomId var) {

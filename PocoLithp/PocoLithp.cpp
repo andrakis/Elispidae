@@ -9,7 +9,9 @@ PocoLithp::AtomMapById_t atomMapById;
 PocoLithp::AtomMapByName_t atomMapByName;
 
 namespace PocoLithp {
-	const bool DEBUG = false;
+	bool DEBUG = false;
+	bool TIMING = false;
+	bool QUIT = false;
 
 	UnsignedInteger parseTime = 0, evalTime = 0;
 
@@ -184,6 +186,13 @@ namespace PocoLithp {
 	const LithpCell sym_begin(Atom, "begin");
 	std::string to_string(const LithpCell & exp);
 
+	const LithpCell booleanCell(const bool val) {
+		return val ? sym_true : sym_false;
+	}
+	bool booleanVal(const LithpCell &val) {
+		return val == sym_true;
+	}
+
 	LithpCell eval(LithpCell x, LithpEnvironment *env) {
 		if (x.tag == Atom) {
 			LithpCell &r = env->find(x.atomid())[x.atomid()];
@@ -219,10 +228,9 @@ namespace PocoLithp {
 				return x;
 			}
 			if (xl0 == sym_begin) {     // (begin exp*)
-				// TODO: This is the OpChain run section
 				for (size_t i = 1; i < xl.size() - 1; ++i)
 					eval(xl[i], env);
-				// WAS: return eval(x.list[x.list.size() - 1], env)
+				// TODO: Check if tail recursion
 				return eval(xl.back(), env);
 			}
 		} 
@@ -335,10 +343,20 @@ namespace PocoLithp {
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
-			if (n > *i)
+			if (n < *i)
 				return sym_false;
 		}
 		return sym_true;
+	}
+
+	LithpCell proc_equal(const LithpCells &c, LithpEnvironment *env)
+	{
+		return booleanCell(c[0] == c[1]);
+	}
+
+	LithpCell proc_not_equal(const LithpCells &c, LithpEnvironment *env)
+	{
+		return booleanCell(c[0] != c[1]);
 	}
 
 	LithpCell proc_length(const LithpCells &c, LithpEnvironment *env) { return LithpCell(Var, c[0].list().size()); }
@@ -380,6 +398,31 @@ namespace PocoLithp {
 		return LithpCell(List, c);
 	}
 
+	// Get or set debug state
+	LithpCell proc_debug(const LithpCells &c, LithpEnvironment *env)
+	{
+		bool was = DEBUG;
+		if (c.size() != 0)
+			DEBUG = booleanVal(c[0]);
+		return booleanCell(was);
+	}
+
+	// Get or set timing state
+	LithpCell proc_timing(const LithpCells &c, LithpEnvironment *env)
+	{
+		bool was = TIMING;
+		if (c.size() != 0)
+			TIMING = booleanVal(c[0]);
+		return booleanCell(was);
+	}
+
+	// Quit interpreter
+	LithpCell proc_quit(const LithpCells &c, LithpEnvironment *env)
+	{
+		QUIT = true;
+		return sym_true;
+	}
+
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
@@ -391,6 +434,9 @@ namespace PocoLithp {
 		env["-"] = LithpCell(&proc_sub);      env["*"] = LithpCell(&proc_mul);
 		env["/"] = LithpCell(&proc_div);      env[">"] = LithpCell(&proc_greater);
 		env["<"] = LithpCell(&proc_less);     env["<="] = LithpCell(&proc_less_equal);
+		env["="] = env["=="] = LithpCell(&proc_equal); env["!="] = LithpCell(&proc_not_equal);
+		env["debug"] = LithpCell(&proc_debug); env["timing"] = LithpCell(&proc_timing);
+		env["q"] = env["quit"] = LithpCell(&proc_quit);
 	}
 
 	////////////////////// parse, read and user interaction
@@ -512,8 +558,10 @@ namespace PocoLithp {
 //			while (tokens.front() != ")")
 //				c.list.push_back(read_from(tokens));
 			LithpCells c;
-			while (tokens.front() != ")")
+			while (tokens.size() > 0 && tokens.front() != ")")
 				c.push_back(read_from(tokens));
+			if (tokens.size() == 0)
+				throw InvalidArgumentException("Parse error");
 			tokens.pop_front();
 			return LithpCell(List, c);
 		}
@@ -556,15 +604,26 @@ namespace PocoLithp {
 	// the default read-eval-print-loop
 	void repl(const std::string & prompt, LithpEnvironment *env)
 	{
-		for (;;) {
+		while(!QUIT) {
 			std::cout << prompt;
 			std::string line; std::getline(std::cin, line);
-			std::cout << to_string(evalTimed(read(line), env)) << '\n';
+			try {
+				auto start = std::chrono::steady_clock::now();
+				std::cout << to_string(evalTimed(read(line), env)) << '\n';
+				if (TIMING) {
+					auto end = std::chrono::steady_clock::now();
+					std::cout << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+				}
+			} catch (const std::exception &e) {
+				std::cerr << "ERROR " << e.what() << std::endl;
+			} 
 		}
 	}
 
 	int plithp_main()
 	{
+		std::cout << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << std::endl;
+		std::cout << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << std::endl;
 		LithpEnvironment global_env; add_globals(global_env);
 		repl("plithp> ", &global_env);
 		return 0;
@@ -720,10 +779,10 @@ int main()
 	//scheme_complete_test();
 	//plithp_test();
 	//plithp_abs_test();
-	plithp_fac_test();
-	plithp_fib_test();
-	plithp_complete_test();
-	//plithp_main();
+	//plithp_fac_test();
+	//plithp_fib_test();
+	//plithp_complete_test();
+	plithp_main();
 	std::cout << "Total eval time: " << evalTime << "ms, parse time: " << parseTime << "ms\n";
     return 0;
 }
