@@ -545,14 +545,11 @@ namespace PocoLithp {
 		const std::string token(tokens.front());
 		tokens.pop_front();
 		if (token == "(") {
-//			LithpCell c(List);
-//			while (tokens.front() != ")")
-//				c.list.push_back(read_from(tokens));
 			LithpCells c;
 			while (tokens.size() > 0 && tokens.front() != ")")
 				c.push_back(read_from(tokens));
 			if (tokens.size() == 0)
-				throw InvalidArgumentException("Parse error");
+				throw SyntaxException("Missing ')'");
 			tokens.pop_front();
 			return LithpCell(List, c);
 		}
@@ -568,7 +565,6 @@ namespace PocoLithp {
 		LithpCell result = read_from(tokens);
 		auto end = std::chrono::steady_clock::now();
 		parseTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		//std::cerr << "read_from() => " << to_string(result) << "\n";
 		return result;
 	}
 
@@ -577,8 +573,7 @@ namespace PocoLithp {
 	{
 		if (exp.tag == List) {
 			std::string s("(");
-			// TODO: Expensive copy here
-			LithpCells expl = exp.list();
+			const LithpCells &expl = exp.list();
 			for (LithpCells::const_iterator e = expl.begin(); e != expl.end(); ++e)
 				s += to_string(*e) + ' ';
 			if (s[s.size() - 1] == ' ')
@@ -595,19 +590,31 @@ namespace PocoLithp {
 	// the default read-eval-print-loop
 	void repl(const std::string & prompt, LithpEnvironment *env)
 	{
+		std::string partialBuffer = "";
+
 		while(!QUIT) {
-			std::cout << prompt;
+			if (partialBuffer.length() == 0) {
+				std::cout << prompt;
+			} else {
+				std::cout << "> ";
+			}
 			std::string line; std::getline(std::cin, line);
 			try {
 				auto start = std::chrono::steady_clock::now();
+				if (partialBuffer.length() != 0) {
+					line = partialBuffer + " " + line;
+					partialBuffer = "";
+				}
 				std::cout << to_string(evalTimed(read(line), env)) << '\n';
 				if (TIMING) {
 					auto end = std::chrono::steady_clock::now();
 					std::cout << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 				}
+			} catch (const SyntaxException) {
+				partialBuffer += line;
 			} catch (const std::exception &e) {
 				std::cerr << "ERROR " << e.what() << std::endl;
-			} 
+			}
 		}
 	}
 

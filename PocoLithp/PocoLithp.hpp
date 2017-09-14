@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.20"
+#define PLITHP_VERSION "0.22"
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -13,18 +13,35 @@ namespace PocoLithp {
 
 	typedef unsigned AtomType;
 
-	class InvalidArgumentException : public std::exception {
+	class LithpException : public std::exception {
 		std::string reason;
+	protected:
+		LithpException(const std::string &_reason) : reason(_reason) {
+		}
 	public:
 		const char *what() const throw() {
 			return reason.c_str();
 		}
-		InvalidArgumentException() : reason("Invalid argument: no reason given") {
+	};
+
+	class InvalidArgumentException : public LithpException {
+	public:
+		InvalidArgumentException() : LithpException("Invalid argument: no reason given") {
 		}
 		InvalidArgumentException(const std::string &_reason)
-			: reason("Invalid argument: " + _reason) {
+			: LithpException("Invalid argument: " + _reason) {
 		}
 	};
+
+	class SyntaxException : public LithpException {
+	public:
+		SyntaxException() : LithpException("Syntax argument: no reason given") {
+		}
+		SyntaxException(const std::string &_reason)
+			: LithpException("Syntax error: " + _reason) {
+		}
+	};
+	
 
 #if defined(POCO_HAVE_INT64)
 #define PLITHP_INT64
@@ -33,11 +50,11 @@ namespace PocoLithp {
 #ifdef PLITHP_INT64
 	typedef Poco::Int64 SignedInteger;
 	typedef Poco::UInt64 UnsignedInteger;
-	const std::string PLITHP_ARCH = "x64";
+	const std::string PLITHP_ARCH = "(Int64 support)";
 #else
 	typedef long SignedInteger;
 	typedef unsigned long UnsignedInteger;
-	const std::string PLITHP_ARCH = "x32";
+	const std::string PLITHP_ARCH = "(Int32 only)";
 #endif
 
 	enum LithpVarType {
@@ -49,8 +66,6 @@ namespace PocoLithp {
 		//Closure, // AKA environment
 
 		// scheme types
-		Symbol,
-		//Number, // Use Var instead
 		List,
 		Proc,
 		Lambda
@@ -91,7 +106,7 @@ namespace PocoLithp {
 		LithpVar(const LithpVar &copy) : value(copy.value), tag(copy.tag), env(copy.env) {
 		}
 		// Scheme constructors
-		LithpVar(LithpVarType _tag = Symbol) : tag(_tag), value(), env(0) {}
+		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
 
 		~LithpVar() {
@@ -101,7 +116,6 @@ namespace PocoLithp {
 			switch (tag) {
 			case Var:
 				// TODO: Floats are getting truncated
-			case Symbol:
 				return value.toString();
 			case Lambda:
 				return "<Lambda>";
