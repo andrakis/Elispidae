@@ -263,4 +263,38 @@ namespace PocoLithp {
 		child_env_map child_envs;   // Keep track of child environments
 		static int child_env_delete_depth;
 	};
+
+	// From PLglobals.cpp
+	extern const LithpCell sym_false;
+	extern const LithpCell sym_true;
+	extern const LithpCell sym_nil;
+	extern const LithpCell sym_quote;
+	extern const LithpCell sym_if;
+	extern const LithpCell sym_set;
+	extern const LithpCell sym_define;
+	extern const LithpCell sym_lambda;
+	extern const LithpCell sym_begin;
+	std::string to_string(const LithpCell &exp);
+	const LithpCell booleanCell(const bool val);
+	bool booleanVal(const LithpCell &val);
+	std::string getAtomById(atomId id);
+	atomId getAtomId(const std::string &name);
+	LithpCell getAtom(const std::string &name);
+	void add_globals(LithpEnvironment &env);
+
+	// From PLparser.cpp
+	LithpCell read(const std::string &s);
+	std::string str(long n);
+	bool isdig(char c);
+	std::list<std::string> tokenize(const std::string & str);
+	PocoVar parseNumber(const std::string &token);
+	LithpCell atom(const std::string &token);
+	LithpCell read_from(std::list<std::string> &tokens);
+
+	// From PLinterpreter.cpp
+	extern UnsignedInteger parseTime, evalTime;
+	extern bool DEBUG, TIMING, QUIT;
+	void repl(const std::string &prompt, LithpEnvironment *env);
+	LithpCell eval(LithpCell x, LithpEnvironment *env);
+	LithpCell evalTimed(const LithpCell &x, LithpEnvironment *env);
 }

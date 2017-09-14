@@ -160,6 +160,11 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PLglobals.cpp" />
+    <ClCompile Include="PLinterpreter.cpp" />
+    <ClCompile Include="PLparser.cpp" />
+    <ClCompile Include="PLtests.cpp" />
+    <ClCompile Include="PLtypes.cpp" />
     <ClCompile Include="PocoLithp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
