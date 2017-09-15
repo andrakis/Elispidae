@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	//Test::RunTests();
 	if (argc <= 1) {
 		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << std::endl;
-		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << std::endl;
+		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state, (tests) to run unit tests" << std::endl;
 		repl("plithp> ", &global_env);
 	} else {
 		std::ifstream userfile(argv[1]);
@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 		while (getline(userfile, line)) {
 			buffer += " " + line;
 		}
+		userfile.close();
 		try {
 			const LithpCell &result = evalTimed(read(buffer), &global_env);
 			std::cout << to_string(result) << std::endl;

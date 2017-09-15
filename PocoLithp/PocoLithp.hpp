@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.26"
+#define PLITHP_VERSION "0.28"
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -189,6 +189,9 @@ namespace PocoLithp {
 			if (tag != List && tag != Lambda)
 				throw InvalidArgumentException("Not a list");
 			return value.extract<LithpCells>();
+		}
+		const LithpCell &operator[](int index) const {
+			return list()[index];
 		}
 
 		// Proc related behaviours

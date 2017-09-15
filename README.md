@@ -64,8 +64,6 @@ This solution does not use Conan, and is the recommended way forward. It does re
 Building (Linux):
 -----------------
 
-This section needs work.
-
 1. Update submodules: `git submodule update --init`
 
 2. Use `make`:
@@ -78,7 +76,7 @@ This section needs work.
 
    For building on OpenRISC 1000:
 
-     `make CONF=Release CC=or1k-linux-musl-gcc CXX=or1k-linux-musl-g++ CXXFLAGS="-DPOCO_ARCH_OR1000=0x10 -DPOCO_ARCH=POCO_ARCH_OR1000 -DPOCO_ARCH_LITTLE_ENDIAN=1 -D__EMSCRIPTEN__ -static" CCFLAGS="-static"`
+     `make CONF=Release CC=or1k-linux-musl-gcc CXX=or1k-linux-musl-g++ CXXFLAGS="-D__EMSCRIPTEN__ -static" CCFLAGS="-static"`
 
      **Note:** POCO does not currently support OpenRISC 1000, however we can fake enough with the above flags that it compiles and runs successfully.
 
@@ -95,14 +93,20 @@ The executable is found in the following location:
 
 Two methods are available:
 
-* **REPL:** Run the executable
+* **REPL:**
 
+      Launch the `Debug` or `Release` configuration within Visual Studio, or
+
+      Run the executable:
       bin\PocoLithp.exe
-	  bin\PocoLithpContrib.exe
-	  bin\plithp
+      bin\PocoLithpContrib.exe
+      bin\plithp
 
 * **Run a file:** Run the executable
 
+      Launch the `Debug - Run Sample` configuration within Visual Studio, or
+
+      Run the executable:
       bin\PocoLithp.exe samples\fac_recursive.lithp
       bin\PocoLithpContrib.exe samples\fac_recursive.lithp
       bin\plithp samples\fac_recursive.lithp
@@ -110,7 +114,9 @@ Two methods are available:
 Notable Milestones
 ------------------
 
-* Reduction capability: `if` and `lambda` now save an `eval` call, resulting in faster execution for tail recursive code. This is not yet perfect.
+* Reduction capability: lambdas now reduce too.
+
+* Reduction capability: `if` and `lambda` now save an `eval` call, resulting in faster execution for tail recursive code. This may still be improved.
 
 * Can now run sample files via command line argument.
 

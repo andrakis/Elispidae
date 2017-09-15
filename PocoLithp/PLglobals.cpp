@@ -200,6 +200,10 @@ namespace PocoLithp {
 		return LithpCell(Var, reductions);
 	}
 
+	LithpCell proc_tests(const LithpCells &c, LithpEnvironment *env) {
+		return LithpCell(Var, Test::RunTests());
+	}
+
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
@@ -214,6 +218,6 @@ namespace PocoLithp {
 		env["="] = env["=="] = LithpCell(&proc_equal); env["!="] = LithpCell(&proc_not_equal);
 		env["debug"] = LithpCell(&proc_debug); env["timing"] = LithpCell(&proc_timing);
 		env["q"] = env["quit"] = LithpCell(&proc_quit);
-		env["reds"] = LithpCell(&proc_reds);
+		env["reds"] = LithpCell(&proc_reds); env["tests"] = LithpCell(&proc_tests);
 	}
 }

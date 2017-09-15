@@ -7,12 +7,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PocoLithp", "PocoLithp\Poco
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Run Sample|x64 = Debug - Run Sample|x64
+		Debug - Run Sample|x86 = Debug - Run Sample|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug - Run Sample|x64.ActiveCfg = Debug - Run Sample|x64
+		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug - Run Sample|x64.Build.0 = Debug - Run Sample|x64
+		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug - Run Sample|x86.ActiveCfg = Debug - Run Sample|Win32
+		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug - Run Sample|x86.Build.0 = Debug - Run Sample|Win32
 		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug|x64.ActiveCfg = Debug|x64
 		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug|x64.Build.0 = Debug|x64
 		{ADE174E9-9554-44CE-B30B-F2DACF4E9A55}.Debug|x86.ActiveCfg = Debug|Win32

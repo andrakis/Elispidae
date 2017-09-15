@@ -35,9 +35,12 @@ namespace PocoLithp {
 			if (xl0 == sym_quote)      // (quote exp)
 				return xl[1];
 			if (xl0 == sym_if) {       // (if test conseq [alt])
+				// Reduce by updating parameters. x will become result of if statement.
 				x = eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2];
+				if (x == sym_nil)
+					// No need to reduce this
+					return x;
 				goto reduce;
-				//return eval(eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2], env);
 			}
 			if (xl0 == sym_set)        // (set! var exp)
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
@@ -54,9 +57,9 @@ namespace PocoLithp {
 			if (xl0 == sym_begin) {     // (begin exp*)
 				for (size_t i = 1; i < xl.size() - 1; ++i)
 					eval(xl[i], env);
+				// Reduce by updating parameters
 				x = xl.back();
 				goto reduce;
-				//return eval(xl.back(), env);
 			}
 		}
 		// (proc exp*)
@@ -75,7 +78,10 @@ namespace PocoLithp {
 			LithpCells proclist = proc.list();
 			LithpEnvironment *child_env = new LithpEnvironment(/*parms*/proclist[1].list(), /*args*/exps, proc.env);
 			env->remember_child_env(child_env);
-			return eval(/*body*/proclist[2], child_env);
+			// Instead of recursing into eval again, reduce by updating x and env.
+			x = proclist[2];
+			env = child_env;
+			goto reduce;
 		} else if (proc.tag == Proc) {
 			const LithpCell &r = proc.proc()(exps, env);
 			if (DEBUG) std::cerr << "<Proc>" << to_string(LithpVar(List, exps)) << " => " << to_string(r) << "\n";
