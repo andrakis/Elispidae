@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.24"
+#define PLITHP_VERSION "0.26"
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -293,8 +293,14 @@ namespace PocoLithp {
 
 	// From PLinterpreter.cpp
 	extern UnsignedInteger parseTime, evalTime;
+	extern UnsignedInteger reductions;
 	extern bool DEBUG, TIMING, QUIT;
 	void repl(const std::string &prompt, LithpEnvironment *env);
 	LithpCell eval(LithpCell x, LithpEnvironment *env);
 	LithpCell evalTimed(const LithpCell &x, LithpEnvironment *env);
+
+	// From PLtests.cpp
+	namespace Test {
+		int RunTests();
+	}
 }

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 namespace PocoLithp {
-
 	namespace Test {
 		void plithp_test() {
 			std::string line;
@@ -89,6 +88,8 @@ namespace PocoLithp {
 			LithpEnvironment global_env; add_globals(global_env);
 			auto start = std::chrono::steady_clock::now();
 			// the 29 unit tests for lis.py
+			TEST("(< 10 2)", "#f");
+			TEST("(<= 10 2)", "#f");
 			TEST("(quote \"f\\\"oo\")", "f\\\"oo");
 			TEST("(quote \"foo\")", "foo");
 			TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2) -3.14e+159)");
@@ -97,8 +98,6 @@ namespace PocoLithp {
 			TEST("(+ (* 2 100) (* 1 10))", "210");
 			TEST("(> 6 5)", "#t");
 			TEST("(< 6 5)", "#f");
-			TEST("(< 10 2)", "#f");
-			TEST("(<= 10 2)", "#f");
 			TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
 			TEST("(if (< 6 5) (+ 1 1) (+ 2 2))", "4");
 			TEST("(define x 3)", "3");
@@ -144,11 +143,12 @@ namespace PocoLithp {
 		}
 
 		int RunTests() {
-			plithp_test();
-			plithp_abs_test();
-			plithp_fac_test();
-			plithp_fib_test();
+			//plithp_test();
+			//plithp_abs_test();
+			//plithp_fac_test();
+			//plithp_fib_test();
 			plithp_complete_test();
+			std::cout << "Reductions: " << reductions << std::endl;
 			return g_fault_count;
 		}
 	}

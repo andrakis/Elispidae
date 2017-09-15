@@ -15,6 +15,7 @@ const int ERR_EXCEPTION = 3;
 int main(int argc, char *argv[])
 {
 	LithpEnvironment global_env; add_globals(global_env);
+	//Test::RunTests();
 	if (argc <= 1) {
 		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << std::endl;
 		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << std::endl;

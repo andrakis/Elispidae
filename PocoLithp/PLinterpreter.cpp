@@ -6,10 +6,15 @@ namespace PocoLithp {
 	bool QUIT = false;
 
 	UnsignedInteger parseTime = 0, evalTime = 0;
+	UnsignedInteger reductions = 0;
 
 	int LithpEnvironment::child_env_delete_depth = 0;
 
 	LithpCell eval(LithpCell x, LithpEnvironment *env) {
+		goto entry;
+	reduce:
+		reductions++;
+	entry:
 		if (x.tag == Atom) {
 			LithpCell &r = env->find(x.atomid())[x.atomid()];
 			if (DEBUG) std::cerr << to_string(x) << " => " << to_string(r) << "\n";
@@ -29,8 +34,11 @@ namespace PocoLithp {
 		if (xl0.tag == Atom) {
 			if (xl0 == sym_quote)      // (quote exp)
 				return xl[1];
-			if (xl0 == sym_if)         // (if test conseq [alt])
-				return eval(eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2], env);
+			if (xl0 == sym_if) {       // (if test conseq [alt])
+				x = eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2];
+				goto reduce;
+				//return eval(eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2], env);
+			}
 			if (xl0 == sym_set)        // (set! var exp)
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
 			if (xl0 == sym_define)     // (define var exp)
@@ -46,8 +54,9 @@ namespace PocoLithp {
 			if (xl0 == sym_begin) {     // (begin exp*)
 				for (size_t i = 1; i < xl.size() - 1; ++i)
 					eval(xl[i], env);
-				// TODO: Check if tail recursion
-				return eval(xl.back(), env);
+				x = xl.back();
+				goto reduce;
+				//return eval(xl.back(), env);
 			}
 		}
 		// (proc exp*)

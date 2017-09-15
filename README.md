@@ -46,7 +46,7 @@ How?
 Status
 ------
 
-**Version: 0.24**
+**Version: 0.26**
 
 **Language compatibility level:** Scheme
 
@@ -109,6 +109,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Reduction capability: `if` and `lambda` now save an `eval` call, resulting in faster execution for tail recursive code. This is not yet perfect.
 
 * Can now run sample files via command line argument.
 

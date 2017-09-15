@@ -106,9 +106,9 @@ namespace PocoLithp {
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			if (n >= *i)
-				return sym_true;
+				return sym_false;
 		}
-		return sym_false;
+		return sym_true;
 	}
 
 	LithpCell proc_less_equal(const LithpCells &c, LithpEnvironment *env)
@@ -195,6 +195,11 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
+	// Get number of reductions
+	LithpCell proc_reds(const LithpCells &c, LithpEnvironment *env) {
+		return reductions;
+	}
+
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
@@ -209,5 +214,6 @@ namespace PocoLithp {
 		env["="] = env["=="] = LithpCell(&proc_equal); env["!="] = LithpCell(&proc_not_equal);
 		env["debug"] = LithpCell(&proc_debug); env["timing"] = LithpCell(&proc_timing);
 		env["q"] = env["quit"] = LithpCell(&proc_quit);
+		env["reds"] = LithpCell(&proc_reds);
 	}
 }
