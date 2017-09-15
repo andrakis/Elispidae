@@ -197,7 +197,7 @@ namespace PocoLithp {
 
 	// Get number of reductions
 	LithpCell proc_reds(const LithpCells &c, LithpEnvironment *env) {
-		return reductions;
+		return LithpCell(Var, reductions);
 	}
 
 	// define the bare minimum set of primitives necessary to pass the unit tests
