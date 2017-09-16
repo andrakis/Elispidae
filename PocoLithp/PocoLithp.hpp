@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.28"
+#define PLITHP_VERSION "0.30"
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;

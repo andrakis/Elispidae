@@ -3,16 +3,42 @@ PocoLithp
 
 An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++14 and using the [Poco](https://procoproject.org) library.
 
-It is extremely fast owing to its dynamic runtime types and reliance on atoms rather than strings.
+It is a mix of Scheme and Common Lisp - the minimalist syntax of Scheme but without most of the advanced features of Scheme, more similar to Common Lisp.
 
-No memory leaks have been detected.
+Features taken from Scheme:
+
+   * Minimalist syntax and interpreter
+
+   * Shared namespace for procedures and variables
+
+Features taken from Common Lisp:
+
+   * Dynamic scoping
+
+   * Fixed data types
+
+       * Integers (signed and unsigned)
+
+       * Floats (stored as double)
+
+       * Atoms (integers), AKA symbols
+
+       * Strings
+
+       * Lists
+
+       * Dictionaries
+
+       * Lambdas
+
+       * Procs
+
+It is extremely fast owing to its dynamic runtime types and reliance on atoms rather than strings.
 
 Why?
 ----
 
 An attempt at a much more lightweight implementation of a C++ Lithp (other attempt [Stackful](https://github.com/andrakis/Stackful) being rather more complicated than desired.)
-
-An improved version of the [90 line C++ Scheme interpreter](https://gist.github.com/ofan/721464) is included for experimentation and basis for the interpreter.
 
 What?
 -----
@@ -20,6 +46,8 @@ What?
 PocoLithp implements a working and extremely fast Scheme-based interpreter. See the [tests](https://github.com/andrakis/PocoLithp/blob/master/PocoLithp/PLtests.cpp) for syntax examples.
 
 It supports most modern types:
+
+   * **Comments:** `;; Comments use double semicolon`
 
    * **Numbers:** `1`, `2.34`, `0xDEADBEEF`
 
@@ -46,7 +74,7 @@ How?
 Status
 ------
 
-**Version: 0.26**
+**Version: 0.30**
 
 **Language compatibility level:** Scheme
 
@@ -113,6 +141,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Comments `;;` are now supported. Parser also handles whitespace better now.
 
 * Reduction capability: lambdas now reduce too.
 

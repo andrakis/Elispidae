@@ -8,17 +8,23 @@ namespace PocoLithp {
 	// return true iff given character is '0'..'9'
 	bool isdig(char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }
 
+	bool iswhitespace(char c) {
+		return c == ' ' || c == '\t' ||
+		       c == '\n' || c == '\r';
+	}
+
 	// convert given string to list of tokens
 	std::list<std::string> tokenize(const std::string & str)
 	{
 		std::list<std::string> tokens;
 		const char *s = str.c_str();
 		while (*s) {
-			while (*s == ' ')
+			while (*s && iswhitespace(*s))
 				++s;
-			if (*s == '\t')
-				++s;
-			else if (*s == '\'' || *s == '"') {
+			if (*s == ';' && *(s + 1) == ';') {
+				while (*s && *s != '\n' && *s != '\r')
+					++s;
+			} else if (*s == '\'' || *s == '"') {
 				// Read a string
 				const char *t = s, sp = *s;
 				unsigned escape = 0;
@@ -27,6 +33,7 @@ namespace PocoLithp {
 					if (escape)
 						escape--;
 					if (*t == '\\')
+						// Skip this and next character
 						escape = 2;
 				} while (*t && (escape != 0 || *t != sp));
 				++t;
@@ -36,7 +43,7 @@ namespace PocoLithp {
 				tokens.push_back(*s++ == '(' ? "(" : ")");
 			} else {
 				const char *t = s;
-				while (*t && *t != ' ' && *t != '(' && *t != ')')
+				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')')
 					++t;
 				tokens.push_back(std::string(s, t));
 				s = t;

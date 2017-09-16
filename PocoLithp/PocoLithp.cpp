@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 		std::string buffer = "";
 		std::string line;
 		while (getline(userfile, line)) {
-			buffer += " " + line;
+			buffer += "\n" + line;
 		}
 		userfile.close();
 		try {

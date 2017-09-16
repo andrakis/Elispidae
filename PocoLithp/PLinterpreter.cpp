@@ -131,7 +131,7 @@ namespace PocoLithp {
 			try {
 				auto start = std::chrono::steady_clock::now();
 				if (partialBuffer.length() != 0) {
-					line = partialBuffer + " " + line;
+					line = partialBuffer + "\n" + line;
 					partialBuffer = "";
 				}
 				std::cout << to_string(evalTimed(read(line), env)) << '\n';
