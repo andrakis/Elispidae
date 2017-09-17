@@ -19,13 +19,15 @@ namespace PocoLithp {
 		std::list<std::string> tokens;
 		const char *s = str.c_str();
 		while (*s) {
+			// Skip whitespace
 			while (*s && iswhitespace(*s))
 				++s;
+			// Skip entire line when ";;" comment
 			if (*s == ';' && *(s + 1) == ';') {
 				while (*s && *s != '\n' && *s != '\r')
 					++s;
 			} else if (*s == '\'' || *s == '"') {
-				// Read a string
+				// Read a string (later will be parsed to extended atom or string)
 				const char *t = s, sp = *s;
 				unsigned escape = 0;
 				do {
@@ -40,8 +42,10 @@ namespace PocoLithp {
 				tokens.push_back(std::string(s, t));
 				s = t;
 			} else if (*s == '(' || *s == ')') {
+				// Start or end a token
 				tokens.push_back(*s++ == '(' ? "(" : ")");
 			} else {
+				// A word
 				const char *t = s;
 				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')')
 					++t;
@@ -53,8 +57,6 @@ namespace PocoLithp {
 	}
 
 	PocoVar parseNumber(const std::string &token) {
-		// TODO: This is hacky
-
 		if (token.find('.', 0) != std::string::npos) {
 			// Float
 			return NumberParser::parseFloat(token);
@@ -96,7 +98,7 @@ namespace PocoLithp {
 		throw InvalidArgumentException("Not a number: " + token);
 	}
 
-	// numbers become Numbers; every other token is an Atom
+	// Numbers become Numbers; every other token is an Atom
 	LithpCell atom(const std::string &token)
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
@@ -110,7 +112,7 @@ namespace PocoLithp {
 		return LithpCell(Atom, token);
 	}
 
-	// return the Lisp expression in the given tokens
+	// Return the Lisp expression in the given tokens
 	LithpCell read_from(std::list<std::string> & tokens)
 	{
 		const std::string token(tokens.front());
@@ -127,7 +129,7 @@ namespace PocoLithp {
 			return atom(token);
 	}
 
-	// return the Lisp expression represented by the given string
+	// Return the Lisp expression represented by the given string
 	LithpCell read(const std::string & s)
 	{
 		auto start = std::chrono::steady_clock::now();

@@ -112,6 +112,14 @@ namespace PocoLithp {
 		switch (tag) {
 		case Var:
 			return *this = LithpVar(value + other.value);
+		case List: {
+			LithpCells newlist;
+			for (auto it = list().begin(); it != list().end(); ++it)
+				newlist.push_back(*it);
+			for (auto it = other.list().begin(); it != other.list().end(); ++it)
+				newlist.push_back(*it);
+			return *this = LithpVar(List, newlist);
+		}
 		default:
 			throw InvalidArgumentException("Invalid operation");
 		}

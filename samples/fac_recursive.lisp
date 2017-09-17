@@ -1,5 +1,7 @@
 ;; Tail recursive factorial
 (begin
+	;; Optional: enable debugging
+	(debug #t)
 	(define fac (lambda (n) (begin
 		;; This should tail recurse
 		(fac2 n 1)

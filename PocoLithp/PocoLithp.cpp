@@ -14,16 +14,14 @@ const int ERR_EXCEPTION = 3;
 
 int main(int argc, char *argv[])
 {
-	LithpEnvironment global_env; add_globals(global_env);
-	//Test::RunTests();
-	if (argc <= 1) {
-		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << std::endl;
-		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state, (tests) to run unit tests" << std::endl;
-		repl("plithp> ", &global_env);
-	} else {
+	LithpEnvironment *global_env = new LithpEnvironment();
+	add_globals(*global_env);
+	Env_p global_p(global_env);
+
+	if (argc > 1) {
 		std::ifstream userfile(argv[1]);
 		if (!userfile.is_open()) {
-			std::cerr << "Failed to open file: " << argv[1] << std::endl;
+			std::cerr << "Failed to open file: " << argv[1] << "\n";
 			return ERR_FILE;
 		}
 		std::string buffer = "";
@@ -33,15 +31,20 @@ int main(int argc, char *argv[])
 		}
 		userfile.close();
 		try {
-			const LithpCell &result = evalTimed(read(buffer), &global_env);
-			std::cout << to_string(result) << std::endl;
+			const LithpCell &result = evalTimed(read(buffer), global_p);
+			std::cout << to_string(result) << "\n";
 		} catch (const SyntaxException) {
-			std::cerr << "SYNTAX ERROR" << std::endl;
+			std::cerr << "SYNTAX ERROR" << "\n";
 			return ERR_SYNTAX;
 		} catch (const std::exception &e) {
-			std::cerr << "ERROR " << e.what() << std::endl;
+			std::cerr << "ERROR " << e.what() << "\n";
 			return ERR_EXCEPTION;
 		}
+	} else {
+		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << "\n";
+		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << "\n";
+		std::cerr << "  Additional useful functions: (tests) (env) (_depth) (_max_depth)" << "\n";
+		repl("plithp> ", global_p);
 	}
 	if(TIMING)
 		std::cerr << "Total eval time: " << evalTime << "ms, parse time: " << parseTime << "ms\n";

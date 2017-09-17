@@ -74,11 +74,11 @@ How?
 Status
 ------
 
-**Version: 0.30**
+**Version: 0.34**
 
-**Language compatibility level:** Scheme
+**Language compatibility level:** Scheme-ish
 
-    Mainly Scheme syntax, but strings are also supported.
+    Mainly Scheme-like syntax, but strings are also supported.
 
 Building (Visual Studio)
 ------------------------
@@ -141,6 +141,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Memory leaks have been plugged by using `std::shared_ptr`. Unfortunately tail call optimization code had to be dropped. It may return in the future.
 
 * Comments `;;` are now supported. Parser also handles whitespace better now.
 

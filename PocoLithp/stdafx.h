@@ -7,11 +7,13 @@
 
 #include "targetver.h"
 
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <list>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>

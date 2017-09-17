@@ -4,7 +4,10 @@ namespace PocoLithp {
 	namespace Test {
 		void plithp_test() {
 			std::string line;
-			LithpEnvironment _env, *env = &_env; add_globals(_env);
+			//LithpEnvironment _env, *env = &_env; add_globals(_env);
+			LithpEnvironment *env_obj = new LithpEnvironment();
+			add_globals(*env_obj);
+			Env_p env(env_obj);
 			auto start = std::chrono::steady_clock::now();
 			evalTimed(read("(define multiply-by (lambda (n) (lambda (y) (* y n))))"), env);
 			evalTimed(read("(define doubler (multiply-by 2))"), env);
@@ -18,7 +21,10 @@ namespace PocoLithp {
 
 		void plithp_fac_test() {
 			std::string line;
-			LithpEnvironment _env, *env = &_env; add_globals(_env);
+			//LithpEnvironment _env, *env = &_env; add_globals(_env);
+			LithpEnvironment *env_obj = new LithpEnvironment();
+			add_globals(*env_obj);
+			Env_p env(env_obj);
 			auto start = std::chrono::steady_clock::now();
 			LithpCell result = evalTimed(read(
 				"(begin "
@@ -44,7 +50,10 @@ namespace PocoLithp {
 			// )
 			std::string line;
 			auto start = std::chrono::steady_clock::now();
-			LithpEnvironment _env, *env = &_env; add_globals(_env);
+			//LithpEnvironment _env, *env = &_env; add_globals(_env);
+			LithpEnvironment *env_obj = new LithpEnvironment();
+			add_globals(*env_obj);
+			Env_p env(env_obj);
 			const LithpCell &result = evalTimed(read(
 				"(begin "
 				"  (define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"
@@ -75,17 +84,23 @@ namespace PocoLithp {
 		// write a message to std::cout if value != expected_value
 #define TEST_EQUAL(value, expected_value, code) test_equal_(value, expected_value, __FILE__, __LINE__, code)
 // evalTimeduate the given Lisp expression and compare the result against the given expected_result
-#define TEST(expr, expected_result) TEST_EQUAL(to_string(evalTimed(read(expr), &global_env)), expected_result, expr)
+#define TEST(expr, expected_result) TEST_EQUAL(to_string(evalTimed(read(expr), global_env)), expected_result, expr)
 
 		unsigned plithp_abs_test() {
-			LithpEnvironment global_env; add_globals(global_env);
+			//LithpEnvironment global_env; add_globals(global_env);
+			LithpEnvironment *global_env_obj = new LithpEnvironment();
+			add_globals(*global_env_obj);
+			Env_p global_env(global_env_obj);
 			TEST("(define abs (lambda (n) ((if (> n 0) + -) 0 n)))", "<Lambda>");
 			TEST("(list (abs -3) (abs 0) (abs 3))", "(3 0 3)");
 			return 0;
 		}
 
 		unsigned plithp_complete_test() {
-			LithpEnvironment global_env; add_globals(global_env);
+			//LithpEnvironment global_env; add_globals(global_env);
+			LithpEnvironment *global_env_obj = new LithpEnvironment();
+			add_globals(*global_env_obj);
+			Env_p global_env(global_env_obj);
 			auto start = std::chrono::steady_clock::now();
 			// the 29 unit tests for lis.py
 			TEST("(< 10 2)", "#f");
@@ -148,7 +163,6 @@ namespace PocoLithp {
 			//plithp_fac_test();
 			//plithp_fib_test();
 			plithp_complete_test();
-			std::cout << "Reductions: " << reductions << std::endl;
 			return g_fault_count;
 		}
 	}

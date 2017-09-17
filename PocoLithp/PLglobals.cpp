@@ -31,7 +31,7 @@ namespace PocoLithp {
 		AtomMapByName_t::const_iterator it = atomMapByName.find(name);
 		if (it != atomMapByName.end())
 			return it->second;
-		atomId id = atomMapByName.size();
+		atomId id = (atomId)atomMapByName.size();
 		atomMapByName.emplace(name, id);
 		atomMapById.emplace(id, name);
 		return id;
@@ -101,6 +101,15 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
+	LithpCell proc_greater_equal(const LithpCells &c, LithpEnvironment *env)
+	{
+		LithpCell n(c[0]);
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+			if (n < *i)
+				return sym_false;
+		return sym_true;
+	}
+
 	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
 	{
 		LithpCell n(c[0]);
@@ -165,8 +174,6 @@ namespace PocoLithp {
 
 	LithpCell proc_list(const LithpCells &c, LithpEnvironment *env)
 	{
-		//		LithpCell result(List); result.list = c;
-		//		return result;
 		return LithpCell(List, c);
 	}
 
@@ -200,24 +207,45 @@ namespace PocoLithp {
 		return LithpCell(Var, reductions);
 	}
 
+	// Run tests
 	LithpCell proc_tests(const LithpCells &c, LithpEnvironment *env) {
 		return LithpCell(Var, Test::RunTests());
+	}
+
+	// Get environment values
+	LithpCell proc_env(const LithpCells &c, LithpEnvironment *env) {
+		return LithpCell(List, env->getCompleteEnv());
+	}
+
+	// Get current eval depth
+	LithpCell proc__depth(const LithpCells &c, LithpEnvironment *env) {
+		TRACK_STATS(return LithpCell(Var, depth));
+		return LithpCell(Atom, "#stats_not_tracked");
+	}
+
+	// Get max eval depth
+	LithpCell proc__depth_max(const LithpCells &c, LithpEnvironment *env) {
+		TRACK_STATS(return LithpCell(Var, depth_max));
+		return LithpCell(Atom, "#stats_not_tracked");
 	}
 
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
 		env["nil"] = sym_nil;   env["#f"] = sym_false;  env["#t"] = sym_true;
-		env["append"] = LithpCell(&proc_append);   env["head"] = LithpCell(&proc_head);
-		env["tail"] = LithpCell(&proc_tail);      env["cons"] = LithpCell(&proc_cons);
-		env["length"] = LithpCell(&proc_length);   env["list"] = LithpCell(&proc_list);
-		env["null?"] = LithpCell(&proc_nullp);    env["+"] = LithpCell(&proc_add);
-		env["-"] = LithpCell(&proc_sub);      env["*"] = LithpCell(&proc_mul);
-		env["/"] = LithpCell(&proc_div);      env[">"] = LithpCell(&proc_greater);
-		env["<"] = LithpCell(&proc_less);     env["<="] = LithpCell(&proc_less_equal);
-		env["="] = env["=="] = LithpCell(&proc_equal); env["!="] = LithpCell(&proc_not_equal);
-		env["debug"] = LithpCell(&proc_debug); env["timing"] = LithpCell(&proc_timing);
+		env["append"] = LithpCell(&proc_append);        env["head"] = LithpCell(&proc_head);
+		env["tail"] = LithpCell(&proc_tail);            env["cons"] = LithpCell(&proc_cons);
+		env["length"] = LithpCell(&proc_length);        env["list"] = LithpCell(&proc_list);
+		env["null?"] = LithpCell(&proc_nullp);
+		env["+"] = LithpCell(&proc_add);                env["-"] = LithpCell(&proc_sub);
+		env["*"] = LithpCell(&proc_mul);                env["/"] = LithpCell(&proc_div);
+		env[">"] = LithpCell(&proc_greater);            env["<"] = LithpCell(&proc_less);
+		env[">="] = LithpCell(&proc_greater_equal);     env["<="] = LithpCell(&proc_less_equal);
+		env["="] = env["=="] = LithpCell(&proc_equal);  env["!="] = LithpCell(&proc_not_equal);
+		env["debug"] = LithpCell(&proc_debug);          env["timing"] = LithpCell(&proc_timing);
 		env["q"] = env["quit"] = LithpCell(&proc_quit);
-		env["reds"] = LithpCell(&proc_reds); env["tests"] = LithpCell(&proc_tests);
+		env["reds"] = LithpCell(&proc_reds);            env["tests"] = LithpCell(&proc_tests);
+		env["env"] = LithpCell(&proc_env);
+		env["_depth"] = LithpCell(&proc__depth);        env["_depth_max"] = LithpCell(&proc__depth_max);
 	}
 }
