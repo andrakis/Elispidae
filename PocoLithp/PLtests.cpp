@@ -103,6 +103,7 @@ namespace PocoLithp {
 			Env_p global_env(global_env_obj);
 			auto start = std::chrono::steady_clock::now();
 			// the 29 unit tests for lis.py
+			TEST("((lambda (x) (+ x x)) 5)", "10");
 			TEST("(< 10 2)", "#f");
 			TEST("(<= 10 2)", "#f");
 			TEST("(quote \"f\\\"oo\")", "f\\\"oo");
@@ -119,7 +120,6 @@ namespace PocoLithp {
 			TEST("x", "3");
 			TEST("(+ x x)", "6");
 			TEST("(begin (define x 1) (set! x (+ x 1)) (+ x 1))", "3");
-			TEST("((lambda (x) (+ x x)) 5)", "10");
 			TEST("(define twice (lambda (x) (* 2 x)))", "<Lambda>");
 			TEST("(twice 5)", "10");
 			TEST("(define compose (lambda (f g) (lambda (x) (f (g x)))))", "<Lambda>");

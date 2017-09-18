@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 			return ERR_EXCEPTION;
 		}
 	} else {
-		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << "\n";
+		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << " " << STATS_DESC << "\n";
 		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << "\n";
 		std::cerr << "  Additional useful functions: (tests) (env) (_depth) (_max_depth)" << "\n";
 		repl("plithp> ", global_p);

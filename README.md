@@ -11,6 +11,8 @@ Features taken from Scheme:
 
    * Shared namespace for procedures and variables
 
+   * Tail-call-optimization
+
 Features taken from Common Lisp:
 
    * Dynamic scoping
@@ -33,7 +35,9 @@ Features taken from Common Lisp:
 
        * Procs
 
-It is extremely fast owing to its dynamic runtime types and reliance on atoms rather than strings.
+It is extremely fast owing to its dynamic runtime types and reliance on atoms (numbers) rather than strings, and tight memory management.
+
+The main execution loop is essentially looking up integers in a vector table and performing arithmatic or decisions on them.
 
 Why?
 ----
@@ -68,15 +72,15 @@ How?
 
    * [Poco](https://procoproject.org) library is used for the underlying dynamic type. Some extensions to this allow for minimal coding and maximum support.
 
-   * Memory is almost universally managed by the standard template library and restricting the use of pointers in code. The only object using pointers is the environment, and this is managed properly and correctly deallocated when no longer in use.
+   * Memory is almost universally managed by the standard template library and restricting the use of pointers in code. `shared_ptr`s take care of environment management, resolving memory issues.
 
 
 Status
 ------
 
-**Version: 0.36**
+**Version: 0.42**
 
-**Language compatibility level:** Scheme-ish
+**Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
     Mainly Scheme-like syntax, but strings are also supported.
 
@@ -141,6 +145,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Full tail-call-optimization has been implemented. Essentially, infinite stack depth is available (for [properly tail-recursive functions](https://github.com/andrakis/PocoLithp/blob/master/samples/fac_recursive.lisp).) This involved resolving more memory management issues.
 
 * Comment handling improved, no longer able to crash interpreter by entering a comment into the REPL.
 

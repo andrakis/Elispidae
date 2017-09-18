@@ -10,5 +10,12 @@
 	(define fac2 (lambda (n a) (begin
 		(if (= n 0) a (fac2 (- n 1) (* n a)))
 	)))
-	(fac 10)
+	(define x 3)
+	(print "Factorial of" x ":" (fac x))
+	(print "Reductions:" (reds) " Max depth:" (_depth_max))
+
+	;; (define map (lambda (l cb) (_map l (list) cb)))
+	;; (define _map (lambda (l acc cb)
+	;; 	(if (= 0 (length l)) acc (_map (tail l) (+ acc (list (cb (head l))))))
+	;; ))
 )

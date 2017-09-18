@@ -2,14 +2,18 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.36"
+#define PLITHP_VERSION "0.42"
 
-#define PLITHP_TRACK_STATS 1
+#ifndef NO_STATS
+#define PLITHP_TRACK_STATS
+#endif
 
-#if PLITHP_TRACK_STATS
+#ifdef PLITHP_TRACK_STATS
 #define TRACK_STATS(code) do { code; } while(0)
+#define STATS_DESC        "(stats enabled)"
 #else
 #define TRACK_STATS(code) while(0)
+#define STATS_DESC        "(no stats)"
 #endif
 
 namespace PocoLithp {
@@ -140,6 +144,9 @@ namespace PocoLithp {
 	}
 
 	struct LithpVar {
+		// TODO: Either make 2nd param a shared_ptr, or remove it entirely.
+		//       Instead have a second proc_type that takes two arguments.
+		//       Should improve speed of function invocation.
 		typedef LithpVar(*proc_type)(const LithpCells &, LithpEnvironment *);
 		LithpVarType tag;
 		PocoVar value;

@@ -229,6 +229,74 @@ namespace PocoLithp {
 		return LithpCell(Atom, "#stats_not_tracked");
 	}
 
+	/** IO Procedures */
+
+	// Print the given arguments
+	LithpCell proc_print(const LithpCells &c, LithpEnvironment *env) {
+		std::stringstream ss;
+		bool first = true;
+		for (auto it = c.begin(); it != c.end(); ++it) {
+			if (first) first = false;
+			else ss << " ";
+			ss << to_string(*it);
+		}
+		std::cout << ss.str() << "\n";
+		return sym_nil;
+	}
+
+	// Read a line
+	LithpCell proc_getline(const LithpCells &c, LithpEnvironment *env) {
+		std::string line; std::getline(std::cin, line);
+		return LithpCell(Var, line);
+	}
+
+	/** String procedures */
+
+	// Convert argument to string
+	LithpCell proc_tostring(const LithpCells &c, LithpEnvironment *env) {
+		if (c.size() != 1)
+			return getAtom("#invalid_arg");
+		return to_string(c[0]);
+	}
+
+	/** Variable procedures */
+
+	const LithpCell tag_atom(Atom, "#atom");
+	const LithpCell tag_number(Atom, "#number");
+	const LithpCell tag_string(Atom, "#string");
+	const LithpCell tag_other(Atom, "#other");
+	const LithpCell tag_lambda(Atom, "#lambda");
+	const LithpCell tag_proc(Atom, "#proc");
+	const LithpCell tag_list(Atom, "#list");
+	const LithpCell tag_dict(Atom, "#dict");
+
+	// Get the tag of the given variable
+	LithpCell proc_tag(const LithpCells &c, LithpEnvironment *env) {
+		if (c.size() != 1)
+			return getAtom("#invalid_arg");
+		const LithpCell &c0 = c[0];
+		switch (c0.tag) {
+		case Atom:
+			return tag_atom;
+		case Var:
+			if (c0.value.isString())
+				return tag_string;
+			if (c0.value.isNumeric())
+				return tag_number;
+			return tag_other;
+		case Lambda:
+			return tag_lambda;
+		case Proc:
+			return tag_proc;
+		case List:
+			return tag_list;
+		case Dict:
+			return tag_dict;
+		default:
+			return getAtom("#unknown");
+		}
+	}
+
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
@@ -247,5 +315,15 @@ namespace PocoLithp {
 		env["reds"] = LithpCell(&proc_reds);            env["tests"] = LithpCell(&proc_tests);
 		env["env"] = LithpCell(&proc_env);
 		env["_depth"] = LithpCell(&proc__depth);        env["_depth_max"] = LithpCell(&proc__depth_max);
+
+		// IO
+		env["print"] = LithpCell(&proc_print);
+		env["getline"] = LithpCell(&proc_getline);
+		
+		// String
+		env["tostring"] = LithpCell(&proc_tostring);
+
+		// Variable information
+		env["tag"] = LithpCell(&proc_tag);
 	}
 }
