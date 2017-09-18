@@ -2,16 +2,14 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.34"
+#define PLITHP_VERSION "0.36"
 
 #define PLITHP_TRACK_STATS 1
 
 #if PLITHP_TRACK_STATS
 #define TRACK_STATS(code) do { code; } while(0)
-#define TRACK_EVAL_EXIT() do { if(depth > depth_max) depth_max = depth; --depth; } while(0)
 #else
 #define TRACK_STATS(code) while(0)
-#define TRACK_EVAL_EXIT() while(0)
 #endif
 
 namespace PocoLithp {

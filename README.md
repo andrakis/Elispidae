@@ -74,7 +74,7 @@ How?
 Status
 ------
 
-**Version: 0.34**
+**Version: 0.36**
 
 **Language compatibility level:** Scheme-ish
 
@@ -141,6 +141,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Comment handling improved, no longer able to crash interpreter by entering a comment into the REPL.
 
 * Memory leaks have been plugged by using `std::shared_ptr`. Unfortunately tail call optimization code had to be dropped. It may return in the future.
 

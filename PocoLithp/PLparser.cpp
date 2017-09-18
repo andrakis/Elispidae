@@ -134,6 +134,8 @@ namespace PocoLithp {
 	{
 		auto start = std::chrono::steady_clock::now();
 		std::list<std::string> tokens(tokenize(s));
+		if (tokens.size() == 0)
+			return sym_nil;
 		LithpCell result = read_from(tokens);
 		auto end = std::chrono::steady_clock::now();
 		parseTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
