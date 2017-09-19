@@ -74,11 +74,22 @@ How?
 
    * Memory is almost universally managed by the standard template library and restricting the use of pointers in code. `shared_ptr`s take care of environment management, resolving memory issues.
 
+   * Code is data! Data is code!
+
+      * Say your code is: `(begin (define add1 (lambda (x) (+ x 1)))(print "Add1:" (add1 5)))`
+
+	  * You could store this to a variable: `(define code (quote (begin (define add1 (lambda (x) (+ x 1)))(print "Add1:" (add1 5)))))`
+
+	  * You can print it out in readable form: `(str code)` => `(begin (define add1 (lambda (x) (+ x 1))) (print Add1: (add1 5)))`
+
+	  * Or you can print the underlying representation: `(str code #t)` => `(8 (6 51 (7 (52) (24 52 1))) (44 "Add1:" (51 5)))` **(individual results may vary)**
+
+	  * And you can run it too: `(eval code)` => `Add1: 6`
 
 Status
 ------
 
-**Version: 0.42**
+**Version: 0.44**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
@@ -145,6 +156,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Improved builtin parameter passing. `proc_type` is no longer passed an environment, if needed use `extended_proc`.
 
 * Full tail-call-optimization has been implemented. Essentially, infinite stack depth is available (for [properly tail-recursive functions](https://github.com/andrakis/PocoLithp/blob/master/samples/fac_recursive.lisp).) This involved resolving more memory management issues.
 

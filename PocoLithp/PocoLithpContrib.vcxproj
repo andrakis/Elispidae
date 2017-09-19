@@ -254,6 +254,7 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\samples\fac_recursive.lisp" />
+    <None Include="..\samples\test.lisp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\contrib\MinimalFoundation\MinimalFoundation.vcxproj">

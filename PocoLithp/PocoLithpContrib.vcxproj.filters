@@ -62,5 +62,8 @@
     <None Include="..\samples\fac_recursive.lisp">
       <Filter>samples</Filter>
     </None>
+    <None Include="..\samples\test.lisp">
+      <Filter>samples</Filter>
+    </None>
   </ItemGroup>
 </Project>

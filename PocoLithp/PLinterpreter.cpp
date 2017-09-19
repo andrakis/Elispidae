@@ -17,8 +17,7 @@ namespace PocoLithp {
 		while (true) {
 			// TODO: Allow VariableReference too
 			if (x.tag == Atom) {
-				LithpCell &r = env->find(x.atomid())[x.atomid()];
-				return r;
+				return env->find(x.atomid())[x.atomid()];
 			} else if (x.tag != List) {
 				// Anything not a list can be returned as is
 				return x;
@@ -72,8 +71,11 @@ namespace PocoLithp {
 					x = proclist[2];
 					env = Env_p(child_env);
 				} else if (proc.tag == Proc) {
-					const LithpCell &r = proc.proc()(exps, env.get());
-					return r;
+					return proc.proc()(exps);
+				} else if (proc.tag == ProcExtended) {
+					return proc.proc_extended()(exps, env);
+				} else {
+					throw RuntimeException("Unhandled type in eval_inner");
 				}
 			}
 			reductions++;
@@ -105,22 +107,39 @@ namespace PocoLithp {
 		return result;
 	}
 
+	template<typename T>
+	std::string rawstr(const T &v) {
+		std::stringstream ss;
+		ss << v;
+		return ss.str();
+	}
+
 	// convert given LithpCell to a Lisp-readable string
-	std::string to_string(const LithpCell & exp)
+	std::string to_string(const LithpCell &exp)
 	{
-		if (exp.tag == List) {
-			std::string s("(");
-			const LithpCells &list = exp.list();
-			bool first = true;
-			for (LithpCells::const_iterator it = list.begin(); it != list.end(); ++it) {
-				if (first)
-					first = false;
+		return to_string(exp, false);
+	}
+
+	// convert given LithpCell to a Lisp-readable string
+	// param repre: true to return as underlying representation
+	std::string to_string(const LithpCell &exp, bool repre)
+	{
+		if (exp.tag == Var || exp.tag == Atom) {
+			if (!repre)
+				return exp.str();
+			else {
+				if (exp.value.isString())
+					return "\"" + exp.value.toString() + "\"";
 				else
-					s += " ";
-				s += to_string(*it);
+					return exp.value.toString();
 			}
-			return s + ')';
-		} else if (exp.tag == Dict) {
+		} else if (!repre && exp.tag == Lambda)
+			return "<Lambda>";
+		else if (exp.tag == Proc)
+			return repre ? rawstr(exp.proc()) : "<Proc>";
+		else if (exp.tag == ProcExtended)
+			return repre ? rawstr(exp.proc_extended()) : "<ProcExtended>";
+		else if (exp.tag == Dict) {
 			std::string s("{");
 			const LithpDict &dict = exp.dict();
 			bool first = true;
@@ -129,20 +148,32 @@ namespace PocoLithp {
 					first = false;
 				else
 					s += ", ";
-				s += getAtomById(it->first) + ": " + to_string(it->second);
+				// In repre mode, just get integer value as string. Otherwise, get atom name.
+				std::string v1 = (repre ? std::to_string(it->first) : getAtomById(it->first));
+				s += v1 + ": " + to_string(it->second, repre);
 			}
 			return s + "}";
-		} else if (exp.tag == Lambda)
-			return "<Lambda>";
-		else if (exp.tag == Proc)
-			return "<Proc>";
-		return exp.str();
+		}
+
+		// A list, or repre is true and we want the list representation
+		std::string s("(");
+		const LithpCells &list = exp.list();
+		bool first = true;
+		for (LithpCells::const_iterator it = list.begin(); it != list.end(); ++it) {
+			if (first)
+				first = false;
+			else
+				s += " ";
+			s += to_string(*it, repre);
+		}
+		return s + ')';
 	}
 
 	// the default read-eval-print-loop
-	void repl(const std::string & prompt, Env_p env)
+	LithpCell repl(const std::string & prompt, Env_p env)
 	{
 		std::string partialBuffer = "";
+		LithpCell result = sym_nil;
 
 		while(!QUIT) {
 			if (partialBuffer.length() == 0) {
@@ -159,7 +190,8 @@ namespace PocoLithp {
 					line = partialBuffer + "\n" + line;
 					partialBuffer = "";
 				}
-				std::cout << to_string(evalTimed(read(line), env)) << "\n";
+				result = evalTimed(read(line), env);
+				std::cout << to_string(result) << "\n";
 				if (TIMING) {
 					auto end = std::chrono::steady_clock::now();
 					std::cerr << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << "\n";
@@ -170,5 +202,9 @@ namespace PocoLithp {
 				std::cerr << "ERROR " << e.what() << "\n";
 			}
 		}
+
+		// Reset QUIT in case REPL was invoked from a script
+		QUIT = false;
+		return result;
 	}
 }

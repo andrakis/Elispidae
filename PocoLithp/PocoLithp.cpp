@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
 	} else {
 		std::cerr << "Welcome to PocoLithp " PLITHP_VERSION " " << PLITHP_ARCH << " " << STATS_DESC << "\n";
 		std::cerr << "Type (q) to quit, (debug) to get / set state, (timing) to get / set state" << "\n";
-		std::cerr << "  Additional useful functions: (tests) (env) (_depth) (_max_depth)" << "\n";
+		std::cerr << "  Additional useful functions: (tests) (str expr) (str expr #t) (env) (_depth) (_max_depth)\n";
+		std::cerr << "                             : (repl [prompt]) (_eval expr)\n";
 		repl("plithp> ", global_p);
 	}
 	if(TIMING)

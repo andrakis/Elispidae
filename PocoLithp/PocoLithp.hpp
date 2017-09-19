@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.42"
+#define PLITHP_VERSION "0.44"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -54,6 +54,14 @@ namespace PocoLithp {
 		}
 	};
 	
+	class RuntimeException : public LithpException {
+	public:
+		RuntimeException() : LithpException("Runtime exception: no reason given") {
+		}
+		RuntimeException(const std::string &_reason)
+			: LithpException("Runtime exception: " + _reason) {
+		}
+	};
 
 #if defined(POCO_HAVE_INT64)
 #define PLITHP_INT64
@@ -80,6 +88,7 @@ namespace PocoLithp {
 		// scheme types
 		List,
 		Proc,
+		ProcExtended,
 		Lambda
 	};
 
@@ -114,6 +123,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_lambda;
 	extern const LithpCell sym_begin;
 	std::string to_string(const LithpCell &exp);
+	std::string to_string(const LithpCell &exp, bool repre);
 	const LithpCell booleanCell(const bool val);
 	bool booleanVal(const LithpCell &val);
 	std::string getAtomById(atomId id);
@@ -134,7 +144,7 @@ namespace PocoLithp {
 	extern UnsignedInteger parseTime, evalTime;
 	extern UnsignedInteger reductions, depth, depth_max;
 	extern bool DEBUG, TIMING, QUIT;
-	void repl(const std::string &prompt, Env_p env);
+	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);
 
@@ -144,10 +154,8 @@ namespace PocoLithp {
 	}
 
 	struct LithpVar {
-		// TODO: Either make 2nd param a shared_ptr, or remove it entirely.
-		//       Instead have a second proc_type that takes two arguments.
-		//       Should improve speed of function invocation.
-		typedef LithpVar(*proc_type)(const LithpCells &, LithpEnvironment *);
+		typedef LithpVar(*proc_type)(const LithpCells &);
+		typedef LithpVar(*proc_extended_type)(const LithpCells &, Env_p);
 		LithpVarType tag;
 		PocoVar value;
 		Env_p env;
@@ -167,6 +175,7 @@ namespace PocoLithp {
 		// Scheme constructors
 		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
+		LithpVar(proc_extended_type proc) : tag(ProcExtended), value(proc), env(0) {}
 
 		~LithpVar() {
 		}
@@ -182,6 +191,8 @@ namespace PocoLithp {
 				return "<List>";
 			case Proc:
 				return "<Proc>";
+			case ProcExtended:
+				return "<ProcExtended>";
 			case Dict:
 				throw InvalidArgumentException("Should be handled higher up");
 			case Atom:
@@ -261,10 +272,15 @@ namespace PocoLithp {
 		}
 
 		// Proc related behaviours
-		proc_type proc() {
+		proc_type proc() const {
 			if (tag != Proc)
 				throw InvalidArgumentException("Not a proc");
 			return value.extract<proc_type>();
+		}
+		proc_extended_type proc_extended() const {
+			if (tag != ProcExtended)
+				throw InvalidArgumentException("Not a proc_extended");
+			return value.extract<proc_extended_type>();
 		}
 
 		// Atom behaviours

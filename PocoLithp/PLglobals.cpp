@@ -40,7 +40,7 @@ namespace PocoLithp {
 		return LithpCell(Atom, getAtomId(name));
 	}
 
-	LithpCell proc_add(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_add(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -53,7 +53,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_sub(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_sub(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -66,7 +66,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_mul(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_mul(const LithpCells &c)
 	{
 		LithpCell n(1);
 		for (LithpCells::const_iterator i = c.begin(); i != c.end(); ++i) {
@@ -79,7 +79,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_div(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_div(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -92,7 +92,7 @@ namespace PocoLithp {
 		return n;
 	}
 
-	LithpCell proc_greater(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_greater(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
@@ -101,7 +101,7 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
-	LithpCell proc_greater_equal(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_greater_equal(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
@@ -110,7 +110,7 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
-	LithpCell proc_less(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_less(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -120,7 +120,7 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
-	LithpCell proc_less_equal(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_less_equal(const LithpCells &c)
 	{
 		LithpCell n(c[0]);
 		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
@@ -130,21 +130,21 @@ namespace PocoLithp {
 		return sym_true;
 	}
 
-	LithpCell proc_equal(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_equal(const LithpCells &c)
 	{
 		return booleanCell(c[0] == c[1]);
 	}
 
-	LithpCell proc_not_equal(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_not_equal(const LithpCells &c)
 	{
 		return booleanCell(c[0] != c[1]);
 	}
 
-	LithpCell proc_length(const LithpCells &c, LithpEnvironment *env) { return LithpCell(Var, c[0].list().size()); }
-	LithpCell proc_nullp(const LithpCells &c, LithpEnvironment *env) { return c[0].is_nullp() ? sym_true : sym_false; }
-	LithpCell proc_head(const LithpCells &c, LithpEnvironment *env) { return c[0].list()[0]; }
+	LithpCell proc_length(const LithpCells &c) { return LithpCell(Var, c[0].list().size()); }
+	LithpCell proc_nullp(const LithpCells &c) { return c[0].is_nullp() ? sym_true : sym_false; }
+	LithpCell proc_head(const LithpCells &c) { return c[0].list()[0]; }
 
-	LithpCell proc_tail(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_tail(const LithpCells &c)
 	{
 		if (c[0].list().size() < 2)
 			return sym_nil;
@@ -153,7 +153,7 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_append(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_append(const LithpCells &c)
 	{
 		LithpCells result = c[0].list();
 		const LithpCells &c1l = c[1].list();
@@ -162,7 +162,7 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_cons(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_cons(const LithpCells &c)
 	{
 		LithpCells result;
 		const LithpCells &c1l = c[1].list();
@@ -172,13 +172,13 @@ namespace PocoLithp {
 		return LithpCell(List, result);
 	}
 
-	LithpCell proc_list(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_list(const LithpCells &c)
 	{
 		return LithpCell(List, c);
 	}
 
 	// Get or set debug state
-	LithpCell proc_debug(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_debug(const LithpCells &c)
 	{
 		bool was = DEBUG;
 		if (c.size() != 0)
@@ -187,7 +187,7 @@ namespace PocoLithp {
 	}
 
 	// Get or set timing state
-	LithpCell proc_timing(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_timing(const LithpCells &c)
 	{
 		bool was = TIMING;
 		if (c.size() != 0)
@@ -196,35 +196,35 @@ namespace PocoLithp {
 	}
 
 	// Quit interpreter
-	LithpCell proc_quit(const LithpCells &c, LithpEnvironment *env)
+	LithpCell proc_quit(const LithpCells &c)
 	{
 		QUIT = true;
 		return sym_true;
 	}
 
 	// Get number of reductions
-	LithpCell proc_reds(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_reds(const LithpCells &c) {
 		return LithpCell(Var, reductions);
 	}
 
 	// Run tests
-	LithpCell proc_tests(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_tests(const LithpCells &c) {
 		return LithpCell(Var, Test::RunTests());
 	}
 
 	// Get environment values
-	LithpCell proc_env(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_env(const LithpCells &c, Env_p env) {
 		return LithpCell(List, env->getCompleteEnv());
 	}
 
 	// Get current eval depth
-	LithpCell proc__depth(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc__depth(const LithpCells &c) {
 		TRACK_STATS(return LithpCell(Var, depth));
 		return LithpCell(Atom, "#stats_not_tracked");
 	}
 
 	// Get max eval depth
-	LithpCell proc__depth_max(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc__depth_max(const LithpCells &c) {
 		TRACK_STATS(return LithpCell(Var, depth_max));
 		return LithpCell(Atom, "#stats_not_tracked");
 	}
@@ -232,7 +232,7 @@ namespace PocoLithp {
 	/** IO Procedures */
 
 	// Print the given arguments
-	LithpCell proc_print(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_print(const LithpCells &c) {
 		std::stringstream ss;
 		bool first = true;
 		for (auto it = c.begin(); it != c.end(); ++it) {
@@ -245,18 +245,34 @@ namespace PocoLithp {
 	}
 
 	// Read a line
-	LithpCell proc_getline(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_getline(const LithpCells &c) {
 		std::string line; std::getline(std::cin, line);
 		return LithpCell(Var, line);
+	}
+
+	// Invoke REPL
+	LithpCell proc_repl(const LithpCells &c, Env_p env) {
+		std::string prompt = "REPL> ";
+		if (c.size() == 1)
+			prompt = c[0].str();
+		return repl(prompt, env);
+	}
+
+	// Call the parent eval function. It is named _eval since implementing a native
+	// eval function is a goal of this interpreter. It would allow extending the
+	// interpreter in classic Lisp ways.
+	LithpCell proc__eval(const LithpCells &c, Env_p env) {
+		return eval(c[0], env);
 	}
 
 	/** String procedures */
 
 	// Convert argument to string
-	LithpCell proc_tostring(const LithpCells &c, LithpEnvironment *env) {
-		if (c.size() != 1)
-			return getAtom("#invalid_arg");
-		return LithpCell(Var, to_string(c[0]));
+	LithpCell proc_tostring(const LithpCells &c) {
+		bool repre = false;
+		if (c.size() == 2)
+			repre = c[1] == sym_true ? true : false;
+		return LithpCell(Var, to_string(c[0], repre));
 	}
 
 	/** Variable procedures */
@@ -271,7 +287,7 @@ namespace PocoLithp {
 	const LithpCell tag_dict(Atom, "#dict");
 
 	// Get the tag of the given variable
-	LithpCell proc_tag(const LithpCells &c, LithpEnvironment *env) {
+	LithpCell proc_tag(const LithpCells &c) {
 		if (c.size() != 1)
 			return getAtom("#invalid_arg");
 		const LithpCell &c0 = c[0];
@@ -319,9 +335,11 @@ namespace PocoLithp {
 		// IO
 		env["print"] = LithpCell(&proc_print);
 		env["getline"] = LithpCell(&proc_getline);
+		env["repl"] = LithpCell(&proc_repl);
+		env["_eval"] = LithpCell(&proc__eval);
 		
 		// String
-		env["tostring"] = LithpCell(&proc_tostring);
+		env["str"] = env["tostring"] = LithpCell(&proc_tostring);
 
 		// Variable information
 		env["tag"] = LithpCell(&proc_tag);
