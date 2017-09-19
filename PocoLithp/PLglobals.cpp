@@ -256,7 +256,7 @@ namespace PocoLithp {
 	LithpCell proc_tostring(const LithpCells &c, LithpEnvironment *env) {
 		if (c.size() != 1)
 			return getAtom("#invalid_arg");
-		return to_string(c[0]);
+		return LithpCell(Var, to_string(c[0]));
 	}
 
 	/** Variable procedures */
