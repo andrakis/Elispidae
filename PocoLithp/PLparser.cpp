@@ -108,6 +108,8 @@ namespace PocoLithp {
 			return LithpCell(Atom, token.substr(1, token.size() - 2));
 		} else if (token[0] == '"') {
 			return LithpCell(Var, token.substr(1, token.size() - 2));
+		} else if (isupper(token[0])) {
+			return LithpCell(VariableReference, token);
 		}
 		return LithpCell(Atom, token);
 	}

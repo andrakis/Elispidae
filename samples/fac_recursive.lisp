@@ -2,20 +2,20 @@
 (begin
 	;; Optional: enable debugging
 	(debug #t)
-	(define fac (lambda (n) (begin
+	(define fac (lambda (N) (begin
 		;; This should tail recurse
-		(fac2 n 1)
+		(fac2 N 1)
 	)))
 	;; This is the tail recursive part
-	(define fac2 (lambda (n a) (begin
-		(if (= n 0) a (fac2 (- n 1) (* n a)))
+	(define fac2 (lambda (N A) (begin
+		(if (= N 0) a (fac2 (- N 1) (* N A)))
 	)))
-	(define x 3)
-	(print "Factorial of" x ":" (fac x))
+	(define X 3)
+	(print "Factorial of" X ":" (fac X))
 	(print "Reductions:" (reds) " Max depth:" (_depth_max))
 
-	;; (define map (lambda (l cb) (_map l (list) cb)))
-	;; (define _map (lambda (l acc cb)
-	;; 	(if (= 0 (length l)) acc (_map (tail l) (+ acc (list (cb (head l))))))
+	;; (define map (lambda (L Cb) (_map L (list) Cb)))
+	;; (define _map (lambda (L Acc Cb)
+	;; 	(if (= 0 (length L)) Acc (_map (tail L) (+ Acc (list (Cb (head L))))))
 	;; ))
 )

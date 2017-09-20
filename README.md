@@ -35,6 +35,12 @@ Features taken from Common Lisp:
 
        * Procs
 
+Features taken from Erlang:
+
+   * Atoms: `lowercase` is atom
+
+   * Variables: `Uppercase` is a variable reference, and will be looked up
+
 It is extremely fast owing to its dynamic runtime types and reliance on atoms (numbers) rather than strings, and tight memory management.
 
 The main execution loop is essentially looking up integers in a vector table and performing arithmatic or decisions on them.
@@ -57,13 +63,17 @@ It supports most modern types:
 
    * **Atoms:** `most` `symbols` `are` `atoms`, additionally an `'extended atom syntax'` is available.
 
+   * **Variables:** `Uppercase` symbols are Variables, and will be resolved to their value at runtime. This replaces atoms/symbols being used to get values from the environment.
+
    * **Strings:** "Strings are supported"
 
    * **Lists:** `(a 1 (2 b (3 c)))`
 
-   * **Lambdas:** `(lambda (a b c) (+ a b c))`, `(lambda (n) (begin (test) (+ n 1)))`
+   * **Lambdas:** `(lambda (A B C) (+ A B C))`, `(lambda (N) (begin (test) (+ N 1)))`
 
-   * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args, LithpEnvironment *env)`
+   * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args)`
+
+   * **ExtendedProcs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args, Env_p env)`
 
 How?
 ----
@@ -76,24 +86,24 @@ How?
 
    * Code is data! Data is code!
 
-      * Say your code is: `(begin (define add1 (lambda (x) (+ x 1)))(print "Add1:" (add1 5)))`
+      * Say your code is: `(begin (define add1 (lambda (X) (+ X 1)))(print "Add1:" (add1 5)))`
 
-	  * You could store this to a variable: `(define code (quote (begin (define add1 (lambda (x) (+ x 1)))(print "Add1:" (add1 5)))))`
+	  * You could store this to a variable: `(define Code (quote (begin (define add1 (lambda (X) (+ X 1)))(print "Add1:" (add1 5)))))`
 
-	  * You can print it out in readable form: `(str code)` => `(begin (define add1 (lambda (x) (+ x 1))) (print Add1: (add1 5)))`
+	  * You can print it out in readable form: `(str Code)` => `(begin (define add1 (lambda (X) (+ X 1))) (print Add1: (add1 5)))`
 
-	  * Or you can print the underlying representation: `(str code #t)` => `(8 (6 51 (7 (52) (24 52 1))) (44 "Add1:" (51 5)))` **(individual results may vary)**
+	  * Or you can print the underlying representation: `(str Code #t)` => `(8 (6 51 (7 (52) (24 52 1))) (44 "Add1:" (51 5)))` **(individual results may vary)**
 
-	  * And you can run it too: `(eval code)` => `Add1: 6`
+	  * And you can run it too: `(_eval Code)` => `Add1: 6`
 
 Status
 ------
 
-**Version: 0.44**
+**Version: 0.46**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
-    Mainly Scheme-like syntax, but strings are also supported.
+    Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced.)
 
 Building (Visual Studio)
 ------------------------

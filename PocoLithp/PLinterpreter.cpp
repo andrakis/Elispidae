@@ -12,12 +12,16 @@ namespace PocoLithp {
 
 #define INDENT()  std::string((depth * 2), ' ')
 
+	inline LithpCell envLookup(atomId id, Env_p env) {
+		return env->find(id)[id];
+	}
+
 	// Eval inner-most loop that performs the interpretation.
 	inline LithpCell eval_inner(LithpCell x, Env_p env) {
+		std::string debugstr = "";
 		while (true) {
-			// TODO: Allow VariableReference too
-			if (x.tag == Atom) {
-				return env->find(x.atomid())[x.atomid()];
+			if (x.tag == VariableReference) {
+				return envLookup(x.atomid(), env);
 			} else if (x.tag != List) {
 				// Anything not a list can be returned as is
 				return x;
@@ -33,7 +37,12 @@ namespace PocoLithp {
 				return xl[1];
 			} else if (xl0 == sym_if) {       // (if test conseq [alt])
 				// Tail recurse
+				if (DEBUG) debugstr += INDENT() + to_string(x);
 				x = eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2];
+				if (DEBUG) std::cerr << debugstr + " => " + to_string(x) + "\n";
+				if (DEBUG) debugstr = "";
+			} else if (xl0 == sym_get) {      // (get! var) - lookup by atom
+				return envLookup(xl[1].atomid(), env);
 			} else if (xl0 == sym_set) {      // (set! var exp)
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
 			} else if (xl0 == sym_define) {   // (define var exp)
@@ -52,7 +61,18 @@ namespace PocoLithp {
 				x = xl.back();
 			} else {
 				// (proc exp*)
-				LithpCell proc(eval(xl[0], env));
+				// What follows is a mini eval loop
+				LithpCell proc = xl[0];
+				if (DEBUG) debugstr = INDENT() + to_string(proc);
+				while (proc.tag == Atom || proc.tag == VariableReference || proc.tag == List) {
+					if (proc.tag == Atom || proc.tag == VariableReference) {
+						proc = envLookup(proc.atomid(), env);
+						++reductions;
+					}  else if (proc.tag == List)
+						proc = eval(proc, env);
+				}
+				if (DEBUG) std::cerr << debugstr << " => " << to_string(proc) << "\n";;
+				if (DEBUG) debugstr = "";
 				LithpCells exps;
 				// Gather parameters
 				for (auto exp = xl.begin() + 1; exp != xl.end(); ++exp)
@@ -88,7 +108,7 @@ namespace PocoLithp {
 		try {
 			const LithpCell &result = eval_inner(x, env);
 			if (DEBUG) {
-				std::cerr << INDENT() << to_string(x) << " => " << to_string(result) << "\n";
+				std::cerr << INDENT() << "eval(" << to_string(x) << ") => " << to_string(result) << "\n";
 			}
 			TRACK_STATS(if (depth > depth_max) depth_max = depth; --depth;);
 			return result;
@@ -124,7 +144,7 @@ namespace PocoLithp {
 	// param repre: true to return as underlying representation
 	std::string to_string(const LithpCell &exp, bool repre)
 	{
-		if (exp.tag == Var || exp.tag == Atom) {
+		if (exp.tag == Var || exp.tag == Atom || exp.tag == VariableReference) {
 			if (!repre)
 				return exp.str();
 			else {

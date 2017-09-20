@@ -65,5 +65,8 @@
     <None Include="..\samples\test.lisp">
       <Filter>samples</Filter>
     </None>
+    <None Include="..\samples\eval.lisp">
+      <Filter>samples</Filter>
+    </None>
   </ItemGroup>
 </Project>

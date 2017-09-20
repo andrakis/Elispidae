@@ -103,7 +103,7 @@ namespace PocoLithp {
 			Env_p global_env(global_env_obj);
 			auto start = std::chrono::steady_clock::now();
 			// the 29 unit tests for lis.py
-			TEST("((lambda (x) (+ x x)) 5)", "10");
+			TEST("((lambda (X) (+ X X)) 5)", "10");
 			TEST("(< 10 2)", "#f");
 			TEST("(<= 10 2)", "#f");
 			TEST("(quote \"f\\\"oo\")", "f\\\"oo");
@@ -116,36 +116,36 @@ namespace PocoLithp {
 			TEST("(< 6 5)", "#f");
 			TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
 			TEST("(if (< 6 5) (+ 1 1) (+ 2 2))", "4");
-			TEST("(define x 3)", "3");
-			TEST("x", "3");
-			TEST("(+ x x)", "6");
-			TEST("(begin (define x 1) (set! x (+ x 1)) (+ x 1))", "3");
-			TEST("(define twice (lambda (x) (* 2 x)))", "<Lambda>");
+			TEST("(define X 3)", "3");
+			TEST("X", "3");
+			TEST("(+ X X)", "6");
+			TEST("(begin (define X 1) (set! X (+ X 1)) (+ X 1))", "3");
+			TEST("(define twice (lambda (X) (* 2 X)))", "<Lambda>");
 			TEST("(twice 5)", "10");
-			TEST("(define compose (lambda (f g) (lambda (x) (f (g x)))))", "<Lambda>");
+			TEST("(define compose (lambda (F G) (lambda (X) (F (G X)))))", "<Lambda>");
 			TEST("((compose list twice) 5)", "(10)");
-			TEST("(define repeat (lambda (f) (compose f f)))", "<Lambda>");
+			TEST("(define repeat (lambda (F) (compose F F)))", "<Lambda>");
 			TEST("((repeat twice) 5)", "20");
 			TEST("((repeat (repeat twice)) 5)", "80");
-			TEST("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))", "<Lambda>");
+			TEST("(define fact (lambda (N) (if (<= N 1) 1 (* N (fact (- N 1))))))", "<Lambda>");
 			TEST("(fact 3)", "6");
 			// TODO: Bignum support
 			//TEST("(fact 50)", "30414093201713378043612608166064768844377641568960512000000000000");
 			TEST("(fact 12)", "479001600");
-			TEST("(define abs (lambda (n) ((if (> n 0) + -) 0 n)))", "<Lambda>");
+			TEST("(define abs (lambda (N) ((if (> N 0) + -) 0 N)))", "<Lambda>");
 			TEST("(list (abs -3) (abs 0) (abs 3))", "(3 0 3)");
-			TEST("(define combine (lambda (f)"
-				"(lambda (x y)"
-				"(if (null? x) (quote ())"
-				"(f (list (head x) (head y))"
-				"((combine f) (tail x) (tail y)))))))", "<Lambda>");
+			TEST("(define combine (lambda (F)"
+				"(lambda (X Y)"
+				"(if (null? X) (quote ())"
+				"(F (list (head X) (head Y))"
+				"((combine F) (tail X) (tail Y)))))))", "<Lambda>");
 			TEST("(define zip (combine cons))", "<Lambda>");
 			TEST("(zip (list 1 2 3 4) (list 5 6 7 8))", "((1 5) (2 6) (3 7) (4 8))");
-			TEST("(define riff-shuffle (lambda (deck) (begin"
-				"(define take (lambda (n seq) (if (<= n 0) (quote ()) (cons (head seq) (take (- n 1) (tail seq))))))"
-				"(define drop (lambda (n seq) (if (<= n 0) seq (drop (- n 1) (tail seq)))))"
-				"(define mid (lambda (seq) (/ (length seq) 2)))"
-				"((combine append) (take (mid deck) deck) (drop (mid deck) deck)))))", "<Lambda>");
+			TEST("(define riff-shuffle (lambda (Deck) (begin"
+				"(define take (lambda (N Seq) (if (<= N 0) (quote ()) (cons (head Seq) (take (- N 1) (tail Seq))))))"
+				"(define drop (lambda (N Seq) (if (<= N 0) Seq (drop (- N 1) (tail Seq)))))"
+				"(define mid (lambda (Seq) (/ (length Seq) 2)))"
+				"((combine (get! append)) (take (mid Deck) Deck) (drop (mid Deck) Deck)))))", "<Lambda>");
 			TEST("(riff-shuffle (list 1 2 3 4 5 6 7 8))", "(1 5 2 6 3 7 4 8)");
 			TEST("((repeat riff-shuffle) (list 1 2 3 4 5 6 7 8))", "(1 3 5 7 2 4 6 8)");
 			TEST("(riff-shuffle (riff-shuffle (riff-shuffle (list 1 2 3 4 5 6 7 8))))", "(1 2 3 4 5 6 7 8)");

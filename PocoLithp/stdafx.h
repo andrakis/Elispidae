@@ -8,7 +8,9 @@
 #include "targetver.h"
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
+#include <forward_list>
 #include <fstream>
 #include <iostream>
 #include <list>

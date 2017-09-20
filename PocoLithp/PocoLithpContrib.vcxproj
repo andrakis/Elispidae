@@ -253,6 +253,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="..\samples\eval.lisp" />
     <None Include="..\samples\fac_recursive.lisp" />
     <None Include="..\samples\test.lisp" />
   </ItemGroup>

@@ -9,6 +9,7 @@ namespace PocoLithp {
 	const LithpCell sym_nil(Atom, "nil");
 	const LithpCell sym_quote(Atom, "quote");
 	const LithpCell sym_if(Atom, "if");
+	const LithpCell sym_get(Atom, "get!");
 	const LithpCell sym_set(Atom, "set!");
 	const LithpCell sym_define(Atom, "define");
 	const LithpCell sym_lambda(Atom, "lambda");

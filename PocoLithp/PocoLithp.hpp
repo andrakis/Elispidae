@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.44"
+#define PLITHP_VERSION "0.46"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -81,6 +81,7 @@ namespace PocoLithp {
 		Var,
 		Dict,
 		Atom,
+		VariableReference,
 		Tuple,
 		//OpChain, // AKA lambda
 		//Closure, // AKA environment
@@ -118,6 +119,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_nil;
 	extern const LithpCell sym_quote;
 	extern const LithpCell sym_if;
+	extern const LithpCell sym_get;
 	extern const LithpCell sym_set;
 	extern const LithpCell sym_define;
 	extern const LithpCell sym_lambda;
@@ -161,7 +163,7 @@ namespace PocoLithp {
 		Env_p env;
 
 		LithpVar(LithpVarType _tag, PocoVar _value) : tag(_tag), value(_value), env(0) {
-			if (_tag == Atom && _value.isString()) {
+			if ((_tag == Atom || _tag == VariableReference) && _value.isString()) {
 				// Convert from string to atom
 				value = getAtomId(_value.toString());
 			}
@@ -196,6 +198,7 @@ namespace PocoLithp {
 			case Dict:
 				throw InvalidArgumentException("Should be handled higher up");
 			case Atom:
+			case VariableReference:
 				return getAtomById(atomid());
 			case Tuple:
 				// TODO
@@ -285,7 +288,7 @@ namespace PocoLithp {
 
 		// Atom behaviours
 		const atomId atomid() const {
-			if (tag != Atom)
+			if (tag != Atom && tag != VariableReference)
 				throw InvalidArgumentException("Not an atom");
 			return value.extract<atomId>();
 		}
