@@ -79,6 +79,7 @@
       <itemPath>PocoLithp/PLglobals.cpp</itemPath>
       <itemPath>PocoLithp/PLinterpreter.cpp</itemPath>
       <itemPath>PocoLithp/PLparser.cpp</itemPath>
+      <itemPath>PocoLithp/PLruntime.cpp</itemPath>
       <itemPath>PocoLithp/PLtests.cpp</itemPath>
       <itemPath>PocoLithp/PLtypes.cpp</itemPath>
       <itemPath>PocoLithp/PocoLithp.cpp</itemPath>
@@ -125,6 +126,8 @@
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLparser.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLruntime.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLtests.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -447,7 +450,8 @@
           <developmentMode>5</developmentMode>
         </cTool>
         <ccTool>
-          <developmentMode>5</developmentMode>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <standard>11</standard>
           <incDir>
             <pElem>contrib/poco/Foundation/include</pElem>
@@ -465,7 +469,8 @@
         </asmTool>
         <linkerTool>
           <output>bin/plithp</output>
-          <commandLine>-pthread</commandLine>
+          <stripSymbols>true</stripSymbols>
+          <commandLine>-pthread -flto</commandLine>
         </linkerTool>
       </compileType>
       <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
@@ -473,6 +478,8 @@
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLparser.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLruntime.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLtests.cpp" ex="false" tool="1" flavor2="0">
       </item>

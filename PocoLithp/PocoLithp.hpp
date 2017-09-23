@@ -135,7 +135,7 @@ namespace PocoLithp {
 	LithpCell getAtom(const std::string &name);
 
 	typedef void(*add_environment_proc)(LithpEnvironment &);
-	size_t add_environment_runtime(add_environment_proc);
+	void add_environment_runtime(add_environment_proc);
 	void add_globals(LithpEnvironment &env);
 
 	// From PLparser.cpp
@@ -154,6 +154,9 @@ namespace PocoLithp {
 	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);
+
+	// From PLruntime.cpp
+	void init_runtime();
 
 	// From PLtests.cpp
 	namespace Test {

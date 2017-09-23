@@ -18,10 +18,12 @@ LithpCell proc_readfile(const LithpCells &x) {
 	std::stringstream ss;
 	ss << f.rdbuf();
 	f.close();
-	return ss.str();
+	return LithpCell(Var, ss.str());
 }
 
-size_t _ = add_environment_runtime([](LithpEnvironment &env) {
-	env["banner"] = LithpCell(&proc_banner);
-	env["readfile"] = LithpCell(&proc_readfile);
-});
+void PocoLithp::init_runtime() {
+    add_environment_runtime([](LithpEnvironment &env) {
+            env["banner"] = LithpCell(&proc_banner);
+            env["readfile"] = LithpCell(&proc_readfile);
+    });
+}

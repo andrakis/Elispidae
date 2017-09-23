@@ -324,9 +324,8 @@ namespace PocoLithp {
 		}
 	}
 
-	size_t add_environment_runtime(add_environment_proc p) {
+	void add_environment_runtime(add_environment_proc p) {
 		environment_procs.push_back(p);
-		return environment_procs.size();
 	}
 
 	// define the bare minimum set of primitives necessary to pass the unit tests

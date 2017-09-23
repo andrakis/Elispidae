@@ -15,6 +15,7 @@ const int ERR_EXCEPTION = 3;
 int main(int argc, char *argv[])
 {
 	LithpEnvironment *global_env = new LithpEnvironment();
+	init_runtime();
 	add_globals(*global_env);
 	Env_p global_p(global_env);
 
