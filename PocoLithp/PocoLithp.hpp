@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.46"
+#define PLITHP_VERSION "0.48"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -53,7 +53,7 @@ namespace PocoLithp {
 			: LithpException("Syntax error: " + _reason) {
 		}
 	};
-	
+
 	class RuntimeException : public LithpException {
 	public:
 		RuntimeException() : LithpException("Runtime exception: no reason given") {
@@ -122,15 +122,20 @@ namespace PocoLithp {
 	extern const LithpCell sym_get;
 	extern const LithpCell sym_set;
 	extern const LithpCell sym_define;
+	extern const LithpCell sym_defined;
 	extern const LithpCell sym_lambda;
+	extern const LithpCell sym_lambda2;
 	extern const LithpCell sym_begin;
 	std::string to_string(const LithpCell &exp);
-	std::string to_string(const LithpCell &exp, bool repre);
+	std::string to_string(const LithpCell &exp, bool advanced, bool repre);
 	const LithpCell booleanCell(const bool val);
 	bool booleanVal(const LithpCell &val);
 	std::string getAtomById(atomId id);
 	atomId getAtomId(const std::string &name);
 	LithpCell getAtom(const std::string &name);
+
+	typedef void(*add_environment_proc)(LithpEnvironment &);
+	size_t add_environment_runtime(add_environment_proc);
 	void add_globals(LithpEnvironment &env);
 
 	// From PLparser.cpp
@@ -139,7 +144,7 @@ namespace PocoLithp {
 	bool isdig(char c);
 	std::list<std::string> tokenize(const std::string & str);
 	PocoVar parseNumber(const std::string &token);
-	LithpCell atom(const std::string &token);
+	LithpCell symbol(const std::string &token);
 	LithpCell read_from(std::list<std::string> &tokens);
 
 	// From PLinterpreter.cpp
@@ -185,8 +190,16 @@ namespace PocoLithp {
 		std::string str() const {
 			switch (tag) {
 			case Var:
-				// TODO: Floats are getting truncated
+			{
+				// Floating point check
+				const std::type_info &rtti = value.type();
+				if (rtti == typeid(double) || rtti == typeid(float)) {
+					std::stringstream ss;
+					ss << std::scientific << value.convert<double>();
+					return ss.str();
+				}
 				return value.toString();
+			}
 			case Lambda:
 				return "<Lambda>";
 			case List:
@@ -215,22 +228,45 @@ namespace PocoLithp {
 		}
 		template<typename Callback>
 		static bool CompareWith(const LithpVar &a, const LithpVar &b, Callback cb) {
+			// Mismatched tags are always a false comparison
 			if (a.tag != b.tag)
 				return false;
-			if (a.tag != Var && a.tag != Atom)
-				return false;
-			const std::type_info &rtti = a.value.type();
-			if (rtti == typeid(atomId)) {
-				return cb(a.atomid(), b.atomid());
-			} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
-				return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
-			} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
-				return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
-			} else if (rtti == typeid(bool)) {
-				return cb(a.value.extract<bool>(), b.value.convert<bool>());
-			} else if (rtti == typeid(double) || rtti == typeid(float)) {
-				return cb(a.value.convert<double>(), b.value.convert<double>());
+
+			// If we have one of the basic types, extract it and perform comparison.
+			// Only a specific few types are supported here.
+			if (a.tag == Var || a.tag == Atom || a.tag == VariableReference) {
+				const std::type_info &rtti = a.value.type();
+				if (rtti == typeid(atomId)) {
+					return cb(a.atomid(), b.atomid());
+				} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
+					return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
+				} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
+					return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
+				} else if (rtti == typeid(bool)) {
+					return cb(a.value.extract<bool>(), b.value.convert<bool>());
+				} else if (rtti == typeid(double) || rtti == typeid(float)) {
+					return cb(a.value.convert<double>(), b.value.convert<double>());
+				}
+			} else if (a.tag == List) {
+				// List comparison
+				if (b.tag != List)
+					return false;
+				const LithpCells &alist = a.list();
+				const LithpCells &blist = b.list();
+				auto it_a = alist.begin(), it_b = blist.begin();
+				for ( ;
+					it_a != alist.end() && it_b != blist.end();
+					++it_a, ++it_b) {
+					// Call callback with the list elements
+					if (!CompareWith(*it_a, *it_b, cb))
+						// Element mismatch, lists are not equal
+						return false;
+				}
+				// Comparison is true if both lists are at their endpoints (length is same)
+				return (it_a == alist.end() && it_b == blist.end());
 			}
+
+			// Fall back to string comparison (slow!)
 			return cb(a.value, b.value);
 		}
 		bool operator == (const LithpVar &other) const { return CompareWith(*this, other, [](auto a, auto b) { return a == b; }); }
@@ -312,7 +348,7 @@ namespace PocoLithp {
 
 		void update(const LithpCells &params, const LithpCells &args) {
 			LithpCellIt a = args.begin();
-			for (LithpCellIt p = params.begin(); p != params.end(); ++p)
+			for (LithpCellIt p = params.begin(); p != params.end() && a != args.end(); ++p)
 				env_[p->atomid()] = *a++;
 		}
 
@@ -320,12 +356,19 @@ namespace PocoLithp {
 			if (DEBUG) std::cerr << "Environment " << this << " has been deleted\n";
 		}
 
+		bool defined(const atomId var) const {
+			if (env_.find(var) != env_.end())
+				return true;
+			if (outer_)
+				return outer_->defined(var);
+			return false;
+		}
 		LithpDict &find(const atomId var) {
 			if (env_.find(var) != env_.end())
 				return env_;
 			if (outer_)
 				return outer_->find(var);
-			throw InvalidArgumentException("Unbound symbol '" + getAtomById(var) + "'");
+			throw InvalidArgumentException("Unbound symbol " + getAtomById(var));
 		}
 
 		LithpCell &operator[](const atomId var) {

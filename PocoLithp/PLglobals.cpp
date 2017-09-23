@@ -3,19 +3,22 @@
 PocoLithp::AtomMapById_t atomMapById;
 PocoLithp::AtomMapByName_t atomMapByName;
 
+typedef std::list<PocoLithp::add_environment_proc> environment_procs_t;
+environment_procs_t environment_procs;
+
 namespace PocoLithp {
-	const LithpCell sym_false(Atom, "#f");
-	const LithpCell sym_true(Atom, "#t");
+	const LithpCell sym_false(Atom, "false");
+	const LithpCell sym_true(Atom, "true");
 	const LithpCell sym_nil(Atom, "nil");
 	const LithpCell sym_quote(Atom, "quote");
 	const LithpCell sym_if(Atom, "if");
 	const LithpCell sym_get(Atom, "get!");
 	const LithpCell sym_set(Atom, "set!");
 	const LithpCell sym_define(Atom, "define");
+	const LithpCell sym_defined(Atom, "defined");
 	const LithpCell sym_lambda(Atom, "lambda");
+	const LithpCell sym_lambda2(Atom, "#");   // Alternative to lambda
 	const LithpCell sym_begin(Atom, "begin");
-
-	std::string to_string(const LithpCell & exp);
 
 	const LithpCell booleanCell(const bool val) {
 		return val ? sym_true : sym_false;
@@ -253,7 +256,7 @@ namespace PocoLithp {
 
 	// Invoke REPL
 	LithpCell proc_repl(const LithpCells &c, Env_p env) {
-		std::string prompt = "REPL> ";
+		std::string prompt = "plithp> ";
 		if (c.size() == 1)
 			prompt = c[0].str();
 		return repl(prompt, env);
@@ -266,6 +269,13 @@ namespace PocoLithp {
 		return eval(c[0], env);
 	}
 
+	// LithpCell read_from(std::list<std::string> &tokens);
+	// std::list<std::string> tokenize(const std::string & str);
+	LithpCell proc__tokensize(const LithpCells &c) {
+		std::list<std::string> tokens = tokenize(c[0].str());
+		return read_from(tokens);
+	}
+
 	/** String procedures */
 
 	// Convert argument to string
@@ -273,24 +283,24 @@ namespace PocoLithp {
 		bool repre = false;
 		if (c.size() == 2)
 			repre = c[1] == sym_true ? true : false;
-		return LithpCell(Var, to_string(c[0], repre));
+		return LithpCell(Var, to_string(c[0], true, repre));
 	}
 
 	/** Variable procedures */
 
-	const LithpCell tag_atom(Atom, "#atom");
-	const LithpCell tag_number(Atom, "#number");
-	const LithpCell tag_string(Atom, "#string");
-	const LithpCell tag_other(Atom, "#other");
-	const LithpCell tag_lambda(Atom, "#lambda");
-	const LithpCell tag_proc(Atom, "#proc");
-	const LithpCell tag_list(Atom, "#list");
-	const LithpCell tag_dict(Atom, "#dict");
+	const LithpCell tag_atom(Atom, "atom");
+	const LithpCell tag_number(Atom, "number");
+	const LithpCell tag_string(Atom, "string");
+	const LithpCell tag_other(Atom, "other");
+	const LithpCell tag_lambda(Atom, "lambda");
+	const LithpCell tag_proc(Atom, "proc");
+	const LithpCell tag_list(Atom, "list");
+	const LithpCell tag_dict(Atom, "dict");
 
 	// Get the tag of the given variable
 	LithpCell proc_tag(const LithpCells &c) {
 		if (c.size() != 1)
-			return getAtom("#invalid_arg");
+			return getAtom("invalid_arg");
 		const LithpCell &c0 = c[0];
 		switch (c0.tag) {
 		case Atom:
@@ -310,14 +320,18 @@ namespace PocoLithp {
 		case Dict:
 			return tag_dict;
 		default:
-			return getAtom("#unknown");
+			return getAtom("unknown");
 		}
+	}
+
+	size_t add_environment_runtime(add_environment_proc p) {
+		environment_procs.push_back(p);
+		return environment_procs.size();
 	}
 
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
-		env["nil"] = sym_nil;   env["#f"] = sym_false;  env["#t"] = sym_true;
 		env["append"] = LithpCell(&proc_append);        env["head"] = LithpCell(&proc_head);
 		env["tail"] = LithpCell(&proc_tail);            env["cons"] = LithpCell(&proc_cons);
 		env["length"] = LithpCell(&proc_length);        env["list"] = LithpCell(&proc_list);
@@ -338,11 +352,18 @@ namespace PocoLithp {
 		env["getline"] = LithpCell(&proc_getline);
 		env["repl"] = LithpCell(&proc_repl);
 		env["_eval"] = LithpCell(&proc__eval);
+		env["_tokenize"] = LithpCell(&proc__tokensize);
+
+		// File IO
 		
 		// String
 		env["str"] = env["tostring"] = LithpCell(&proc_tostring);
 
 		// Variable information
 		env["tag"] = LithpCell(&proc_tag);
+
+		// Add any other procs
+		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)
+			(*it)(env);
 	}
 }

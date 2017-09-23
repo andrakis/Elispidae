@@ -2,11 +2,11 @@
 (begin
 	;; (def fib        #N::((if (< N 2) (1) ((+ (fib (- N 2)) (fib (- N 1)))))))
 	(defiNe fib (lambda (N) (if (< N 2)  1   (+ (fib (- N 2)) (fib (- N 1))))))
-	(timing #t)
-	(debug #f)
+	(timing true)
+	(debug false)
 	(print (fib 10) ", reds: " (reds) ", max depth: " (_depth_max))
 
-	(debug #f)
+	(debug false)
 	(define foldl (lambda (Lst Acc Cb) (begin
 		(print "(foldl " Lst Acc Cb ")")
 		(if (= nil Lst) Acc (foldl (tail Lst) (Cb (head Lst) Acc) Cb))

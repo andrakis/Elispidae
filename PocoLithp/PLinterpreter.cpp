@@ -47,7 +47,9 @@ namespace PocoLithp {
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
 			} else if (xl0 == sym_define) {   // (define var exp)
 				return (*env)[xl[1].atomid()] = eval(xl[2], env);
-			} else if (xl0 == sym_lambda) {   // (lambda (var*) exp)
+			} else if (xl0 == sym_defined) {  // (defined var)
+				return env->defined(xl[1].atomid()) ? sym_true : sym_false;
+			} else if (xl0 == sym_lambda || xl0 == sym_lambda2) {   // (lambda (var*) exp), (# (var*) exp)
 				x.tag = Lambda;
 				// Keep a reference to the environment that exists now (when the
 				// lambda is being defined) because that's the outer environment
@@ -61,14 +63,11 @@ namespace PocoLithp {
 				x = xl.back();
 			} else {
 				// (proc exp*)
-				// What follows is a mini eval loop
-				LithpCell proc = xl[0];
-				if (DEBUG) debugstr = INDENT() + to_string(proc);
+				LithpCell proc = eval(xl[0], env);
 				while (proc.tag == Atom || proc.tag == VariableReference || proc.tag == List) {
-					if (proc.tag == Atom || proc.tag == VariableReference) {
+					if (proc.tag == Atom)
 						proc = envLookup(proc.atomid(), env);
-						++reductions;
-					}  else if (proc.tag == List)
+					else
 						proc = eval(proc, env);
 				}
 				if (DEBUG) std::cerr << debugstr << " => " << to_string(proc) << "\n";;
@@ -87,6 +86,8 @@ namespace PocoLithp {
 					// more symbols defined in that environment.
 					LithpCells proclist = proc.list();
 					LithpEnvironment *child_env = new LithpEnvironment(/*parms*/proclist[1].list(), /*args*/exps, proc.env);
+					if (proclist.size() < 3)
+						return sym_nil;
 					// Tail recurse
 					x = proclist[2];
 					env = Env_p(child_env);
@@ -137,12 +138,12 @@ namespace PocoLithp {
 	// convert given LithpCell to a Lisp-readable string
 	std::string to_string(const LithpCell &exp)
 	{
-		return to_string(exp, false);
+		return to_string(exp, false, false);
 	}
 
 	// convert given LithpCell to a Lisp-readable string
 	// param repre: true to return as underlying representation
-	std::string to_string(const LithpCell &exp, bool repre)
+	std::string to_string(const LithpCell &exp, bool advanced, bool repre)
 	{
 		if (exp.tag == Var || exp.tag == Atom || exp.tag == VariableReference) {
 			if (!repre)
@@ -153,7 +154,7 @@ namespace PocoLithp {
 				else
 					return exp.value.toString();
 			}
-		} else if (!repre && exp.tag == Lambda)
+		} else if (!advanced && !repre && exp.tag == Lambda)
 			return "<Lambda>";
 		else if (exp.tag == Proc)
 			return repre ? rawstr(exp.proc()) : "<Proc>";
@@ -170,7 +171,7 @@ namespace PocoLithp {
 					s += ", ";
 				// In repre mode, just get integer value as string. Otherwise, get atom name.
 				std::string v1 = (repre ? std::to_string(it->first) : getAtomById(it->first));
-				s += v1 + ": " + to_string(it->second, repre);
+				s += v1 + ": " + to_string(it->second, advanced, repre);
 			}
 			return s + "}";
 		}
@@ -184,7 +185,7 @@ namespace PocoLithp {
 				first = false;
 			else
 				s += " ";
-			s += to_string(*it, repre);
+			s += to_string(*it, advanced, repre);
 		}
 		return s + ')';
 	}

@@ -104,16 +104,16 @@ namespace PocoLithp {
 			auto start = std::chrono::steady_clock::now();
 			// the 29 unit tests for lis.py
 			TEST("((lambda (X) (+ X X)) 5)", "10");
-			TEST("(< 10 2)", "#f");
-			TEST("(<= 10 2)", "#f");
+			TEST("(< 10 2)", "false");
+			TEST("(<= 10 2)", "false");
 			TEST("(quote \"f\\\"oo\")", "f\\\"oo");
 			TEST("(quote \"foo\")", "foo");
-			TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2) -3.14e+159)");
+			TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2.000000e+00) -3.140000e+159)");
 			TEST("(+ 2 2)", "4");
-			TEST("(+ 2.5 2)", "4.5");
+			TEST("(+ 2.5 2)", "4.500000e+00");
 			TEST("(+ (* 2 100) (* 1 10))", "210");
-			TEST("(> 6 5)", "#t");
-			TEST("(< 6 5)", "#f");
+			TEST("(> 6 5)", "true");
+			TEST("(< 6 5)", "false");
 			TEST("(if (> 6 5) (+ 1 1) (+ 2 2))", "2");
 			TEST("(if (< 6 5) (+ 1 1) (+ 2 2))", "4");
 			TEST("(define X 3)", "3");

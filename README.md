@@ -59,7 +59,7 @@ It supports most modern types:
 
    * **Comments:** `;; Comments use double semicolon`
 
-   * **Numbers:** `1`, `2.34`, `0xDEADBEEF`
+   * **Numbers:** `1`, `2.34`, `-3.14e159`, `0xDEADBEEF`
 
    * **Atoms:** `most` `symbols` `are` `atoms`, additionally an `'extended atom syntax'` is available.
 
@@ -70,6 +70,8 @@ It supports most modern types:
    * **Lists:** `(a 1 (2 b (3 c)))`
 
    * **Lambdas:** `(lambda (A B C) (+ A B C))`, `(lambda (N) (begin (test) (+ N 1)))`
+
+   * **Lithp-like Lambdas:** `(# (A B C) (+ A B C))`, `(# (N) (begin (test) (+ N 1)))`
 
    * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args)`
 
@@ -92,18 +94,18 @@ How?
 
 	  * You can print it out in readable form: `(str Code)` => `(begin (define add1 (lambda (X) (+ X 1))) (print Add1: (add1 5)))`
 
-	  * Or you can print the underlying representation: `(str Code #t)` => `(8 (6 51 (7 (52) (24 52 1))) (44 "Add1:" (51 5)))` **(individual results may vary)**
+	  * Or you can print the underlying representation: `(str Code true)` => `(8 (6 51 (7 (52) (24 52 1))) (44 "Add1:" (51 5)))` **(individual results may vary)**
 
 	  * And you can run it too: `(_eval Code)` => `Add1: 6`
 
 Status
 ------
 
-**Version: 0.46**
+**Version: 0.48**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
-    Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced.)
+    Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`)
 
 Building (Visual Studio)
 ------------------------
@@ -166,6 +168,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Lists can now be compared
 
 * Improved builtin parameter passing. `proc_type` is no longer passed an environment, if needed use `extended_proc`.
 

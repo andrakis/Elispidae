@@ -9,25 +9,28 @@ namespace PocoLithp {
 	bool isdig(char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }
 
 	bool iswhitespace(char c) {
-		return c == ' ' || c == '\t' ||
-		       c == '\n' || c == '\r';
+		return c == ' ' || c == '\t' ||  // Space and tab
+			c == '\n' || c == '\r' ||    // Newline and carriage return
+			c == ':';                    // Lithp-style function body marker
 	}
 
 	// convert given string to list of tokens
-	std::list<std::string> tokenize(const std::string & str)
+	std::list<std::string> tokenize(const std::string &_str)
 	{
 		std::list<std::string> tokens;
+		std::string str = _str;
 		const char *s = str.c_str();
 		while (*s) {
 			// Skip whitespace
 			while (*s && iswhitespace(*s))
 				++s;
-			// Skip entire line when ";;" comment
 			if (*s == ';' && *(s + 1) == ';') {
+				// Skip entire line when ";;" comment
 				while (*s && *s != '\n' && *s != '\r')
 					++s;
 			} else if (*s == '\'' || *s == '"') {
 				// Read a string (later will be parsed to extended atom or string)
+				// sp stores the speech symbol in use
 				const char *t = s, sp = *s;
 				unsigned escape = 0;
 				do {
@@ -47,7 +50,7 @@ namespace PocoLithp {
 			} else {
 				// A word
 				const char *t = s;
-				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')')
+				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')' && *t != ':')
 					++t;
 				tokens.push_back(std::string(s, t));
 				s = t;
@@ -99,7 +102,7 @@ namespace PocoLithp {
 	}
 
 	// Numbers become Numbers; every other token is an Atom
-	LithpCell atom(const std::string &token)
+	LithpCell symbol(const std::string &token)
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {
 			LithpCell V = LithpCell(Var, parseNumber(token));
@@ -128,7 +131,7 @@ namespace PocoLithp {
 			tokens.pop_front();
 			return LithpCell(List, c);
 		} else
-			return atom(token);
+			return symbol(token);
 	}
 
 	// Return the Lisp expression represented by the given string

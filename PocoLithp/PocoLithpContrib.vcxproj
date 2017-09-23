@@ -239,6 +239,7 @@
     <ClCompile Include="PLglobals.cpp" />
     <ClCompile Include="PLinterpreter.cpp" />
     <ClCompile Include="PLparser.cpp" />
+    <ClCompile Include="PLruntime.cpp" />
     <ClCompile Include="PLtests.cpp" />
     <ClCompile Include="PLtypes.cpp" />
     <ClCompile Include="PocoLithp.cpp" />
@@ -255,6 +256,7 @@
     <None Include="..\README.md" />
     <None Include="..\samples\eval.lisp" />
     <None Include="..\samples\fac_recursive.lisp" />
+    <None Include="..\samples\init.lisp" />
     <None Include="..\samples\test.lisp" />
   </ItemGroup>
   <ItemGroup>
