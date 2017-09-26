@@ -12,8 +12,37 @@ const int ERR_FILE = 1;
 const int ERR_SYNTAX = 2;
 const int ERR_EXCEPTION = 3;
 
+std::string stdin_getline(const std::string &prompt) {
+	std::string line; std::getline(std::cin, line);
+	return line;
+}
+
+#ifdef READLINE_NG
+void linenoise_init () {
+	const char *history = "./history";
+	const char *prompt = "\x1b[1;32mplithp\x1b[0m> ";
+	linenoiseInstallWindowChangeHandler();
+	linenoiseHistoryLoad(history);
+	//linenoiseSetCompletionCallback(completionHook);
+}
+
+std::string linenoise_getline(const std::string &prompt) {
+	char *buf = linenoise(prompt.c_str());
+	std::string result;
+	if(buf == NULL || *buf == '\0')
+		result = "";
+	else
+		result = std::string(buf);
+    linenoiseHistoryAdd(buf);
+	if(buf)
+		free(buf);
+	return result;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
+	GETLINE_INIT();
 	LithpEnvironment *global_env = new LithpEnvironment();
 	init_runtime();
 	add_globals(*global_env);

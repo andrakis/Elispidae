@@ -21,9 +21,17 @@ LithpCell proc_readfile(const LithpCells &x) {
 	return LithpCell(Var, ss.str());
 }
 
+// Convert a string to an atom
+LithpCell proc_atom(const LithpCells &x) {
+	if(x.size() == 0)
+		return LithpCell(Atom, "atom");
+	return LithpCell(Atom, x[0]);
+}
+
 void PocoLithp::init_runtime() {
     add_environment_runtime([](LithpEnvironment &env) {
             env["banner"] = LithpCell(&proc_banner);
             env["readfile"] = LithpCell(&proc_readfile);
+            env["atom"] = LithpCell(&proc_atom);
     });
 }

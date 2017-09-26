@@ -191,18 +191,22 @@ namespace PocoLithp {
 	}
 
 	// the default read-eval-print-loop
-	LithpCell repl(const std::string & prompt, Env_p env)
+	LithpCell repl(const std::string &prompt, Env_p env)
 	{
 		std::string partialBuffer = "";
 		LithpCell result = sym_nil;
 
 		while(!QUIT) {
+			std::string currentPrompt;
 			if (partialBuffer.length() == 0) {
-				std::cerr << prompt;
+				//std::cerr << prompt;
+				currentPrompt = prompt;
 			} else {
-				std::cerr << "> ";
+				//std::cerr << "> ";
+				currentPrompt = "> ";
 			}
-			std::string line; std::getline(std::cin, line);
+			//std::string line; std::getline(std::cin, line);
+			std::string line = GETLINE(currentPrompt);
 			if (line.length() == 0)
 				continue;
 			try {
