@@ -101,7 +101,7 @@ How?
 Status
 ------
 
-**Version: 0.48**
+**Version: 0.50**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
@@ -168,6 +168,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Now using [Linenoise-ng](https://github.com/arangodb/linenoise-ng) for REPL input.
 
 * Lists can now be compared
 

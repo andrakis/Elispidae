@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.48"
+#define PLITHP_VERSION "0.50"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS

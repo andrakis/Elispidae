@@ -25,7 +25,7 @@ LithpCell proc_readfile(const LithpCells &x) {
 LithpCell proc_atom(const LithpCells &x) {
 	if(x.size() == 0)
 		return LithpCell(Atom, "atom");
-	return LithpCell(Atom, x[0]);
+	return LithpCell(Atom, x[0].str());
 }
 
 void PocoLithp::init_runtime() {
