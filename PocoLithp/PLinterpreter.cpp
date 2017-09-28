@@ -70,7 +70,7 @@ namespace PocoLithp {
 					else
 						proc = eval(proc, env);
 				}
-				if (DEBUG) std::cerr << INDENT() << " => " << to_string(proc) << "\n";;
+				if (DEBUG) std::cerr << INDENT() << "  => " << to_string(proc) << "\n";
 				if (DEBUG) debugstr = "";
 				LithpCells exps;
 				// Gather parameters
