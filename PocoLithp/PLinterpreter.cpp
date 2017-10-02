@@ -197,29 +197,27 @@ namespace PocoLithp {
 		LithpCell result = sym_nil;
 
 		while(!QUIT) {
-			std::string currentPrompt;
-			if (partialBuffer.length() == 0) {
-				//std::cerr << prompt;
-				currentPrompt = prompt;
-			} else {
-				//std::cerr << "> ";
-				currentPrompt = "> ";
-			}
-			//std::string line; std::getline(std::cin, line);
+			// Continuation prompt if partialBuffer has content, else default prompt
+			std::string currentPrompt = partialBuffer.length() > 0 ? "> " : prompt;
 			std::string line = GETLINE(currentPrompt);
+			// If EOF on input, quit now.
+			if(GETLINE_EOF()) break;
+			// Empty lines don't do anything
 			if (line.length() == 0)
 				continue;
+			// Continue previous buffer
+			if (partialBuffer.length() != 0) {
+				line = partialBuffer + "\n" + line;
+				partialBuffer = "";
+			}
+			// Start measurements
 			try {
-				auto start = std::chrono::steady_clock::now();
-				if (partialBuffer.length() != 0) {
-					line = partialBuffer + "\n" + line;
-					partialBuffer = "";
-				}
+				auto prev = evalTime;
 				result = evalTimed(read(line), env);
 				std::cout << to_string(result) << "\n";
 				if (TIMING) {
-					auto end = std::chrono::steady_clock::now();
-					std::cerr << "evaluated in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << "\n";
+					auto end = evalTime;
+					std::cerr << "evaluated in " << (end - prev) << "ms\n";
 				}
 			} catch (const SyntaxException) {
 				partialBuffer += line;

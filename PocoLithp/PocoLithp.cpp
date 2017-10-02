@@ -13,8 +13,12 @@ const int ERR_SYNTAX = 2;
 const int ERR_EXCEPTION = 3;
 
 std::string stdin_getline(const std::string &prompt) {
-	std::string line; std::getline(std::cin, line);
+	std::string line;
+	std::getline(std::cin, line);
 	return line;
+}
+bool stdin_eof() {
+	return std::cin.eof();
 }
 
 #ifdef READLINE_NG
@@ -26,16 +30,17 @@ void linenoise_init () {
 	//linenoiseSetCompletionCallback(completionHook);
 }
 
+bool linenoise_eof_flag = false;
+bool linenoise_eof () { return linenoise_eof_flag; }
 std::string linenoise_getline(const std::string &prompt) {
+	std::string result = "";
 	char *buf = linenoise(prompt.c_str());
-	std::string result;
-	if(buf == NULL || *buf == '\0')
-		result = "";
-	else
+	linenoise_eof_flag = (NULL == buf);
+	if(buf && *buf != '\0') {
 		result = std::string(buf);
-    linenoiseHistoryAdd(buf);
-	if(buf)
-		free(buf);
+		linenoiseHistoryAdd(buf);
+	}
+	free(buf);
 	return result;
 }
 #endif
