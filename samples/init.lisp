@@ -29,6 +29,14 @@
 		((combine (get! append)) (take (mid Deck) Deck) (drop (mid Deck) Deck))
 	)))
 
+	;; Runtime functions
+	(define lookup (# (Symbol)
+		;; Use eval to get Symbol's value at runtime
+		(if (_eval (list defined Symbol))  ;; If symbol present
+			(_eval (list get! Symbol))     ;; get symbol
+		    (# () stub))                   ;; else return a stub
+	))
+
 	(print (banner))
 
 	;; Invoke the repl
