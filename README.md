@@ -101,7 +101,7 @@ How?
 Status
 ------
 
-**Version: 0.50**
+**Version: 0.54**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization.
 
@@ -168,6 +168,10 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Fixes multiplication operator dropping floating point value.
+
+* Adds some better string handling.
 
 * Now using [Linenoise-ng](https://github.com/arangodb/linenoise-ng) for REPL input.
 

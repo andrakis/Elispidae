@@ -8,12 +8,14 @@ LithpCell proc_banner(const LithpCells &x) {
 		"Welcome to PocoLithp " PLITHP_VERSION " " + PLITHP_ARCH + " " + STATS_DESC + "\n"
 		"Type (q) to quit, (debug) to get / set state, (timing) to get / set state" + "\n"
 		"  Additional useful functions: (tests) (str expr) (str expr true) (env) (_depth) (_max_depth)\n"
-		"                             : (repl [prompt]) (_eval expr)\n"
+		"                             : (repl [prompt]) (_eval expr) (expl \"string\") \n"
 	);
 }
 
 // File IO
 LithpCell proc_readfile(const LithpCells &x) {
+	if (x.size() < 1)
+		throw InvalidArgumentException("No filename provided");
 	std::ifstream f(x[0].str());
 	std::stringstream ss;
 	ss << f.rdbuf();

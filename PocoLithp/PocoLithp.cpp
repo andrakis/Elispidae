@@ -14,6 +14,7 @@ const int ERR_EXCEPTION = 3;
 
 std::string stdin_getline(const std::string &prompt) {
 	std::string line;
+	std::cout << prompt;
 	std::getline(std::cin, line);
 	return line;
 }

@@ -72,8 +72,8 @@ namespace PocoLithp {
 
 	LithpCell proc_mul(const LithpCells &c)
 	{
-		LithpCell n(1);
-		for (LithpCells::const_iterator i = c.begin(); i != c.end(); ++i) {
+		LithpCell n(c[0]);
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
 			// Signedness promotion check
 			if (i->value.isSigned() == true && n.value.isSigned() == false) {
 				n.value = n.value.convert<SignedInteger>();
@@ -144,9 +144,9 @@ namespace PocoLithp {
 		return booleanCell(c[0] != c[1]);
 	}
 
-	LithpCell proc_length(const LithpCells &c) { return LithpCell(Var, c[0].list().size()); }
+	LithpCell proc_length(const LithpCells &c) { return LithpCell(Var, c[0].size()); }
 	LithpCell proc_nullp(const LithpCells &c) { return c[0].is_nullp() ? sym_true : sym_false; }
-	LithpCell proc_head(const LithpCells &c) { return c[0].list()[0]; }
+	LithpCell proc_head(const LithpCells &c) { return c[0][0]; }
 
 	LithpCell proc_tail(const LithpCells &c)
 	{
@@ -179,6 +179,15 @@ namespace PocoLithp {
 	LithpCell proc_list(const LithpCells &c)
 	{
 		return LithpCell(List, c);
+	}
+
+	// Explode a string into a list
+	LithpCell proc_expl(const LithpCells &c) {
+		std::string str = c[0].str();
+		LithpCells list;
+		for (auto it = str.begin(); it != str.end(); ++it)
+			list.push_back(LithpCell(Var, std::string(1, *it)));
+		return LithpCell(List, list);
 	}
 
 	// Get or set debug state
@@ -360,6 +369,9 @@ namespace PocoLithp {
 
 		// Variable information
 		env["tag"] = LithpCell(&proc_tag);
+		
+		// String functions
+		env["expl"] = LithpCell(&proc_expl);
 
 		// Add any other procs
 		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)

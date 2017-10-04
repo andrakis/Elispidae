@@ -37,6 +37,17 @@
 		    (# () stub))                   ;; else return a stub
 	))
 
+	;; Play functions
+		;; The factorial function
+		(define fac (# (N) (begin
+			;; This should tail recurse
+			(fac2 N 1)
+		)))
+		;; This is the tail recursive part
+		(define fac2 (# (N A) (begin
+			(if (= N 0) A (fac2 (- N 1) (* N A)))
+		)))
+
 	(print (banner))
 
 	;; Invoke the repl

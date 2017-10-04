@@ -81,9 +81,10 @@ namespace PocoLithp {
 				std::cerr << " - success\n";
 			}
 		}
-		// write a message to std::cout if value != expected_value
+
+// write a message to std::cout if value != expected_value
 #define TEST_EQUAL(value, expected_value, code) test_equal_(value, expected_value, __FILE__, __LINE__, code)
-// evalTimeduate the given Lisp expression and compare the result against the given expected_result
+// evaluate the given Lisp expression and compare the result against the given expected_result
 #define TEST(expr, expected_result) TEST_EQUAL(to_string(evalTimed(read(expr), global_env)), expected_result, expr)
 
 		unsigned plithp_abs_test() {
@@ -111,6 +112,7 @@ namespace PocoLithp {
 			TEST("(quote (testing 1 (2.0) -3.14e159))", "(testing 1 (2.000000e+00) -3.140000e+159)");
 			TEST("(+ 2 2)", "4");
 			TEST("(+ 2.5 2)", "4.500000e+00");
+			TEST("(* 2.25 2)", "4.500000e+00");    // Bugfix, multiplication was losing floating point value
 			TEST("(+ (* 2 100) (* 1 10))", "210");
 			TEST("(> 6 5)", "true");
 			TEST("(< 6 5)", "false");
@@ -127,11 +129,14 @@ namespace PocoLithp {
 			TEST("(define repeat (lambda (F) (compose F F)))", "<Lambda>");
 			TEST("((repeat twice) 5)", "20");
 			TEST("((repeat (repeat twice)) 5)", "80");
+			// Factorial - head recursive
 			TEST("(define fact (lambda (N) (if (<= N 1) 1 (* N (fact (- N 1))))))", "<Lambda>");
 			TEST("(fact 3)", "6");
 			// TODO: Bignum support
-			//TEST("(fact 50)", "30414093201713378043612608166064768844377641568960512000000000000");
 			TEST("(fact 12)", "479001600");
+			// Factorial - tail recursive
+			TEST("(begin (define fac (# (N) (fac2 N 1))) (define fac2 (# (N A) (if (= N 0) A (fac2 (- N 1) (* N A))))))", "<Lambda>");
+			TEST("(fac 50.0)", "3.041409e+64");   // Bugfix, multiplication was losing floating point value
 			TEST("(define abs (lambda (N) ((if (> N 0) + -) 0 N)))", "<Lambda>");
 			TEST("(list (abs -3) (abs 0) (abs 3))", "(3 0 3)");
 			TEST("(define combine (lambda (F)"

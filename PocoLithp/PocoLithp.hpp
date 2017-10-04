@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.52"
+#define PLITHP_VERSION "0.54"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -294,12 +294,28 @@ namespace PocoLithp {
 		LithpVar& operator /= (const LithpVar &other);
 		LithpVar& operator *= (const LithpVar &other);
 
+		const bool isString() const {
+			return (tag == Var && value.isString());
+		}
+		size_t size() const {
+			if (isList())
+				return list().size();
+			else if (isString())
+				return value.size();
+			throw InvalidArgumentException("Not an enumerable type");
+		}
+		Poco::Dynamic::Var::ConstIterator begin() { return value.begin(); }
+		Poco::Dynamic::Var::ConstIterator end() { return value.end(); }
+
 		// List related behaviours
 		// Read-only!
+		bool isList() const {
+			return (tag == List || tag == Lambda);
+		}
 		const LithpCells &list() const {
-			if (tag != List && tag != Lambda)
-				throw InvalidArgumentException("Not a list");
-			return value.extract<LithpCells>();
+			if(isList())
+				return value.extract<LithpCells>();
+			throw InvalidArgumentException("Not a list");
 		}
 		const LithpCell &operator[](int index) const {
 			return list()[index];
