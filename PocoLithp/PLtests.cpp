@@ -135,8 +135,8 @@ namespace PocoLithp {
 			// TODO: Bignum support
 			TEST("(fact 12)", "479001600");
 			// Factorial - tail recursive
-			TEST("(begin (define fac (# (N) (fac2 N 1))) (define fac2 (# (N A) (if (= N 0) A (fac2 (- N 1) (* N A))))))", "<Lambda>");
-			TEST("(fac 50.0)", "3.041409e+64");   // Bugfix, multiplication was losing floating point value
+			TEST("(begin (define fac (# (N) (fac2 N 1))) (define fac2 (# (N A) (if (<= N 0) A (fac2 (- N 1) (* N A))))))", "<Lambda>");
+			TEST("(fac 50.1)", "4.732679e+63");   // Bugfix, multiplication was losing floating point value
 			TEST("(define abs (lambda (N) ((if (> N 0) + -) 0 N)))", "<Lambda>");
 			TEST("(list (abs -3) (abs 0) (abs 3))", "(3 0 3)");
 			TEST("(define combine (lambda (F)"
