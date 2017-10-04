@@ -37,6 +37,9 @@
 		    (# () stub))                   ;; else return a stub
 	))
 
+	;; Reverse of expl
+	(define unexpl (# (List) (foldl List "" (# (Char Acc) (+ Acc Char)))))
+
 	;; Play functions
 		;; The factorial function
 		(define fac (# (N) (begin
