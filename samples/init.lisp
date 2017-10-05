@@ -30,6 +30,8 @@
 	)))
 
 	;; Runtime functions
+
+	;; Lookup a function or return a stub
 	(define lookup (# (Symbol)
 		;; Use eval to get Symbol's value at runtime
 		(if (_eval (list defined Symbol))  ;; If symbol present
@@ -56,6 +58,15 @@
 		(define fac2 (# (N A) (begin
 			(if (<= N 0) A (fac2 (- N 1) (* N A)))
 		)))
+
+		;; A tuple
+		(define tuple (# (A B) (begin
+			(list (ifDefined A) (ifDefined B))
+		)))
+		(define dict (# (Members) Members))
+	
+		(define with (# (A Cb) (# () (Cb A))))
+		(define triple (# (A) ((with A (# (X) (list X X X))))))
 
 	(print (banner))
 

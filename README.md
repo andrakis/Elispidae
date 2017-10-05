@@ -73,6 +73,8 @@ It supports most modern types:
 
    * **Lithp-like Lambdas:** `(# (A B C) (+ A B C))`, `(# (N) (begin (test) (+ N 1)))`
 
+   * **Macros:** `(define ifDefined (macro (Name) (_eval (list if (list defined Name) (list get! Name) none))))` - macros are simply lambdas whose arguments are not evaluated before passing, and use the environment of their callee so have access to the callees symbols. Abritrary code can be executed, such as in this snippet where an AST is created that checks if the given variable is defined, and returns its value or the atom `none`.
+
    * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args)`
 
    * **ExtendedProcs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args, Env_p env)`
@@ -101,9 +103,9 @@ How?
 Status
 ------
 
-**Version: 0.54**
+**Version: 0.58**
 
-**Language compatibility level:** Scheme-ish, with tail-call-optimization.
+**Language compatibility level:** Scheme-ish, with tail-call-optimization and macros.
 
     Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`)
 
@@ -168,6 +170,10 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Macros are implemented. They function like lambdas, except their arguments are not evaluated before passing.
+
+* Fixed a number of issues that could result in a segfault, crashing the interpreter. Argument counts are now checked.
 
 * Fixes multiplication operator dropping floating point value.
 

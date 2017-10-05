@@ -34,20 +34,26 @@ namespace PocoLithp {
 			LithpCells xl = x.list();
 			const LithpCell &xl0 = xl[0];
 			if (xl0 == sym_quote) {           // (quote exp)
+				if(xl.size() < 1) throw InvalidArgumentException("Cannot quote nothing");
 				return xl[1];
 			} else if (xl0 == sym_if) {       // (if test conseq [alt])
+				if(xl.size() < 3) throw InvalidArgumentException("Not enough arguments to if");
 				// Tail recurse
 				if (DEBUG) debugstr += INDENT() + to_string(x);
 				x = eval(xl[1], env) == sym_false ? (xl.size() < 4 ? sym_nil : xl[3]) : xl[2];
 				if (DEBUG) std::cerr << debugstr + " => " + to_string(x) + "\n";
 				if (DEBUG) debugstr = "";
 			} else if (xl0 == sym_get) {      // (get! var) - lookup by atom
+				if(xl.size() < 2) throw InvalidArgumentException("Not enough arguments to get!");
 				return envLookup(xl[1].atomid(), env);
 			} else if (xl0 == sym_set) {      // (set! var exp)
+				if(xl.size() < 3) throw InvalidArgumentException("Not enough arguments to set!");
 				return env->find(xl[1].atomid())[xl[1].atomid()] = eval(xl[2], env);
 			} else if (xl0 == sym_define) {   // (define var exp)
+				if(xl.size() < 3) throw InvalidArgumentException("Not enough arguments to define");
 				return (*env)[xl[1].atomid()] = eval(xl[2], env);
 			} else if (xl0 == sym_defined) {  // (defined var)
+				if(xl.size() < 2) return sym_false;
 				return env->defined(xl[1].atomid()) ? sym_true : sym_false;
 			} else if (xl0 == sym_lambda || xl0 == sym_lambda2) {   // (lambda (var*) exp), (# (var*) exp)
 				x.tag = Lambda;
