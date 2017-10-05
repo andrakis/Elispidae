@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.54"
+#define PLITHP_VERSION "0.56"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -90,7 +90,8 @@ namespace PocoLithp {
 		List,
 		Proc,
 		ProcExtended,
-		Lambda
+		Lambda,
+		Macro
 	};
 
 	struct LithpEnvironment;
@@ -125,6 +126,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_defined;
 	extern const LithpCell sym_lambda;
 	extern const LithpCell sym_lambda2;
+	extern const LithpCell sym_macro;
 	extern const LithpCell sym_begin;
 	std::string to_string(const LithpCell &exp);
 	std::string to_string(const LithpCell &exp, bool advanced, bool repre);
@@ -205,6 +207,8 @@ namespace PocoLithp {
 			}
 			case Lambda:
 				return "<Lambda>";
+			case Macro:
+				return "<Macro>";
 			case List:
 				return "<List>";
 			case Proc:
@@ -310,7 +314,7 @@ namespace PocoLithp {
 		// List related behaviours
 		// Read-only!
 		bool isList() const {
-			return (tag == List || tag == Lambda);
+			return (tag == List || tag == Lambda || tag == Macro);
 		}
 		const LithpCells &list() const {
 			if(isList())
@@ -352,6 +356,7 @@ namespace PocoLithp {
 			switch (tag) {
 			case List:
 			case Lambda:
+			case Macro:
 				return list().empty();
 			}
 			return true;

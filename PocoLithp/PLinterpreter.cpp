@@ -56,6 +56,10 @@ namespace PocoLithp {
 				// we'll need to use when the lambda is executed
 				x.env = env;
 				return x;
+			} else if (xl0 == sym_macro) {     // (macro (var*) exp)
+				x.tag = Macro;
+				x.env = nullptr;  // To be filled in later
+				return x;
 			} else if (xl0 == sym_begin) {     // (begin exp*)
 				for (size_t i = 1; i < xl.size() - 1; ++i)
 					eval(xl[i], env);
@@ -74,18 +78,24 @@ namespace PocoLithp {
 				if (DEBUG) debugstr = "";
 				LithpCells exps;
 				// Gather parameters
-				for (auto exp = xl.begin() + 1; exp != xl.end(); ++exp)
-					exps.push_back(eval(*exp, env));
-				if (proc.tag == Lambda) {
+				bool isMacro = proc.tag == Macro;
+				for (auto exp = xl.begin() + 1; exp != xl.end(); ++exp) {
+					// If macro, skip eval
+					exps.push_back(isMacro ? *exp : eval(*exp, env));
+				}
+				if (proc.tag == Lambda || proc.tag == Macro) {
 					// Create an environment for the execution of this lambda function
 					// where the outer environment is the one that existed* at the time
 					// the lambda was defined and the new inner associations are the
 					// parameter names with the given arguments.
-					// *Although the environmet existed at the time the lambda was defined
+					// *Although the environment existed at the time the lambda was defined
 					// it wasn't necessarily complete - it may have subsequently had
 					// more symbols defined in that environment.
 					LithpCells proclist = proc.list();
-					LithpEnvironment *child_env = new LithpEnvironment(/*parms*/proclist[1].list(), /*args*/exps, proc.env);
+					Env_p destEnv = proc.env;
+					if (proc.tag == Macro)
+						destEnv = env;
+					LithpEnvironment *child_env = new LithpEnvironment(/*parms*/proclist[1].list(), /*args*/exps, destEnv);
 					if (proclist.size() < 3)
 						return sym_nil;
 					// Tail recurse
@@ -156,6 +166,8 @@ namespace PocoLithp {
 			}
 		} else if (!advanced && !repre && exp.tag == Lambda)
 			return "<Lambda>";
+		else if (!advanced && !repre && exp.tag == Macro)
+			return "<Macro>";
 		else if (exp.tag == Proc)
 			return repre ? rawstr(exp.proc()) : "<Proc>";
 		else if (exp.tag == ProcExtended)

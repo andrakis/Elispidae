@@ -37,6 +37,12 @@
 		    (# () stub))                   ;; else return a stub
 	))
 
+	;; A macro that checks if Name is defined, and returns its value
+	;; or the atom none.
+	(define ifDefined (macro (Name)
+		;; Construct a manual AST of: (if (defined Name) (get! Name) none)
+		(_eval (list if (list defined Name) (list get! Name) none))))
+
 	;; Reverse of expl
 	(define unexpl (# (List) (foldl List "" (# (Char Acc) (+ Acc Char)))))
 
