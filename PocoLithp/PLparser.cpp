@@ -10,8 +10,7 @@ namespace PocoLithp {
 
 	bool iswhitespace(char c) {
 		return c == ' ' || c == '\t' ||  // Space and tab
-			c == '\n' || c == '\r' ||    // Newline and carriage return
-			c == ':';                    // Lithp-style function body marker
+			c == '\n' || c == '\r';      // Newline and carriage return
 	}
 
 	// convert given string to list of tokens
@@ -50,7 +49,7 @@ namespace PocoLithp {
 			} else {
 				// A word
 				const char *t = s;
-				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')' && *t != ':')
+				while (*t && !iswhitespace(*t) && *t != '(' && *t != ')')
 					++t;
 				tokens.push_back(std::string(s, t));
 				s = t;

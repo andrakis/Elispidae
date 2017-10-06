@@ -30,10 +30,19 @@ LithpCell proc_atom(const LithpCells &x) {
 	return LithpCell(Atom, x[0].str());
 }
 
+// Throw an InvalidArgument exception
+LithpCell proc_invalid_arg(const LithpCells &c) {
+	std::string message = "";
+	if(c.size() > 0)
+		message = c[0].str();
+	throw InvalidArgumentException(message);
+}
+
 void PocoLithp::init_runtime() {
-    add_environment_runtime([](LithpEnvironment &env) {
-            env["banner"] = LithpCell(&proc_banner);
-            env["readfile"] = LithpCell(&proc_readfile);
-            env["atom"] = LithpCell(&proc_atom);
-    });
+	add_environment_runtime([](LithpEnvironment &env) {
+		env["banner"] = LithpCell(&proc_banner);
+		env["readfile"] = LithpCell(&proc_readfile);
+		env["atom"] = LithpCell(&proc_atom);
+		env["invalid_arg"] = LithpCell(&proc_invalid_arg);
+	});
 }

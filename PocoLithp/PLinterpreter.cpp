@@ -8,8 +8,6 @@ namespace PocoLithp {
 	UnsignedInteger parseTime = 0, evalTime = 0;
 	UnsignedInteger reductions = 0, depth = 0, depth_max = 0;
 
-	int LithpEnvironment::child_env_delete_depth = 0;
-
 #define INDENT()  std::string((depth * 2), ' ')
 
 	inline LithpCell envLookup(atomId id, Env_p env) {
@@ -101,7 +99,24 @@ namespace PocoLithp {
 					Env_p destEnv = proc.env;
 					if (proc.tag == Macro)
 						destEnv = env;
-					LithpEnvironment *child_env = new LithpEnvironment(/*parms*/proclist[1].list(), /*args*/exps, destEnv);
+					LithpCells parms;
+					// If argument is a variable, assign all arguments to that variable.
+					// Otherwise, assign each variable to the appropriate argument.
+					switch(proclist[1].tag) {
+						case VariableReference:
+						{
+							parms.push_back(proclist[1]);
+							// Move arguments to a single list
+							LithpCells tmp = exps;
+							exps.clear();
+							exps.push_back(LithpCell(List, tmp));
+							break;
+						}
+						case List:
+							parms = proclist[1].list();
+							break;
+					}
+					LithpEnvironment *child_env = new LithpEnvironment(/*parms*/parms, /*args*/exps, destEnv);
 					if (proclist.size() < 3)
 						return sym_nil;
 					// Tail recurse

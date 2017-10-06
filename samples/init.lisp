@@ -1,8 +1,9 @@
 ;; Entry point for standard REPL environment
 (begin
 	;; Define some standard library functions
+	(define import (macro (Path) (_eval (_tokenize (readfile (+ "lib/" Path ".lisp"))))))
 	(define foldl (# (Lst Acc Cb)
-		(if (= nil Lst) Acc (foldl (tail Lst) (Cb (head Lst) Acc) Cb))
+		(if (= 0 (length Lst)) Acc (foldl (tail Lst) (Cb (head Lst) Acc) Cb))
 	))
 	(define map (# (Lst Cb) (foldl Lst (list) (# (N Acc) (+ Acc (list (Cb N)))))))
 	(define sum (# (Lst) (foldl Lst 0 (# (N Acc) (+ N Acc)))))

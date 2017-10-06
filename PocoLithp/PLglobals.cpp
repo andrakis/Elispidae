@@ -268,6 +268,26 @@ namespace PocoLithp {
 		return LithpCell(List, env->getCompleteEnv());
 	}
 
+	// Get keys from dictionary
+	LithpCell proc_keys(const LithpCells &c) {
+		if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for keys(::dict)");
+		const LithpDict &dict = c[0].dict();
+		LithpCells keys;
+		for(auto it = dict.begin(); it != dict.end(); ++it)
+			keys.push_back(LithpCell(Atom, it->first));
+		return LithpCell(List, keys);
+	}
+
+	// Get values from dictionary
+	LithpCell proc_values(const LithpCells &c) {
+		if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for values(::dict)");
+		const LithpDict &dict = c[0].dict();
+		LithpCells values;
+		for(auto it = dict.begin(); it != dict.end(); ++it)
+			values.push_back(LithpCell(Var, it->second));
+		return LithpCell(List, values);
+	}
+
 	// Get current eval depth
 	LithpCell proc__depth(const LithpCells &c) {
 		TRACK_STATS(return LithpCell(Var, depth));
@@ -312,12 +332,23 @@ namespace PocoLithp {
 		return repl(prompt, env);
 	}
 
-	// Call the parent eval function. It is named _eval since implementing a native
-	// eval function is a goal of this interpreter. It would allow extending the
+	// Call the eval function in the current environment with the tokenized
+	// arguments.
+	// It is named _eval since implementing a native  eval function is
+	// a goal of this interpreter. It would allow extending the
 	// interpreter in classic Lisp ways.
 	LithpCell proc__eval(const LithpCells &c, Env_p env) {
 		if(c.size() == 0) return sym_nil;
 		return eval(c[0], env);
+	}
+
+	// Call the eval function in the topmost environment with the tokenized
+	// arguments.
+	// This means any definitions will be defined in the topmost environment.
+	// TODO: Should a define-all or export be implemented instead?
+	LithpCell proc__eval_ctx(const LithpCells &c, Env_p env) {
+		if(c.size() == 0) return sym_nil;
+		return eval(c[0], env->getTopmost(env));
 	}
 
 	// Tokenize the given string
@@ -405,6 +436,7 @@ namespace PocoLithp {
 		env["getline"] = LithpCell(&proc_getline);
 		env["repl"] = LithpCell(&proc_repl);
 		env["_eval"] = LithpCell(&proc__eval);
+		env["_eval_ctx"] = LithpCell(&proc__eval_ctx);
 		env["_tokenize"] = LithpCell(&proc__tokensize);
 
 		// File IO
@@ -417,6 +449,10 @@ namespace PocoLithp {
 		
 		// String functions
 		env["expl"] = LithpCell(&proc_expl);
+
+		// Dict functions
+		env["keys"] = LithpCell(&proc_keys);
+		env["values"] = LithpCell(&proc_values);
 
 		// Add any other procs
 		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)

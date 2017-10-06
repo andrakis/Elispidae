@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.56"
+#define PLITHP_VERSION "0.60"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -364,7 +364,7 @@ namespace PocoLithp {
 	};
 
 	struct LithpEnvironment {
-		LithpEnvironment(Env_p outer = 0) : outer_(outer) {}
+		LithpEnvironment(Env_p outer = nullptr) : outer_(outer) {}
 		LithpEnvironment(const LithpCells &params, const LithpCells &args, Env_p outer)
 			: outer_(outer) {
 			update(params, args);
@@ -418,9 +418,15 @@ namespace PocoLithp {
 		LithpEnvironment *getOuter() const {
 			return outer_.get();
 		}
+		bool hasOuter() const { return outer_ != nullptr; }
+
+		Env_p getTopmost(Env_p topmost) {
+			while(topmost->hasOuter())
+				topmost = topmost->outer_;
+			return topmost;
+		}
 	private:
 		LithpDict env_;
 		Env_p outer_;
-		static int child_env_delete_depth;
 	};
 }
