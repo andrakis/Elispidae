@@ -16,6 +16,9 @@
     <Filter Include="samples">
       <UniqueIdentifier>{0ed402bd-6b1e-4738-9170-02c702dce305}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{eda4fb66-7eb7-47f0-99b3-6e0e171a52fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -73,6 +76,24 @@
     </None>
     <None Include="..\samples\init.lisp">
       <Filter>samples</Filter>
+    </None>
+    <None Include="..\lib\init.lisp">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="..\lib\lists.lisp">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="..\lib\misc.lisp">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="..\lib\numeric.lisp">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="..\lib\require.lisp">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="..\lib\string.lisp">
+      <Filter>lib</Filter>
     </None>
   </ItemGroup>
 </Project>

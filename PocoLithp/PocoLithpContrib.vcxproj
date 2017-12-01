@@ -125,9 +125,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,9 +140,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,9 +155,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -170,9 +170,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -187,9 +187,9 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>POCO_STATIC ;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -210,9 +210,9 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>POCO_STATIC ;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -253,6 +253,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\lib\init.lisp" />
+    <None Include="..\lib\lists.lisp" />
+    <None Include="..\lib\misc.lisp" />
+    <None Include="..\lib\numeric.lisp" />
+    <None Include="..\lib\require.lisp" />
+    <None Include="..\lib\string.lisp" />
     <None Include="..\README.md" />
     <None Include="..\samples\eval.lisp" />
     <None Include="..\samples\fac_recursive.lisp" />
@@ -260,6 +266,9 @@
     <None Include="..\samples\test.lisp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\contrib\linenoise-ng-project\linenoise-ng-project.vcxproj">
+      <Project>{a5a7cb82-6773-4c9b-9244-4f73d98a1634}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\contrib\MinimalFoundation\MinimalFoundation.vcxproj">
       <Project>{f44ffab2-37ab-409d-8c51-d42d08da6cbc}</Project>
     </ProjectReference>
