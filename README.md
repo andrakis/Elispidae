@@ -41,6 +41,8 @@ Features taken from Erlang:
 
    * Variables: `Uppercase` is a variable reference, and will be looked up
 
+   * Microthreading: Running multiple scripts at a time. Incorporates message passing.
+
 It is extremely fast owing to its dynamic runtime types and reliance on atoms (numbers) rather than strings, and tight memory management.
 
 The main execution loop is essentially looking up integers in a vector table and performing arithmatic or decisions on them.
@@ -100,14 +102,23 @@ How?
 
 	  * And you can run it too: `(_eval Code)` => `Add1: 6`
 
+   * [Stackless](https://github.com/andrakis/Stackless) provides microthreading and a stackless interpreter.
+
 Status
 ------
 
-**Version: 0.58**
+**Version: 0.62**
 
 **Language compatibility level:** Scheme-ish, with tail-call-optimization and macros.
 
     Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`)
+
+Building
+========
+
+* Requires Visual Studio 2015 or G++ 4.9.1 or higher.
+
+* Coming soon: CMake support
 
 Building (Visual Studio)
 ------------------------
@@ -170,6 +181,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Start incorporating Stackless interpreter.
 
 * Macros are implemented. They function like lambdas, except their arguments are not evaluated before passing.
 

@@ -231,31 +231,31 @@ namespace PocoLithp {
 	// Get or set debug state
 	LithpCell proc_debug(const LithpCells &c)
 	{
-		bool was = DEBUG;
+		bool was = GetDEBUG();
 		if (c.size() != 0)
-			DEBUG = booleanVal(c[0]);
+			SetDEBUG(booleanVal(c[0]));
 		return booleanCell(was);
 	}
 
 	// Get or set timing state
 	LithpCell proc_timing(const LithpCells &c)
 	{
-		bool was = TIMING;
+		bool was = GetTIMING();
 		if (c.size() != 0)
-			TIMING = booleanVal(c[0]);
+			SetTIMING(booleanVal(c[0]));
 		return booleanCell(was);
 	}
 
 	// Quit interpreter
 	LithpCell proc_quit(const LithpCells &c)
 	{
-		QUIT = true;
+		SetQUIT(true);
 		return sym_true;
 	}
 
 	// Get number of reductions
 	LithpCell proc_reds(const LithpCells &c) {
-		return LithpCell(Var, reductions);
+		return LithpCell(Var, 0); // reductions);
 	}
 
 	// Run tests
@@ -290,13 +290,13 @@ namespace PocoLithp {
 
 	// Get current eval depth
 	LithpCell proc__depth(const LithpCells &c) {
-		TRACK_STATS(return LithpCell(Var, depth));
+		TRACK_STATS(return LithpCell(Var, GetDepth()));
 		return LithpCell(Atom, "#stats_not_tracked");
 	}
 
 	// Get max eval depth
 	LithpCell proc__depth_max(const LithpCells &c) {
-		TRACK_STATS(return LithpCell(Var, depth_max));
+		TRACK_STATS(return LithpCell(Var, GetDepthMax()));
 		return LithpCell(Atom, "#stats_not_tracked");
 	}
 

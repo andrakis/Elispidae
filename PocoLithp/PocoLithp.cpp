@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
 	} else {
 		evalTimed(read(std::string("(begin (print (banner)) (repl))")), global_p);
 	}
-	if(TIMING)
-		std::cerr << "Total eval time: " << evalTime << "ms, parse time: " << parseTime << "ms\n";
+	if(GetTIMING())
+		std::cerr << "Total eval time: " << GetEvalTime() << "ms, parse time: " << parseTime << "ms\n";
     return ERR_NOERROR;
 }
 

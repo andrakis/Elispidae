@@ -4,3 +4,6 @@
 [submodule "contrib/linenoise-ng"]
 	path = contrib/linenoise-ng
 	url = https://github.com/arangodb/linenoise-ng
+[submodule "contrib/Stackless"]
+	path = contrib/Stackless
+	url = https://github.com/andrakis/Stackless

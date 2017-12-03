@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.60"
+#define PLITHP_VERSION "0.62"
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -149,10 +149,36 @@ namespace PocoLithp {
 	LithpCell symbol(const std::string &token);
 	LithpCell read_from(std::list<std::string> &tokens);
 
+
+	class Interpreter {
+		public:
+			// Top-level eval function.
+			virtual LithpCell eval(LithpCell x, Env_p env) = 0;
+			// Timed evaluation. For performance sake, we prefer this to be called once.
+			virtual LithpCell evalTimed(const LithpCell &x, Env_p env) = 0;
+
+			bool DEBUG = false;
+			bool TIMING = false;
+			bool QUIT = false;
+
+			UnsignedInteger parseTime = 0, evalTime = 0;
+			UnsignedInteger reductions = 0, depth = 0, depth_max = 0;
+	};
+
 	// From PLinterpreter.cpp
-	extern UnsignedInteger parseTime, evalTime;
-	extern UnsignedInteger reductions, depth, depth_max;
-	extern bool DEBUG, TIMING, QUIT;
+	bool GetDEBUG();
+	void SetDEBUG(const bool);
+	bool GetTIMING();
+	void SetTIMING(const bool);
+	bool GetQUIT();
+	void SetQUIT(const bool);
+	UnsignedInteger GetEvalTime();
+	UnsignedInteger GetReductions();
+	UnsignedInteger GetDepth();
+	UnsignedInteger GetDepthMax();
+	extern UnsignedInteger parseTime;
+	extern Interpreter *interpreter;
+	Interpreter *StandardInterpreter();
 	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);
@@ -377,7 +403,7 @@ namespace PocoLithp {
 		}
 
 		~LithpEnvironment() {
-			if (DEBUG) std::cerr << "Environment " << this << " has been deleted\n";
+			if (GetDEBUG()) std::cerr << "Environment " << this << " has been deleted\n";
 		}
 
 		bool defined(const atomId var) const {

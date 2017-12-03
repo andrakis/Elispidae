@@ -231,6 +231,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="overflow.h" />
+    <ClInclude Include="PLint_recursive.hpp" />
     <ClInclude Include="PocoLithp.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -238,6 +239,7 @@
   <ItemGroup>
     <ClCompile Include="PLglobals.cpp" />
     <ClCompile Include="PLinterpreter.cpp" />
+    <ClCompile Include="PLint_recursive.cpp" />
     <ClCompile Include="PLparser.cpp" />
     <ClCompile Include="PLruntime.cpp" />
     <ClCompile Include="PLtests.cpp" />
