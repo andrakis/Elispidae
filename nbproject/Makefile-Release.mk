@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/PocoLithp/PLglobals.o \
+	${OBJECTDIR}/PocoLithp/PLint_recursive.o \
 	${OBJECTDIR}/PocoLithp/PLinterpreter.o \
 	${OBJECTDIR}/PocoLithp/PLparser.o \
 	${OBJECTDIR}/PocoLithp/PLruntime.o \
@@ -134,7 +135,12 @@ bin/plithp: ${OBJECTFILES}
 ${OBJECTDIR}/PocoLithp/PLglobals.o: PocoLithp/PLglobals.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -D_RELEASE -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
+	$(COMPILE.cc) -O3 -s -DREADLINE_NG -D_RELEASE -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
+
+${OBJECTDIR}/PocoLithp/PLint_recursive.o: PocoLithp/PLint_recursive.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -O3 -s -DREADLINE_NG -D_RELEASE -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLint_recursive.o PocoLithp/PLint_recursive.cpp
 
 ${OBJECTDIR}/PocoLithp/PLinterpreter.o: PocoLithp/PLinterpreter.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp

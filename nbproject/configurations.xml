@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>PocoLithp/PLint_recursive.hpp</itemPath>
       <itemPath>PocoLithp/PocoLithp.hpp</itemPath>
       <itemPath>PocoLithp/overflow.h</itemPath>
       <itemPath>PocoLithp/stdafx.h</itemPath>
@@ -85,6 +86,7 @@
         </logicalFolder>
       </logicalFolder>
       <itemPath>PocoLithp/PLglobals.cpp</itemPath>
+      <itemPath>PocoLithp/PLint_recursive.cpp</itemPath>
       <itemPath>PocoLithp/PLinterpreter.cpp</itemPath>
       <itemPath>PocoLithp/PLparser.cpp</itemPath>
       <itemPath>PocoLithp/PLruntime.cpp</itemPath>
@@ -132,6 +134,10 @@
         </linkerTool>
       </compileType>
       <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -506,6 +512,10 @@
         </linkerTool>
       </compileType>
       <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>
