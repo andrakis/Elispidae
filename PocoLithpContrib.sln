@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MinimalFoundation", "contri
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "linenoise-ng-project", "contrib\linenoise-ng-project\linenoise-ng-project.vcxproj", "{A5A7CB82-6773-4C9B-9244-4F73D98A1634}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stackless", "..\..\..\..\Source\Repos\Stackless\Stackless\Stackless.vcxproj", "{F24753E1-36C2-4B55-AE98-D6C04E311259}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stackless", "contrib\Stackless\Stackless\Stackless.vcxproj", "{F24753E1-36C2-4B55-AE98-D6C04E311259}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
