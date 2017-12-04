@@ -161,7 +161,7 @@ namespace PocoLithp {
 			bool TIMING = false;
 			bool QUIT = false;
 
-			UnsignedInteger parseTime = 0, evalTime = 0;
+			UnsignedInteger evalTime = 0;
 			UnsignedInteger reductions = 0, depth = 0, depth_max = 0;
 	};
 
@@ -395,6 +395,8 @@ namespace PocoLithp {
 			: outer_(outer) {
 			update(params, args);
 		}
+
+		typedef std::shared_ptr<LithpEnvironment> _env_p;
 
 		void update(const LithpCells &params, const LithpCells &args) {
 			LithpCellIt a = args.begin();

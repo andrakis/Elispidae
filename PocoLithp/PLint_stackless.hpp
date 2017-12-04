@@ -3,9 +3,9 @@
 #include "stdafx.h"
 
 namespace PocoLithp {
-	class RecursiveInterpreter : public Interpreter {
+	class StacklessInterpreter : public Interpreter {
 	public:
-		RecursiveInterpreter() : Interpreter() { }
+		StacklessInterpreter() : Interpreter() { }
 	private:
 #define INDENT()  std::string((depth * 2), ' ')
 
@@ -21,8 +21,9 @@ namespace PocoLithp {
 		LithpCell eval(LithpCell x, Env_p env);
 		// Timed evaluation. For performance sake, we prefer this to be called once.
 		LithpCell evalTimed(const LithpCell &x, Env_p env);
+
 		static Interpreter *Instantiate() {
-			return new RecursiveInterpreter();
+			return new StacklessInterpreter();
 		}
 	};
 }
