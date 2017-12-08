@@ -21,10 +21,9 @@ namespace PocoLithp {
 				Set,
 				Get,
 				Define,
+				Defined,
 				Begin,
-				Proc,    // handles Lambda, Macro, Proc, ProcExtended
-				Lambda,
-				Macro,
+				Proc, ProcExtended, Lambda, Macro,
 				Invalid
 			};
 		}
@@ -33,21 +32,21 @@ namespace PocoLithp {
 			: public InstructionConverter<LithpCell, typename instruction::instruction> {
 			static _instruction_type convert(_cell_type value) {
 				switch (value.tag) {
-				case Lambda:
-				case Proc:
-				case ProcExtended:
-				case Macro:
-					return instruction::Proc;
 				case Atom:
 					if (value == sym_quote) return instruction::Quote;
 					if (value == sym_if) return instruction::If;
 					if (value == sym_set) return instruction::Set;
 					if (value == sym_define) return instruction::Define;
+					if (value == sym_defined) return instruction::Defined;
 					if (value == sym_get) return instruction::Get;
 					if (value == sym_lambda || value == sym_lambda2) return instruction::Lambda;
 					if (value == sym_macro) return instruction::Macro;
 					// Fall through
 				case List:
+				case Lambda:
+				case Proc:
+				case ProcExtended:
+				case Macro:
 					return instruction::Proc;
 				default:
 					return instruction::Invalid;
@@ -68,7 +67,8 @@ namespace PocoLithp {
 				arg_it(arguments.cbegin()),
 				resolved(false),
 				subframe(nullptr),
-				subframe_mode(None)
+				subframe_mode(None),
+				arg_id(0)
 			{
 			}
 		public:
@@ -90,14 +90,14 @@ namespace PocoLithp {
 			void execute() {
 				if (isResolved())
 					return;
-
 			}
 
 			void nextArgument() {
 				if (arg_it == arguments.cend())
 					dispatch();
-				else if (resolveArgument(*arg_it)) {
+				else if (resolveArgument(*arg_it, arg_id)) {
 					++arg_it;
+					++arg_id;
 					nextArgument();
 				}
 			}
@@ -131,10 +131,18 @@ namespace PocoLithp {
 					return;
 				}
 				arg_it = arguments.cbegin();
+				arg_id = 0;
 				nextArgument();
 			}
 
-			bool resolveArgument(const LithpCell &value) {
+			bool resolveArgument(const LithpCell &value, const unsigned &id) {
+				if (exp.tag == Macro) {
+					// Macro mode, arguments not evaluated
+					if (id > 0) {
+						resolved_arguments.push_back(value);
+						return true;
+					}
+				}
 				switch (value.tag) {
 				case VariableReference:
 					resolved_arguments.push_back(lookup(value));
@@ -185,9 +193,9 @@ namespace PocoLithp {
 						result = value;
 						return true;
 					}
-					auto first = value.list()[0];
 					// iterator skips first item
 					const LithpCells::const_iterator begin = value.list().cbegin();
+					auto first = *begin;
 					LithpCells::const_iterator it = begin + 1;
 					const LithpCells::const_iterator end = value.list().cend();
 #define ARG(message) checkArgument(it, end, message)
@@ -207,7 +215,7 @@ namespace PocoLithp {
 							ARG("if: requires a conseq");
 							resolved_arguments.push_back(*it); ++it;
 							// [alt]
-							if (it != value.list().cend())
+							if (it != end)
 								resolved_arguments.push_back(*it);
 							else
 								resolved_arguments.push_back(sym_nil);
@@ -269,7 +277,156 @@ namespace PocoLithp {
 			bool resolved;
 			LithpFrame *subframe;
 			SubframeMode subframe_mode;
+			// TODO: This is a bit of a hack to support return type parsing
+			unsigned arg_id;
 		};
+
+		template<typename instruction::instruction Instruction>
+		struct LithpDispatcher {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				throw new RuntimeException("Instruction not implemented");
+			}
+		};
+
+		template<> struct LithpDispatcher<instruction::If> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				LithpCells::const_iterator it(args);
+				const LithpCell &conseq = *it; ++it;
+				const LithpCell &alt = *it; ++it;
+				const LithpCell &test = *it; ++it;
+				const LithpCell &if_result = (test == sym_true) ? conseq : alt;
+				frame.setExpression(LithpCell(if_result));
+				// Don't move exp_it
+				return false;
+			}
+		};
+
+		template<> struct LithpDispatcher<instruction::Begin> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				// Update expressions to call list
+				frame.expressions.swap(frame.resolved_arguments);
+				frame.resolved_arguments.clear();
+				frame.exp_it = frame.expressions.cbegin();
+				frame.setExpression(*frame.exp_it);
+				// Don't move exp_it
+				return false;
+			}
+		};
+
+		template<> struct LithpDispatcher<instruction::Define> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				LithpCells::const_iterator it(args);
+				const LithpCell &var = *it; ++it;
+				const LithpCell &val = *it; ++it;
+				frame.lookup(var) = frame.result = val;
+				return true;
+			}
+		};
+
+		template<> struct LithpDispatcher<instruction::Defined> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				LithpCells::const_iterator it(args);
+				const LithpCell &var = *it; ++it;
+				frame.result = frame.env->defined(var.atomid()) ? sym_true : sym_false;
+				return true;
+			}
+		};
+
+		template<> struct LithpDispatcher<instruction::Proc> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+				LithpCells::const_iterator it(args);
+				LithpCell proc(*it); ++it;
+				LithpCells arguments(it, frame.resolved_arguments.cend());
+				switch (proc.tag) {
+					// Proc: a builtin procedure in C++ that needs no environment.
+				case Proc:
+					// Copy the rest of the resolved arguments to a new list,
+					// that list is passed as the arguments.
+					frame.result = proc.proc()(arguments);
+					return true;
+					// ProcExtended: a builtin procedure in C++ that passes the frame environment.
+				case ProcExtended:
+					// Copy the rest of the resolved arguments to a new list,
+					// that list is passed as the arguments.
+					frame.result = proc.proc_extended()(arguments, frame.env);
+					return true;
+					// A Lisp procedure or macro.
+				case Lambda:
+				case Macro:
+				{
+					// (lambda|macro ArgList::list()|var() Body::list())
+					LithpCells arglist;
+					const LithpCell &arglist_cell = proc.list()[1];
+					switch (arglist_cell.tag) {
+					case VariableReference:
+						// Single argument, assign all args as list
+						arglist.push_back(arglist_cell);
+						break;
+					case List:
+						// List of arguments
+						arglist = LithpCells(arglist_cell.list());
+						break;
+					default:
+						throw new RuntimeException("Unknown arguments type");
+					}
+					// Body
+					const LithpCell body = proc.list()[2];
+					// Create environment parented to lambda/macro env
+					Env_p new_env(new LithpEnvironment(proc.env));
+					auto env_arg_it = arguments.cbegin();
+					// assign remaining arguments to our list of argument names in
+					// new environment.
+					new_env->update(arglist, arguments);
+					// create subframe
+					frame.subframe_mode = LithpFrame::Procedure;
+					frame.subframe = new LithpFrame(body, new_env);
+					// don't move exp_it
+					return false;
+				}
+				default:
+					throw new RuntimeException("Unknown proc type");
+				}
+			}
+		};
+
+		bool LithpFrame::dispatchCall() {
+			LithpCells::const_iterator it = resolved_arguments.cbegin();
+			instruction::instruction ins = LithpInstructionConverter::convert(exp);
+			switch (ins) {
+			case instruction::If:
+				return LithpDispatcher<instruction::If>::dispatch(*this, it);
+			case instruction::Begin:
+				return LithpDispatcher<instruction::Begin>::dispatch(*this, it);
+			case instruction::Set:
+				return LithpDispatcher<instruction::Set>::dispatch(*this, it);
+			case instruction::Define:
+				return LithpDispatcher<instruction::Define>::dispatch(*this, it);
+			case instruction::Defined:
+				return LithpDispatcher<instruction::Defined>::dispatch(*this, it);
+			case instruction::Proc:
+				return LithpDispatcher<instruction::Proc>::dispatch(*this, it);
+			default:
+				return LithpDispatcher<instruction::Invalid>::dispatch(*this, it);
+			}
+		}
+
+		struct LithpImplementation : public Implementation<LithpEnvironment, LithpFrame> {
+			LithpImplementation(const LithpCell &ins, env_p _env)
+				: Implementation(_env), frame(ins, _env) {
+			}
+			LithpFrame &getCurrentFrame() {
+				return frame;
+			}
+			void executeFrame(LithpFrame &fr) {
+				fr.execute();
+			}
+		private:
+			LithpFrame frame;
+		};
+
+		struct LithpThreadManager : public MicrothreadManager<LithpImplementation> {
+		};
+		LithpThreadManager LithpThreadMan;
 	}
 
 	#define INDENT()  std::string((depth * 2), ' ')
