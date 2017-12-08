@@ -1,12 +1,17 @@
 #include "stdafx.h"
 #include "PLint_recursive.hpp"
+#include "PLint_stackless.hpp"
 
 namespace PocoLithp {
 	UnsignedInteger parseTime = 0;
 
 	Interpreter *interpreter = nullptr;
 	void SetStandardInterpreter() {
+#ifdef PLITHP_STACKLESS
+		interpreter = new StacklessInterpreter();
+#else
 		interpreter = new RecursiveInterpreter();
+#endif
 	}
 	Interpreter *StandardInterpreter() {
 		return interpreter;

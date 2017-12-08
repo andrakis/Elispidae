@@ -51,10 +51,11 @@ namespace PocoLithp {
 				case Atom:
 					if (value == sym_quote) return instruction::Quote;
 					if (value == sym_if) return instruction::If;
+					if (value == sym_begin) return instruction::Begin;
+					if (value == sym_get) return instruction::Get;
 					if (value == sym_set) return instruction::Set;
 					if (value == sym_define) return instruction::Define;
 					if (value == sym_defined) return instruction::Defined;
-					if (value == sym_get) return instruction::Get;
 					if (value == sym_lambda || value == sym_lambda2) return instruction::Lambda;
 					if (value == sym_macro) return instruction::Macro;
 					// Fall through
@@ -63,6 +64,8 @@ namespace PocoLithp {
 				case Proc:
 				case ProcExtended:
 				case Macro:
+				case Var:
+				case VariableReference:
 					return instruction::Proc;
 				default:
 					return instruction::Invalid;
@@ -153,6 +156,14 @@ namespace PocoLithp {
 		};
 
 		template<> struct LithpDispatcher<instruction::Begin> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+		};
+
+		template<> struct LithpDispatcher<instruction::Get> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+		};
+
+		template<> struct LithpDispatcher<instruction::Set> {
 			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
 		};
 

@@ -2,7 +2,15 @@
 
 #include "stdafx.h"
 
-#define PLITHP_VERSION "0.62"
+#define PLITHP_VERSION "0.71"
+
+// Undefine to use recursive emulator
+#define PLITHP_STACKLESS
+#ifdef PLITHP_STACKLESS
+#define STACKLESS_DESC   " (Stackless)"
+#else
+#define STACKLESS_DESC   ""
+#endif
 
 #ifndef NO_STATS
 #define PLITHP_TRACK_STATS
@@ -15,6 +23,10 @@
 #define TRACK_STATS(code) while(0)
 #define STATS_DESC        "(no stats)"
 #endif
+
+// Transitional name
+#define APP_NAME "PocoLithp (Elispidae) "
+#define PLITHP_VERSION_INFO APP_NAME PLITHP_VERSION STACKLESS_DESC 
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;

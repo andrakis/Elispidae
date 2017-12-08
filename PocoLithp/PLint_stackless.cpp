@@ -18,9 +18,65 @@ unsigned stackless::microthreading::thread_counter = 0;
 namespace PocoLithp {
 	namespace Stackless {
 		// Frame implementation
+
 		void LithpFrame::execute() {
+			/**
+			 * execute()
+			 *
+			 * Logic:
+			 *  A) have subframe?
+			 *    A=t      B) execute subframe
+			 *      .      C) subframe resolved?
+			 *      .  C=t D) subframe_mode
+			 *      .  C=t D=Argument  E) resolved_arguments.push(frame.result)
+			 *      .    .   .         F) nextArgument()
+			 *      .    .   .         G) goto L
+			 *      .  C=t D=Procedure H) result = frame.result
+			 *      .    .   .         I) nextExpression()
+			 *      .    .   .         J) goto L
+			 *      .  C=t D=*         K) error()
+			 *      .    . L) delete subframe
+			 *      .  C=* K) goto Z
+			 *    A=f      L) arg_it == arguments.end()
+			 *      .  H=t M)   dispatch()
+			 *      .    . N)   goto Z
+			 *  Z) done.
+			 */
 			if (isResolved())
 				return;
+			if (subframe != nullptr) {
+				subframe->execute();
+				if (subframe->isResolved()) {
+					// Copy results
+					LithpCell res(subframe->result);
+					auto mode = subframe_mode;
+					DEBUG("  subframe(" + std::string((mode == Argument ? "arg" : "proc")) + ") = " + to_string(res));
+					// Clear subframe
+					delete subframe;
+					subframe = nullptr;
+					subframe_mode = None;
+					// Do something with result
+					switch (mode) {
+					case Argument:
+						resolved_arguments.push_back(res);
+						++arg_it;
+						nextArgument();
+						break;
+					case Procedure:
+						result = res;
+						nextExpression();
+						break;
+					default:
+						throw new RuntimeException("Invalid subframe mode None");
+					}
+				}
+			} else if (arg_it == arguments.cend())
+				dispatch();
+			else
+				nextArgument();
+#if 0 && _DEBUG
+			execute();
+#endif
 		}
 
 		void LithpFrame::nextArgument() {
@@ -77,7 +133,7 @@ namespace PocoLithp {
 			switch (value.tag) {
 			case VariableReference:
 				resolved_arguments.push_back(lookup(value));
-				DEBUG(std::string("  resolveArgument(") + to_string(value) + std::string(") = ") + to_string(lookup(value.val)));
+				DEBUG(std::string("  resolveArgument(") + to_string(value) + std::string(") = ") + to_string(lookup(value)));
 				return true;
 			case List:
 				if (value.list().empty()) {
@@ -101,7 +157,8 @@ namespace PocoLithp {
 				result = lookup(value);
 				return true;
 			case Var:
-				result = value;
+			case Atom:
+				result = LithpCell(value);
 				return true;
 			case List:
 			{
@@ -136,6 +193,12 @@ namespace PocoLithp {
 						else
 							resolved_arguments.push_back(sym_nil);
 						return false;
+					} else if (first == sym_get) {   // (get! var)
+						// var
+						ARG("get: requires var name");
+						//resolved_arguments.push_back(*it); ++it;
+						result = LithpCell(lookup(*it));
+						return true;
 					} else if (first == sym_set) {   // (set! var exp)
 						// var
 						ARG("set: requires var name");
@@ -169,7 +232,7 @@ namespace PocoLithp {
 						result.env = env;
 						return true;
 					} else if (first == sym_begin) {  // (begin exp*)
-						resolved_arguments = LithpCells(begin, end);
+						resolved_arguments = LithpCells(begin + 1, end);
 						return false;
 					}
 				}
@@ -184,6 +247,7 @@ namespace PocoLithp {
 			}
 		}
 
+		// Dispatcher implementation
 		bool LithpDispatcher<instruction::If>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &conseq = *it; ++it;
@@ -205,11 +269,26 @@ namespace PocoLithp {
 			return false;
 		}
 
+		bool LithpDispatcher<instruction::Get>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+			LithpCells::const_iterator it(args);
+			const LithpCell &var = *it; ++it;
+			frame.result = frame.lookup(var);
+			return true;
+		}
+
+		bool LithpDispatcher<instruction::Set>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+			LithpCells::const_iterator it(args);
+			const LithpCell &var = *it; ++it;
+			const LithpCell &val = *it; ++it;
+			frame.env->operator[](var.atomid()) = frame.result = val;
+			return true;
+		}
+
 		bool LithpDispatcher<instruction::Define>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &var = *it; ++it;
 			const LithpCell &val = *it; ++it;
-			frame.lookup(var) = frame.result = val;
+			frame.env->operator[](var.atomid()) = frame.result = val;
 			return true;
 		}
 
@@ -222,8 +301,29 @@ namespace PocoLithp {
 
 		bool LithpDispatcher<instruction::Proc>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
 			LithpCells::const_iterator it(args);
+
+			// TODO: This is a hack to allow atoms to be returned as is
+			if (it == frame.resolved_arguments.cend()) {
+				frame.result = LithpCell(frame.exp);
+				return true;
+			}
+
 			LithpCell proc(*it); ++it;
 			LithpCells arguments(it, frame.resolved_arguments.cend());
+
+			// Secondary proc evaluation
+			switch (proc.tag) {
+			case Atom:
+			case VariableReference:
+			case Var:
+				proc = LithpCell(frame.lookup(proc));
+				break;
+			default:
+				// Do nothing
+				break;
+			}
+
+			// Primary proc evaluation
 			switch (proc.tag) {
 				// Proc: a builtin procedure in C++ that needs no environment.
 			case Proc:
@@ -283,6 +383,8 @@ namespace PocoLithp {
 				return LithpDispatcher<instruction::If>::dispatch(*this, it);
 			case instruction::Begin:
 				return LithpDispatcher<instruction::Begin>::dispatch(*this, it);
+			case instruction::Get:
+				return LithpDispatcher<instruction::Get>::dispatch(*this, it);
 			case instruction::Set:
 				return LithpDispatcher<instruction::Set>::dispatch(*this, it);
 			case instruction::Define:
@@ -296,6 +398,7 @@ namespace PocoLithp {
 			}
 		}
 
+		// Thread implementation
 		LithpThreadManager LithpThreadMan;
 		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
 			// create thread
