@@ -402,7 +402,8 @@ namespace PocoLithp {
 		LithpThreadManager LithpThreadMan;
 		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
 			// create thread
-			ThreadId thread = tm.start([&ins, env]() {
+			ThreadId thread = tm.start([&ins, env](MicrothreadBase *thread_ptr) {
+				env->thread = thread_ptr;
 				LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
 				return impl;
 			});

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include <Stackless.hpp>		// Ugly hack
 
 #define PLITHP_VERSION "0.71"
 
@@ -402,6 +403,8 @@ namespace PocoLithp {
 	};
 
 	struct LithpEnvironment {
+		typedef stackless::microthreading::MicrothreadBase Microthread;
+
 		LithpEnvironment(Env_p outer = nullptr) : outer_(outer) {}
 		LithpEnvironment(const LithpCells &params, const LithpCells &args, Env_p outer)
 			: outer_(outer) {
@@ -409,6 +412,14 @@ namespace PocoLithp {
 		}
 
 		typedef std::shared_ptr<LithpEnvironment> _env_p;
+		Microthread *thread = nullptr;
+		Microthread *getThread() const {
+			if (thread != nullptr)
+				return thread;
+			if (outer_)
+				return outer_->getThread();
+			return nullptr;
+		}
 
 		void update(const LithpCells &params, const LithpCells &args) {
 			LithpCellIt a = args.begin();

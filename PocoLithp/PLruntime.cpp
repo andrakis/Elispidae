@@ -38,11 +38,20 @@ LithpCell proc_invalid_arg(const LithpCells &c) {
 	throw InvalidArgumentException(message);
 }
 
+// Get thread id
+LithpCell proc_self(const LithpCells &c, Env_p env) {
+	LithpEnvironment::Microthread *thread = env->getThread();
+	if (thread == nullptr)
+		return LithpCell(Atom, "invalid_thread");
+	return LithpCell(Var, thread->thread_id);
+}
+
 void PocoLithp::init_runtime() {
 	add_environment_runtime([](LithpEnvironment &env) {
 		env["banner"] = LithpCell(&proc_banner);
 		env["readfile"] = LithpCell(&proc_readfile);
 		env["atom"] = LithpCell(&proc_atom);
 		env["invalid_arg"] = LithpCell(&proc_invalid_arg);
+		env["self"] = LithpCell(&proc_self);
 	});
 }
