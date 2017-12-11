@@ -93,6 +93,8 @@ namespace PocoLithp {
 			}
 		} else if (!advanced && !repre && exp.tag == Lambda)
 			return "<Lambda>";
+		else if (exp.tag == Thread)
+			return exp.str();
 		else if (!advanced && !repre && exp.tag == Macro)
 			return "<Macro>";
 		else if (exp.tag == Proc)

@@ -42,6 +42,9 @@
     <ClInclude Include="PLint_stackless.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ELisp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -72,6 +75,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PLint_stackless.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ELthreads.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ELisp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

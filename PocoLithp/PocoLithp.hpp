@@ -104,7 +104,10 @@ namespace PocoLithp {
 		Proc,
 		ProcExtended,
 		Lambda,
-		Macro
+		Macro,
+
+		// Extended types
+		Thread
 	};
 
 	struct LithpEnvironment;
@@ -204,6 +207,30 @@ namespace PocoLithp {
 		int RunTests();
 	}
 
+	typedef stackless::microthreading::ThreadId LithpThreadId;
+	typedef LithpThreadId LithpThreadNode;
+	typedef LithpThreadId LithpCosmosNode;
+	struct LithpThreadReference {
+		LithpThreadId thread_id;
+		LithpThreadNode node_id;
+		LithpCosmosNode cosmos_id;
+
+		LithpThreadReference(const LithpThreadId id = 0, const LithpThreadNode node = 0, const LithpCosmosNode cosmos = 0)
+			: thread_id(id), node_id(node), cosmos_id(cosmos) {
+		}
+		LithpThreadReference(const LithpThreadReference &copy)
+			: thread_id(copy.thread_id), node_id(copy.node_id), cosmos_id(copy.cosmos_id) {
+		}
+
+		std::string str() const {
+			return std::string("<") +
+				std::to_string(cosmos_id) + std::string(".") +
+				std::to_string(node_id) + std::string(".") +
+				std::to_string(thread_id) +
+				std::string(">");
+		}
+	};
+
 	struct LithpVar {
 		typedef LithpVar(*proc_type)(const LithpCells &);
 		typedef LithpVar(*proc_extended_type)(const LithpCells &, Env_p);
@@ -227,6 +254,8 @@ namespace PocoLithp {
 		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
 		LithpVar(proc_extended_type proc) : tag(ProcExtended), value(proc), env(0) {}
+		LithpVar(LithpThreadReference &tr) : tag(Thread), value(tr), env(0) {}
+		// Extended constructors
 
 		~LithpVar() {
 		}
@@ -254,6 +283,8 @@ namespace PocoLithp {
 				return "<Proc>";
 			case ProcExtended:
 				return "<ProcExtended>";
+			case Thread:
+				return thread_ref().str();
 			case Dict:
 				throw InvalidArgumentException("Should be handled higher up");
 			case Atom:
@@ -390,6 +421,13 @@ namespace PocoLithp {
 				throw InvalidArgumentException("Not an atom");
 			return value.extract<atomId>();
 		}
+		
+		// Extended behaviours
+		LithpThreadReference thread_ref() const {
+			if (tag != Thread)
+				throw InvalidArgumentException("Not a thread ref");
+			return value.extract<LithpThreadReference>();
+		}
 
 		bool is_nullp() const {
 			switch (tag) {
@@ -403,8 +441,6 @@ namespace PocoLithp {
 	};
 
 	struct LithpEnvironment {
-		typedef stackless::microthreading::MicrothreadBase Microthread;
-
 		LithpEnvironment(Env_p outer = nullptr) : outer_(outer) {}
 		LithpEnvironment(const LithpCells &params, const LithpCells &args, Env_p outer)
 			: outer_(outer) {
@@ -412,14 +448,6 @@ namespace PocoLithp {
 		}
 
 		typedef std::shared_ptr<LithpEnvironment> _env_p;
-		Microthread *thread = nullptr;
-		Microthread *getThread() const {
-			if (thread != nullptr)
-				return thread;
-			if (outer_)
-				return outer_->getThread();
-			return nullptr;
-		}
 
 		void update(const LithpCells &params, const LithpCells &args) {
 			LithpCellIt a = args.begin();

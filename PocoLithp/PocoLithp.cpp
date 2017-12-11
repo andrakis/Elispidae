@@ -4,6 +4,7 @@
 // TODO: Bignum support
 
 #include "stdafx.h"
+#include "ELisp.hpp"
 
 using namespace PocoLithp;
 
@@ -50,7 +51,8 @@ int main(int argc, char *argv[])
 {
 	GETLINE_INIT();
 	LithpEnvironment *global_env = new LithpEnvironment();
-	init_runtime();
+	PocoLithp::init_runtime();
+	Elispidae::init_runtime();
 	add_globals(*global_env);
 	Env_p global_p(global_env);
 

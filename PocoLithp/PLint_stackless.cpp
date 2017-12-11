@@ -17,35 +17,23 @@ unsigned stackless::microthreading::thread_counter = 0;
 
 namespace PocoLithp {
 	namespace Stackless {
-		// Frame implementation
+		const LithpCell sym_receive(Atom, "receive");
 
-		void LithpFrame::execute() {
-			/**
-			 * execute()
-			 *
-			 * Logic:
-			 *  A) have subframe?
-			 *    A=t      B) execute subframe
-			 *      .      C) subframe resolved?
-			 *      .  C=t D) subframe_mode
-			 *      .  C=t D=Argument  E) resolved_arguments.push(frame.result)
-			 *      .    .   .         F) nextArgument()
-			 *      .    .   .         G) goto L
-			 *      .  C=t D=Procedure H) result = frame.result
-			 *      .    .   .         I) nextExpression()
-			 *      .    .   .         J) goto L
-			 *      .  C=t D=*         K) error()
-			 *      .    . L) delete subframe
-			 *      .  C=* K) goto Z
-			 *    A=f      L) arg_it == arguments.end()
-			 *      .  H=t M)   dispatch()
-			 *      .    . N)   goto Z
-			 *  Z) done.
-			 */
+		// Frame implementation
+		void LithpFrame::execute(LithpImplementation &impl) {
+			// TODO:HACK: Stop frames from completing before they're fully initialized
+			if (wait_state == Initialize) {
+				wait_state = Run;
+				expressions.push_back(exp);
+				exp_it = expressions.cbegin();
+				setExpression(exp);
+			}
 			if (isResolved())
 				return;
+			if (isWaiting())
+				return;
 			if (subframe != nullptr) {
-				subframe->execute();
+				subframe->execute(impl);
 				if (subframe->isResolved()) {
 					// Copy results
 					LithpCell res(subframe->result);
@@ -234,6 +222,9 @@ namespace PocoLithp {
 					} else if (first == sym_begin) {  // (begin exp*)
 						resolved_arguments = LithpCells(begin + 1, end);
 						return false;
+					} else if (first == sym_receive) { // (receive (# (Message::any)) [timeout [timeout callback]]}
+						resolved_arguments = LithpCells(begin + 1, end);
+						return false;
 					}
 				}
 				// (proc exp*)
@@ -375,6 +366,12 @@ namespace PocoLithp {
 			}
 		}
 
+		bool LithpDispatcher<instruction::Receive>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+			std::cout << "receive!? lol\n";
+			frame.result = LithpCell(Atom, "lol");
+			return true;
+		}
+
 		bool LithpFrame::dispatchCall() {
 			LithpCells::const_iterator it = resolved_arguments.cbegin();
 			instruction::instruction ins = LithpInstructionConverter::convert(exp);
@@ -393,6 +390,8 @@ namespace PocoLithp {
 				return LithpDispatcher<instruction::Defined>::dispatch(*this, it);
 			case instruction::Proc:
 				return LithpDispatcher<instruction::Proc>::dispatch(*this, it);
+			case instruction::Receive:
+				return LithpDispatcher<instruction::Receive>::dispatch(*this, it);
 			default:
 				return LithpDispatcher<instruction::Invalid>::dispatch(*this, it);
 			}
@@ -403,8 +402,7 @@ namespace PocoLithp {
 		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
 			// create thread
 			ThreadId thread = tm.start([&ins, env](MicrothreadBase *thread_ptr) {
-				env->thread = thread_ptr;
-				LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
+				LithpThreadManager::impl_p impl(new LithpImplementation(thread_ptr, ins, env));
 				return impl;
 			});
 			// execute multithreading until thread resolved

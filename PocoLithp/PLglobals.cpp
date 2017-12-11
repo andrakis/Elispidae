@@ -380,6 +380,7 @@ namespace PocoLithp {
 	const LithpCell tag_proc(Atom, "proc");
 	const LithpCell tag_list(Atom, "list");
 	const LithpCell tag_dict(Atom, "dict");
+	const LithpCell tag_thread(Atom, "thread");
 
 	// Get the tag of the given variable
 	LithpCell proc_tag(const LithpCells &c) {
@@ -403,6 +404,8 @@ namespace PocoLithp {
 			return tag_list;
 		case Dict:
 			return tag_dict;
+		case Thread:
+			return tag_thread;
 		default:
 			return getAtom("unknown");
 		}

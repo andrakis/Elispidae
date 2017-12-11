@@ -2,8 +2,11 @@
 
 #include "stdafx.h"
 #include <Stackless.hpp>
+#include <queue>
 
 namespace PocoLithp {
+	typedef std::queue<LithpCell> LithpMailbox;
+
 	class StacklessInterpreter : public Interpreter {
 	public:
 		StacklessInterpreter() : Interpreter() { }
@@ -40,10 +43,12 @@ namespace PocoLithp {
 				Defined,
 				Begin,
 				Proc, ProcExtended, Lambda, Macro,
+				Receive,
 				Invalid
 			};
 		}
 
+		extern const LithpCell sym_receive;
 		struct LithpInstructionConverter
 			: public InstructionConverter<LithpCell, typename instruction::instruction> {
 			static _instruction_type convert(_cell_type value) {
@@ -58,6 +63,7 @@ namespace PocoLithp {
 					if (value == sym_defined) return instruction::Defined;
 					if (value == sym_lambda || value == sym_lambda2) return instruction::Lambda;
 					if (value == sym_macro) return instruction::Macro;
+					if (value == sym_receive) return instruction::Receive;
 					// Fall through
 				case List:
 				case Lambda:
@@ -73,11 +79,27 @@ namespace PocoLithp {
 			}
 		};
 
+		enum FrameWaitState {
+			Initialize,
+			Run,
+			Done,
+			Receive
+		};
+
+		// When in a message receive state
+		struct ReceiveState {
+			LithpCell on_message;  // (# (Message::any) :: any) callback on message receive
+			LithpCell on_timeout;  // (# () :: any) callback on timeout
+			LithpCell timeout;     // infinite, or number of milliseconds
+		};
+
+		struct LithpImplementation;
 		// Frame implementation
 		struct LithpFrame : public Frame<LithpCell, typename instruction::instruction, LithpEnvironment> {
 		private:
 			LithpFrame(env_p environment)
 				: Frame(environment),
+				wait_state(Initialize),
 				exp(sym_nil),
 				expressions(),
 				arguments(),
@@ -94,9 +116,6 @@ namespace PocoLithp {
 			LithpFrame(const LithpCell &expression, env_p environment)
 				: LithpFrame(environment) {
 				exp = expression;
-				expressions.push_back(exp);
-				exp_it = expressions.cbegin();
-				setExpression(exp);
 			}
 
 			enum SubframeMode {
@@ -106,10 +125,12 @@ namespace PocoLithp {
 			};
 
 			bool isResolved() const { return resolved; }
+			bool isWaiting() const { return wait_state == Receive; }
+
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
 
-			void execute();
+			void execute(LithpImplementation &);
 			void nextArgument();
 			void nextExpression();
 			void setExpression(const LithpCell &value);
@@ -131,6 +152,7 @@ namespace PocoLithp {
 
 			bool resolveExpression(LithpCell &value);
 
+			FrameWaitState wait_state;
 			LithpCell exp;
 			LithpCells expressions;
 			LithpCells arguments;
@@ -178,23 +200,34 @@ namespace PocoLithp {
 		template<> struct LithpDispatcher<instruction::Proc> {
 			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
 		};
+		template<> struct LithpDispatcher<instruction::Receive> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+		};
 
 		struct LithpImplementation : public Implementation<LithpEnvironment, LithpFrame> {
-			LithpImplementation(const LithpCell &ins, env_p _env)
-				: Implementation(_env), frame(ins, _env) {
+			LithpImplementation(MicrothreadBase *thread_ptr, const LithpCell &ins, env_p _env)
+				: Implementation(_env), thread(thread_ptr), frame(ins, _env) {
 			}
 			LithpFrame &getCurrentFrame() {
 				return frame;
 			}
 			void executeFrame(LithpFrame &fr) {
-				fr.execute();
+				fr.execute(*this);
 			}
+			MicrothreadBase *thread;
 		private:
 			LithpFrame frame;
 		};
 
 		using namespace stackless::microthreading;
 		struct LithpThreadManager : public MicrothreadManager<LithpImplementation> {
+			typedef std::vector<_thread_type> Threads;
+			Threads getThreads() {
+				Threads list;
+				for (auto it = threads.begin(); it != threads.end(); ++it)
+					list.push_back(it->second);
+				return list;
+			}
 		};
 		extern LithpThreadManager LithpThreadMan;
 	}
