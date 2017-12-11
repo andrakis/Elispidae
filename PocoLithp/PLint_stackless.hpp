@@ -130,7 +130,7 @@ namespace PocoLithp {
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
 
-			void execute(LithpImplementation &);
+			void execute();
 			void nextArgument();
 			void nextExpression();
 			void setExpression(const LithpCell &value);
@@ -205,16 +205,15 @@ namespace PocoLithp {
 		};
 
 		struct LithpImplementation : public Implementation<LithpEnvironment, LithpFrame> {
-			LithpImplementation(MicrothreadBase *thread_ptr, const LithpCell &ins, env_p _env)
-				: Implementation(_env), thread(thread_ptr), frame(ins, _env) {
+			LithpImplementation(const LithpCell &ins, env_p _env)
+				: Implementation(_env), frame(ins, _env) {
 			}
 			LithpFrame &getCurrentFrame() {
 				return frame;
 			}
 			void executeFrame(LithpFrame &fr) {
-				fr.execute(*this);
+				fr.execute();
 			}
-			MicrothreadBase *thread;
 		private:
 			LithpFrame frame;
 		};

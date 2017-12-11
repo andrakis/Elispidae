@@ -20,7 +20,7 @@ namespace PocoLithp {
 		const LithpCell sym_receive(Atom, "receive");
 
 		// Frame implementation
-		void LithpFrame::execute(LithpImplementation &impl) {
+		void LithpFrame::execute() {
 			// TODO:HACK: Stop frames from completing before they're fully initialized
 			if (wait_state == Initialize) {
 				wait_state = Run;
@@ -33,7 +33,7 @@ namespace PocoLithp {
 			if (isWaiting())
 				return;
 			if (subframe != nullptr) {
-				subframe->execute(impl);
+				subframe->execute();
 				if (subframe->isResolved()) {
 					// Copy results
 					LithpCell res(subframe->result);
@@ -401,8 +401,8 @@ namespace PocoLithp {
 		LithpThreadManager LithpThreadMan;
 		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
 			// create thread
-			ThreadId thread = tm.start([&ins, env](MicrothreadBase *thread_ptr) {
-				LithpThreadManager::impl_p impl(new LithpImplementation(thread_ptr, ins, env));
+			ThreadId thread = tm.start([&ins, env]() {
+				LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
 				return impl;
 			});
 			// execute multithreading until thread resolved
