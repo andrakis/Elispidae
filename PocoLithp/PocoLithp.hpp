@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define PLITHP_VERSION "0.71"
+#define PLITHP_VERSION "0.73"
 
 // Undefine to use recursive emulator
 #define PLITHP_STACKLESS
@@ -144,6 +144,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_lambda2;
 	extern const LithpCell sym_macro;
 	extern const LithpCell sym_begin;
+	extern const LithpCell sym_receive;
 	std::string to_string(const LithpCell &exp);
 	std::string to_string(const LithpCell &exp, bool advanced, bool repre);
 	const LithpCell booleanCell(const bool val);
@@ -195,6 +196,7 @@ namespace PocoLithp {
 	extern UnsignedInteger parseTime;
 	extern Interpreter *interpreter;
 	Interpreter *StandardInterpreter();
+        void SetStandardInterpreter();
 	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);

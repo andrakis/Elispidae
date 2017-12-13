@@ -35,7 +35,11 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/PocoLithp/ELisp.o \
+	${OBJECTDIR}/PocoLithp/ELthreads.o \
 	${OBJECTDIR}/PocoLithp/PLglobals.o \
+	${OBJECTDIR}/PocoLithp/PLint_recursive.o \
+	${OBJECTDIR}/PocoLithp/PLint_stackless.o \
 	${OBJECTDIR}/PocoLithp/PLinterpreter.o \
 	${OBJECTDIR}/PocoLithp/PLparser.o \
 	${OBJECTDIR}/PocoLithp/PLruntime.o \
@@ -131,250 +135,270 @@ bin/plithp: ${OBJECTFILES}
 	${MKDIR} -p bin
 	${LINK.cc} -o bin/plithp ${OBJECTFILES} ${LDLIBSOPTIONS} -pthread -s
 
+${OBJECTDIR}/PocoLithp/ELisp.o: PocoLithp/ELisp.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/ELisp.o PocoLithp/ELisp.cpp
+
+${OBJECTDIR}/PocoLithp/ELthreads.o: PocoLithp/ELthreads.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/ELthreads.o PocoLithp/ELthreads.cpp
+
 ${OBJECTDIR}/PocoLithp/PLglobals.o: PocoLithp/PLglobals.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
+
+${OBJECTDIR}/PocoLithp/PLint_recursive.o: PocoLithp/PLint_recursive.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLint_recursive.o PocoLithp/PLint_recursive.cpp
+
+${OBJECTDIR}/PocoLithp/PLint_stackless.o: PocoLithp/PLint_stackless.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLint_stackless.o PocoLithp/PLint_stackless.cpp
 
 ${OBJECTDIR}/PocoLithp/PLinterpreter.o: PocoLithp/PLinterpreter.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLinterpreter.o PocoLithp/PLinterpreter.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLinterpreter.o PocoLithp/PLinterpreter.cpp
 
 ${OBJECTDIR}/PocoLithp/PLparser.o: PocoLithp/PLparser.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLparser.o PocoLithp/PLparser.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLparser.o PocoLithp/PLparser.cpp
 
 ${OBJECTDIR}/PocoLithp/PLruntime.o: PocoLithp/PLruntime.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLruntime.o PocoLithp/PLruntime.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLruntime.o PocoLithp/PLruntime.cpp
 
 ${OBJECTDIR}/PocoLithp/PLtests.o: PocoLithp/PLtests.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtests.o PocoLithp/PLtests.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtests.o PocoLithp/PLtests.cpp
 
 ${OBJECTDIR}/PocoLithp/PLtypes.o: PocoLithp/PLtypes.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtypes.o PocoLithp/PLtypes.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLtypes.o PocoLithp/PLtypes.cpp
 
 ${OBJECTDIR}/PocoLithp/PocoLithp.o: PocoLithp/PocoLithp.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PocoLithp.o PocoLithp/PocoLithp.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PocoLithp.o PocoLithp/PocoLithp.cpp
 
 ${OBJECTDIR}/PocoLithp/stdafx.o: PocoLithp/stdafx.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdafx.o PocoLithp/stdafx.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdafx.o PocoLithp/stdafx.cpp
 
 ${OBJECTDIR}/contrib/linenoise-ng/src/ConvertUTF.o: contrib/linenoise-ng/src/ConvertUTF.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/linenoise-ng/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/ConvertUTF.o contrib/linenoise-ng/src/ConvertUTF.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/ConvertUTF.o contrib/linenoise-ng/src/ConvertUTF.cpp
 
 ${OBJECTDIR}/contrib/linenoise-ng/src/linenoise.o: contrib/linenoise-ng/src/linenoise.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/linenoise-ng/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/linenoise.o contrib/linenoise-ng/src/linenoise.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/linenoise.o contrib/linenoise-ng/src/linenoise.cpp
 
 ${OBJECTDIR}/contrib/linenoise-ng/src/wcwidth.o: contrib/linenoise-ng/src/wcwidth.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/linenoise-ng/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/wcwidth.o contrib/linenoise-ng/src/wcwidth.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/linenoise-ng/src/wcwidth.o contrib/linenoise-ng/src/wcwidth.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o: contrib/poco/Foundation/src/ASCIIEncoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o contrib/poco/Foundation/src/ASCIIEncoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/ASCIIEncoding.o contrib/poco/Foundation/src/ASCIIEncoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o: contrib/poco/Foundation/src/Ascii.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o contrib/poco/Foundation/src/Ascii.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Ascii.o contrib/poco/Foundation/src/Ascii.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o: contrib/poco/Foundation/src/AtomicCounter.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o contrib/poco/Foundation/src/AtomicCounter.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/AtomicCounter.o contrib/poco/Foundation/src/AtomicCounter.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o: contrib/poco/Foundation/src/Bugcheck.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o contrib/poco/Foundation/src/Bugcheck.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Bugcheck.o contrib/poco/Foundation/src/Bugcheck.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o: contrib/poco/Foundation/src/DateTime.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o contrib/poco/Foundation/src/DateTime.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTime.o contrib/poco/Foundation/src/DateTime.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o: contrib/poco/Foundation/src/DateTimeFormat.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o contrib/poco/Foundation/src/DateTimeFormat.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeFormat.o contrib/poco/Foundation/src/DateTimeFormat.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o: contrib/poco/Foundation/src/DateTimeParser.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o contrib/poco/Foundation/src/DateTimeParser.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/DateTimeParser.o contrib/poco/Foundation/src/DateTimeParser.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o: contrib/poco/Foundation/src/Debugger.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o contrib/poco/Foundation/src/Debugger.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Debugger.o contrib/poco/Foundation/src/Debugger.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o: contrib/poco/Foundation/src/Exception.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o contrib/poco/Foundation/src/Exception.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Exception.o contrib/poco/Foundation/src/Exception.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Format.o: contrib/poco/Foundation/src/Format.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Format.o contrib/poco/Foundation/src/Format.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Format.o contrib/poco/Foundation/src/Format.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o: contrib/poco/Foundation/src/Latin1Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o contrib/poco/Foundation/src/Latin1Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin1Encoding.o contrib/poco/Foundation/src/Latin1Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o: contrib/poco/Foundation/src/Latin2Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o contrib/poco/Foundation/src/Latin2Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin2Encoding.o contrib/poco/Foundation/src/Latin2Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o: contrib/poco/Foundation/src/Latin9Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o contrib/poco/Foundation/src/Latin9Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Latin9Encoding.o contrib/poco/Foundation/src/Latin9Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o: contrib/poco/Foundation/src/LocalDateTime.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o contrib/poco/Foundation/src/LocalDateTime.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/LocalDateTime.o contrib/poco/Foundation/src/LocalDateTime.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o: contrib/poco/Foundation/src/Mutex.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o contrib/poco/Foundation/src/Mutex.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Mutex.o contrib/poco/Foundation/src/Mutex.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o: contrib/poco/Foundation/src/NumberFormatter.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o contrib/poco/Foundation/src/NumberFormatter.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberFormatter.o contrib/poco/Foundation/src/NumberFormatter.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o: contrib/poco/Foundation/src/NumberParser.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o contrib/poco/Foundation/src/NumberParser.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumberParser.o contrib/poco/Foundation/src/NumberParser.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o: contrib/poco/Foundation/src/NumericString.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o contrib/poco/Foundation/src/NumericString.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/NumericString.o contrib/poco/Foundation/src/NumericString.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o: contrib/poco/Foundation/src/RWLock.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o contrib/poco/Foundation/src/RWLock.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RWLock.o contrib/poco/Foundation/src/RWLock.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o: contrib/poco/Foundation/src/RefCountedObject.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o contrib/poco/Foundation/src/RefCountedObject.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/RefCountedObject.o contrib/poco/Foundation/src/RefCountedObject.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o: contrib/poco/Foundation/src/TextConverter.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o contrib/poco/Foundation/src/TextConverter.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextConverter.o contrib/poco/Foundation/src/TextConverter.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o: contrib/poco/Foundation/src/TextEncoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o contrib/poco/Foundation/src/TextEncoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextEncoding.o contrib/poco/Foundation/src/TextEncoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o: contrib/poco/Foundation/src/TextIterator.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o contrib/poco/Foundation/src/TextIterator.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/TextIterator.o contrib/poco/Foundation/src/TextIterator.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o: contrib/poco/Foundation/src/Timespan.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o contrib/poco/Foundation/src/Timespan.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timespan.o contrib/poco/Foundation/src/Timespan.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o: contrib/poco/Foundation/src/Timestamp.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o contrib/poco/Foundation/src/Timestamp.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timestamp.o contrib/poco/Foundation/src/Timestamp.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o: contrib/poco/Foundation/src/Timezone.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o contrib/poco/Foundation/src/Timezone.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Timezone.o contrib/poco/Foundation/src/Timezone.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o: contrib/poco/Foundation/src/UTF16Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o contrib/poco/Foundation/src/UTF16Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF16Encoding.o contrib/poco/Foundation/src/UTF16Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o: contrib/poco/Foundation/src/UTF32Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o contrib/poco/Foundation/src/UTF32Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF32Encoding.o contrib/poco/Foundation/src/UTF32Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o: contrib/poco/Foundation/src/UTF8Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o contrib/poco/Foundation/src/UTF8Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8Encoding.o contrib/poco/Foundation/src/UTF8Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o: contrib/poco/Foundation/src/UTF8String.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o contrib/poco/Foundation/src/UTF8String.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UTF8String.o contrib/poco/Foundation/src/UTF8String.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o: contrib/poco/Foundation/src/Unicode.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o contrib/poco/Foundation/src/Unicode.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Unicode.o contrib/poco/Foundation/src/Unicode.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o: contrib/poco/Foundation/src/UnicodeConverter.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o contrib/poco/Foundation/src/UnicodeConverter.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/UnicodeConverter.o contrib/poco/Foundation/src/UnicodeConverter.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Var.o: contrib/poco/Foundation/src/Var.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Var.o contrib/poco/Foundation/src/Var.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Var.o contrib/poco/Foundation/src/Var.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o: contrib/poco/Foundation/src/VarHolder.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o contrib/poco/Foundation/src/VarHolder.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarHolder.o contrib/poco/Foundation/src/VarHolder.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o: contrib/poco/Foundation/src/VarIterator.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o contrib/poco/Foundation/src/VarIterator.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/VarIterator.o contrib/poco/Foundation/src/VarIterator.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o: contrib/poco/Foundation/src/Windows1250Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o contrib/poco/Foundation/src/Windows1250Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1250Encoding.o contrib/poco/Foundation/src/Windows1250Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o: contrib/poco/Foundation/src/Windows1251Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o contrib/poco/Foundation/src/Windows1251Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1251Encoding.o contrib/poco/Foundation/src/Windows1251Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o: contrib/poco/Foundation/src/Windows1252Encoding.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -D_DEBUG -DREADLINE_NG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o contrib/poco/Foundation/src/Windows1252Encoding.cpp
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contrib/poco/Foundation/src/Windows1252Encoding.o contrib/poco/Foundation/src/Windows1252Encoding.cpp
 
 ${OBJECTDIR}/contrib/poco/Foundation/src/pcre_byte_order.o: contrib/poco/Foundation/src/pcre_byte_order.c
 	${MKDIR} -p ${OBJECTDIR}/contrib/poco/Foundation/src

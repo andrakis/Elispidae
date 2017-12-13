@@ -126,7 +126,7 @@
           <incDir>
             <pElem>contrib/poco/Foundation/include</pElem>
             <pElem>contrib/linenoise-ng/include</pElem>
-            <pElem>contrib/Stackess/Stackless/include</pElem>
+            <pElem>contrib/Stackless/Stackless/include</pElem>
           </incDir>
           <preprocessorList>
             <Elem>READLINE_NG</Elem>
@@ -493,7 +493,7 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -508,7 +508,7 @@
           <incDir>
             <pElem>contrib/poco/Foundation/include</pElem>
             <pElem>contrib/linenoise-ng/include</pElem>
-            <pElem>contrib/Stackess/Stackless/include</pElem>
+            <pElem>contrib/Stackless/Stackless/include</pElem>
           </incDir>
           <commandLine>-flto</commandLine>
           <preprocessorList>

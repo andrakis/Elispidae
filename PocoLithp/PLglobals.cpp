@@ -20,6 +20,7 @@ namespace PocoLithp {
 	const LithpCell sym_lambda2(Atom, "#");   // Alternative to lambda
 	const LithpCell sym_macro(Atom, "macro");
 	const LithpCell sym_begin(Atom, "begin");
+	const LithpCell sym_receive(Atom, "receive");
 
 	const LithpCell booleanCell(const bool val) {
 		return val ? sym_true : sym_false;

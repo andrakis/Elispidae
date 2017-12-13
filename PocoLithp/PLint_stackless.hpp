@@ -48,7 +48,6 @@ namespace PocoLithp {
 			};
 		}
 
-		extern const LithpCell sym_receive;
 		struct LithpInstructionConverter
 			: public InstructionConverter<LithpCell, typename instruction::instruction> {
 			static _instruction_type convert(_cell_type value) {

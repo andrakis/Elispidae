@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 {
 	GETLINE_INIT();
 	LithpEnvironment *global_env = new LithpEnvironment();
+	SetStandardInterpreter();
 	PocoLithp::init_runtime();
 	Elispidae::init_runtime();
 	add_globals(*global_env);

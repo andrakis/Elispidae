@@ -17,8 +17,6 @@ unsigned stackless::microthreading::thread_counter = 0;
 
 namespace PocoLithp {
 	namespace Stackless {
-		const LithpCell sym_receive(Atom, "receive");
-
 		// Frame implementation
 		void LithpFrame::execute() {
 			// TODO:HACK: Stop frames from completing before they're fully initialized
