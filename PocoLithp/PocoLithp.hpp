@@ -27,7 +27,7 @@
 
 // Transitional name
 #define APP_NAME "PocoLithp (Elispidae) "
-#define PLITHP_VERSION_INFO APP_NAME PLITHP_VERSION STACKLESS_DESC 
+#define PLITHP_VERSION_INFO APP_NAME PLITHP_VERSION STACKLESS_DESC
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -213,8 +213,12 @@ namespace PocoLithp {
 	typedef LithpThreadId LithpThreadNode;
 	typedef LithpThreadId LithpCosmosNode;
 	struct LithpThreadReference {
+		// Thread ID as returned from thread start
 		LithpThreadId thread_id;
+		// Node ID of the interpreter, currently always 0. In the future if threading
+		// is implemented, this number will have differing values.
 		LithpThreadNode node_id;
+		// Global network (Cosmos) node id. 0 until joined to the Cosmos network.
 		LithpCosmosNode cosmos_id;
 
 		LithpThreadReference(const LithpThreadId id = 0, const LithpThreadNode node = 0, const LithpCosmosNode cosmos = 0)
