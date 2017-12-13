@@ -131,7 +131,7 @@ namespace PocoLithp {
 				subframe_mode = Argument;
 				return false;
 			default:
-				DEBUG(std::string("  resolveArgument(") + to_string(value) + std::string(") = ") + to_string(value));
+				DEBUG(std::string("  resolveArgument(") + to_string(value) + std::string(") = ") + to_string(value) + std::string(", tag: ") + std::to_string(value.tag));
 				resolved_arguments.push_back(value);
 				return true;
 			}
@@ -300,6 +300,7 @@ namespace PocoLithp {
 			LithpCell proc(*it); ++it;
 			LithpCells arguments(it, frame.resolved_arguments.cend());
 
+			DEBUG("Secondary proc evaluation of: " + proc.str());
 			// Secondary proc evaluation
 			switch (proc.tag) {
 			case Atom:
@@ -312,6 +313,7 @@ namespace PocoLithp {
 				break;
 			}
 
+			DEBUG("Primary proc evaluation of: " + proc.str());
 			// Primary proc evaluation
 			switch (proc.tag) {
 				// Proc: a builtin procedure in C++ that needs no environment.

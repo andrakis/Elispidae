@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define PLITHP_VERSION "0.73"
+#define PLITHP_VERSION "0.75"
 
 // Undefine to use recursive emulator
 #define PLITHP_STACKLESS
@@ -196,7 +196,7 @@ namespace PocoLithp {
 	extern UnsignedInteger parseTime;
 	extern Interpreter *interpreter;
 	Interpreter *StandardInterpreter();
-        void SetStandardInterpreter();
+	void SetStandardInterpreter();
 	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);
@@ -313,18 +313,21 @@ namespace PocoLithp {
 
 			// If we have one of the basic types, extract it and perform comparison.
 			// Only a specific few types are supported here.
-			if (a.tag == Var || a.tag == Atom || a.tag == VariableReference) {
+			if (a.tag == Atom && b.tag == Atom) {
+				return cb(a.atomid(), b.atomid());
+			}
+			if (a.tag == Var || a.tag == VariableReference) {
 				const std::type_info &rtti = a.value.type();
-				if (rtti == typeid(atomId)) {
-					return cb(a.atomid(), b.atomid());
-				} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
-					return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
+				if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
+					return cb(a.value.convert<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
 				} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
-					return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
+					return cb(a.value.convert<SignedInteger>(), b.value.convert<SignedInteger>());
 				} else if (rtti == typeid(bool)) {
-					return cb(a.value.extract<bool>(), b.value.convert<bool>());
+					return cb(a.value.convert<bool>(), b.value.convert<bool>());
 				} else if (rtti == typeid(double) || rtti == typeid(float)) {
 					return cb(a.value.convert<double>(), b.value.convert<double>());
+				} else {
+					throw InvalidArgumentException("CompareWith: no matching variable types");
 				}
 			} else if (a.tag == List) {
 				// List comparison
@@ -420,7 +423,7 @@ namespace PocoLithp {
 		// Atom behaviours
 		const atomId atomid() const {
 			if (tag != Atom && tag != VariableReference)
-				throw InvalidArgumentException("Not an atom");
+				throw InvalidArgumentException("Not an atom, tag: " + std::to_string(tag) + ", value: " + str());
 			return value.extract<atomId>();
 		}
 		

@@ -6,6 +6,13 @@ PocoLithp::AtomMapByName_t atomMapByName;
 typedef std::list<PocoLithp::add_environment_proc> environment_procs_t;
 environment_procs_t environment_procs;
 
+// For when you really need to dig deep into the behaviour of the interpreter.
+#if 1
+#define TRACE_DEBUG(x)
+#else
+#define TRACE_DEBUG(x) do { x; } while(0);
+#endif
+
 namespace PocoLithp {
 	const LithpCell sym_false(Atom, "false");
 	const LithpCell sym_true(Atom, "true");
@@ -104,11 +111,16 @@ namespace PocoLithp {
 
 	LithpCell proc_greater(const LithpCells &c)
 	{
+		TRACE_DEBUG(std::cerr << "Greater ..." << std::endl);
 		if(c.size() < 2) return sym_false;
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+		TRACE_DEBUG(std::cerr << "Greater: n=" << n.str() << ", tag: " << n.tag << std::endl);
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			TRACE_DEBUG(std::cerr << "Greater: *i=" << i->str() << ", tag: " << i->tag << std::endl);
 			if (n <= *i)
 				return sym_false;
+		}
+		TRACE_DEBUG(std::cerr << "Greater: not greater" << std::endl);
 		return sym_true;
 	}
 
