@@ -7,7 +7,7 @@ namespace PocoLithp {
 
 	Interpreter *interpreter = nullptr;
 	void SetStandardInterpreter() {
-#ifdef ELITHP_STACKLESS
+#ifdef ELISP_STACKLESS
 		interpreter = new StacklessInterpreter();
 #else
 		interpreter = new RecursiveInterpreter();

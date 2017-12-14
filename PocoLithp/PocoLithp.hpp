@@ -3,21 +3,21 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define ELITHP_VERSION "0.77"
+#define ELISP_VERSION "0.80"
 
 // Undefine to use recursive emulator
-#define ELITHP_STACKLESS
-#ifdef ELITHP_STACKLESS
+#define ELISP_STACKLESS
+#ifdef ELISP_STACKLESS
 #define STACKLESS_DESC   " (Stackless)"
 #else
 #define STACKLESS_DESC   ""
 #endif
 
 #ifndef NO_STATS
-#define ELITHP_TRACK_STATS
+#define ELISP_TRACK_STATS
 #endif
 
-#ifdef ELITHP_TRACK_STATS
+#ifdef ELISP_TRACK_STATS
 #define TRACK_STATS(code) do { code; } while(0)
 #define STATS_DESC        "(stats enabled)"
 #else
@@ -26,7 +26,7 @@
 #endif
 
 #define APP_NAME "Elispidae "
-#define ELITHP_VERSION_INFO APP_NAME ELITHP_VERSION STACKLESS_DESC
+#define ELISP_VERSION_INFO APP_NAME ELISP_VERSION STACKLESS_DESC
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -76,17 +76,17 @@ namespace PocoLithp {
 	};
 
 #if defined(POCO_HAVE_INT64)
-#define ELITHP_INT64
+#define ELISP_INT64
 #endif
 
-#ifdef ELITHP_INT64
+#ifdef ELISP_INT64
 	typedef Poco::Int64 SignedInteger;
 	typedef Poco::UInt64 UnsignedInteger;
-	const std::string ELITHP_ARCH = "(Int64 support)";
+	const std::string ELISP_ARCH = "(Int64 support)";
 #else
 	typedef long SignedInteger;
 	typedef unsigned long UnsignedInteger;
-	const std::string ELITHP_ARCH = "(Int32 only)";
+	const std::string ELISP_ARCH = "(Int32 only)";
 #endif
 
 	enum LithpVarType {
