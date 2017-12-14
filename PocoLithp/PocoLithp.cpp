@@ -80,7 +80,8 @@ int main(int argc, char *argv[])
 			return ERR_EXCEPTION;
 		}
 	} else {
-		evalTimed(read(std::string("(begin (print (banner)) (repl))")), global_p);
+		evalTimed(read(std::string("(begin (print (banner)))")), global_p);
+		repl("Elisp> ", global_p);
 	}
 	if(GetTIMING())
 		std::cerr << "Total eval time: " << GetEvalTime() << "ms, parse time: " << parseTime << "ms\n";

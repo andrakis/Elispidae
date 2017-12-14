@@ -7,7 +7,7 @@ namespace PocoLithp {
 
 	Interpreter *interpreter = nullptr;
 	void SetStandardInterpreter() {
-#ifdef PLITHP_STACKLESS
+#ifdef ELITHP_STACKLESS
 		interpreter = new StacklessInterpreter();
 #else
 		interpreter = new RecursiveInterpreter();
@@ -167,8 +167,6 @@ namespace PocoLithp {
 			}
 		}
 
-		// Reset QUIT in case REPL was invoked from a script
-		SetQUIT(false);
 		return result;
 	}
 }

@@ -4,6 +4,11 @@
 #include <Stackless.hpp>
 #include <queue>
 
+// For avoiding 100% cpu usage
+#include <chrono>
+#include <mutex>
+#include <thread>
+
 namespace PocoLithp {
 	typedef std::queue<LithpCell> LithpMailbox;
 
@@ -79,10 +84,18 @@ namespace PocoLithp {
 		};
 
 		enum FrameWaitState {
+			// Frame startup
 			Initialize,
+			// Standard run
 			Run,
+			// Running but awaiting on a proc to finish
+			Run_Wait,
+			// Finished
 			Done,
-			Receive
+			// Awaiting message
+			Receive,
+			// Special state
+			REPL
 		};
 
 		// When in a message receive state
@@ -123,8 +136,14 @@ namespace PocoLithp {
 				Procedure
 			};
 
+			LithpFrame &deepestFrame() {
+				if (subframe != nullptr)
+					return subframe->deepestFrame();
+				return *this;
+			}
+
 			bool isResolved() const { return resolved; }
-			bool isWaiting() const { return wait_state == Receive; }
+			bool isWaiting() const { return wait_state == Receive || wait_state == REPL || wait_state == Run_Wait; }
 
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
@@ -220,12 +239,79 @@ namespace PocoLithp {
 		using namespace stackless::microthreading;
 		struct LithpThreadManager : public MicrothreadManager<LithpImplementation> {
 			typedef std::vector<_thread_type> Threads;
+			// TODO: This should be part of the thread, but we don't have access to it
+			typedef std::map<ThreadId, LithpMailbox> Mailboxes;
+
+			LithpThreadManager() : MicrothreadManager() {
+			}
+
 			Threads getThreads() {
 				Threads list;
 				for (auto it = threads.begin(); it != threads.end(); ++it)
 					list.push_back(it->second);
 				return list;
 			}
+
+			_threads_type::iterator getThreadById(const LithpThreadId thread_id, const LithpThreadNode node_id = 0, const LithpCosmosNode cosmos_id = 0) {
+				// TODO: Only thread_id is used so far
+				return threads.find(thread_id);
+			}
+			_threads_type::iterator getThreadById(const LithpThreadReference &ref) {
+				return getThreadById(ref.thread_id, ref.node_id, ref.cosmos_id);
+			}
+
+			Mailboxes::iterator getMailboxById(const LithpThreadId thread_id, const LithpThreadNode node_id = 0, const LithpCosmosNode cosmos_id = 0) {
+				Mailboxes::iterator mailbox_it = mailboxes.find(thread_id);
+				if (mailbox_it == mailboxes.end()) {
+					// Mailbox not found, create it
+					mailboxes.emplace(thread_id, LithpMailbox());
+					mailbox_it = mailboxes.find(thread_id);
+				}
+				return mailbox_it;
+			}
+			Mailboxes::iterator getMailboxById(const LithpThreadReference &ref) {
+				return getMailboxById(ref.thread_id, ref.node_id, ref.cosmos_id);
+			}
+
+			// Send a message to a thread.
+			// Returns: true on success, false on thread not existing.
+			bool send(const LithpCell &message, const LithpThreadReference &ref) {
+				auto thread_it = getThreadById(ref);
+				if (thread_it == threads.end())
+					return false; // Thread not found
+				auto mailbox_it = getMailboxById(ref);
+				mailbox_it->second.push(LithpCell(message));
+				return true;
+			}
+			
+			// Attempt to receive a message for a thread.
+			// Returns: true on message received and copied into &message, false if nothing available.
+			bool receive(LithpCell &message, const LithpThreadReference &ref) {
+				auto thread_it = getThreadById(ref);
+				if (thread_it == threads.end())
+					return false; // No thread with this id
+				auto mailbox_it = getMailboxById(ref);
+				if (mailbox_it->second.empty())
+					return false; // No messages waiting
+				// Update message object
+				message.update(mailbox_it->second.front());
+				mailbox_it->second.pop();
+				return true;
+			}
+		protected:
+			void yield_process() {
+				for(;;) {
+					if (!yield_mutex.try_lock()) {
+						std::this_thread::yield();
+						std::this_thread::sleep_for(std::chrono::milliseconds(1));
+						continue;
+					}
+					break;
+				}
+			}
+		private:
+			Mailboxes mailboxes;
+			std::mutex yield_mutex;
 		};
 		extern LithpThreadManager LithpThreadMan;
 	}

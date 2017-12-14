@@ -3,21 +3,21 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define PLITHP_VERSION "0.75"
+#define ELITHP_VERSION "0.77"
 
 // Undefine to use recursive emulator
-#define PLITHP_STACKLESS
-#ifdef PLITHP_STACKLESS
+#define ELITHP_STACKLESS
+#ifdef ELITHP_STACKLESS
 #define STACKLESS_DESC   " (Stackless)"
 #else
 #define STACKLESS_DESC   ""
 #endif
 
 #ifndef NO_STATS
-#define PLITHP_TRACK_STATS
+#define ELITHP_TRACK_STATS
 #endif
 
-#ifdef PLITHP_TRACK_STATS
+#ifdef ELITHP_TRACK_STATS
 #define TRACK_STATS(code) do { code; } while(0)
 #define STATS_DESC        "(stats enabled)"
 #else
@@ -25,9 +25,8 @@
 #define STATS_DESC        "(no stats)"
 #endif
 
-// Transitional name
-#define APP_NAME "PocoLithp (Elispidae) "
-#define PLITHP_VERSION_INFO APP_NAME PLITHP_VERSION STACKLESS_DESC
+#define APP_NAME "Elispidae "
+#define ELITHP_VERSION_INFO APP_NAME ELITHP_VERSION STACKLESS_DESC
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -77,17 +76,17 @@ namespace PocoLithp {
 	};
 
 #if defined(POCO_HAVE_INT64)
-#define PLITHP_INT64
+#define ELITHP_INT64
 #endif
 
-#ifdef PLITHP_INT64
+#ifdef ELITHP_INT64
 	typedef Poco::Int64 SignedInteger;
 	typedef Poco::UInt64 UnsignedInteger;
-	const std::string PLITHP_ARCH = "(Int64 support)";
+	const std::string ELITHP_ARCH = "(Int64 support)";
 #else
 	typedef long SignedInteger;
 	typedef unsigned long UnsignedInteger;
-	const std::string PLITHP_ARCH = "(Int32 only)";
+	const std::string ELITHP_ARCH = "(Int32 only)";
 #endif
 
 	enum LithpVarType {
@@ -260,10 +259,17 @@ namespace PocoLithp {
 		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
 		LithpVar(proc_extended_type proc) : tag(ProcExtended), value(proc), env(0) {}
-		LithpVar(LithpThreadReference &tr) : tag(Thread), value(tr), env(0) {}
 		// Extended constructors
+		LithpVar(LithpThreadReference &tr) : tag(Thread), value(tr), env(0) {}
 
 		~LithpVar() {
+		}
+
+		// Set the value to that of another LithpVar
+		void update(const LithpVar &copy) {
+			tag = copy.tag;
+			value = copy.value;
+			env = copy.env;
 		}
 
 		std::string str() const {

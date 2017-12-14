@@ -339,7 +339,7 @@ namespace PocoLithp {
 
 	// Invoke REPL
 	LithpCell proc_repl(const LithpCells &c, Env_p env) {
-		std::string prompt = "plithp> ";
+		std::string prompt = "Elisp> ";
 		if (c.size() == 1)
 			prompt = c[0].str();
 		return repl(prompt, env);
@@ -450,6 +450,7 @@ namespace PocoLithp {
 		// IO
 		env["print"] = LithpCell(&proc_print);
 		env["getline"] = LithpCell(&proc_getline);
+		// Stackless interpreter defines this in ELthreads.cpp
 		env["repl"] = LithpCell(&proc_repl);
 		env["_eval"] = LithpCell(&proc__eval);
 		env["_eval_ctx"] = LithpCell(&proc__eval_ctx);

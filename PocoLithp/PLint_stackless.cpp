@@ -218,9 +218,11 @@ namespace PocoLithp {
 						result.env = env;
 						return true;
 					} else if (first == sym_begin) {  // (begin exp*)
+						ARG("begin: requires an expression");
 						resolved_arguments = LithpCells(begin + 1, end);
 						return false;
 					} else if (first == sym_receive) { // (receive (# (Message::any)) [timeout [timeout callback]]}
+						ARG("receive: requires a callback");
 						resolved_arguments = LithpCells(begin + 1, end);
 						return false;
 					}
@@ -318,15 +320,23 @@ namespace PocoLithp {
 			switch (proc.tag) {
 				// Proc: a builtin procedure in C++ that needs no environment.
 			case Proc:
+				// Mark wait state to avoid re-entry into this section
+				frame.wait_state = Run_Wait;
 				// Copy the rest of the resolved arguments to a new list,
 				// that list is passed as the arguments.
 				frame.result = proc.proc()(arguments);
+				// Restore wait_state
+				frame.wait_state = Run;
 				return true;
 				// ProcExtended: a builtin procedure in C++ that passes the frame environment.
 			case ProcExtended:
+				// Mark wait state to avoid re-entry into this section
+				frame.wait_state = Run_Wait;
 				// Copy the rest of the resolved arguments to a new list,
 				// that list is passed as the arguments.
 				frame.result = proc.proc_extended()(arguments, frame.env);
+				// Restore wait_state
+				frame.wait_state = Run;
 				return true;
 				// A Lisp procedure or macro.
 			case Lambda:
@@ -406,7 +416,7 @@ namespace PocoLithp {
 				return impl;
 			});
 			// execute multithreading until thread resolved
-			tm.runThreadToCompletion(thread);
+			tm.runThreadToCompletion(thread, Multi);
 			// return frame result
 			LithpCell result(tm.getThread(thread).getResult());
 			// remove thread
