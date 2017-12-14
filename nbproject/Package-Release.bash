@@ -13,8 +13,8 @@ CND_BUILDDIR=build
 CND_DLIB_EXT=so
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=bin/plithp
-OUTPUT_BASENAME=plithp
+OUTPUT_PATH=bin/elisp
+OUTPUT_BASENAME=elisp
 PACKAGE_TOP_DIR=pocolithp/
 
 # Functions

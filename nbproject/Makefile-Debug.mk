@@ -129,11 +129,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin/plithp
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk bin/elisp
 
-bin/plithp: ${OBJECTFILES}
+bin/elisp: ${OBJECTFILES}
 	${MKDIR} -p bin
-	${LINK.cc} -o bin/plithp ${OBJECTFILES} ${LDLIBSOPTIONS} -pthread -s
+	${LINK.cc} -o bin/elisp ${OBJECTFILES} ${LDLIBSOPTIONS} -pthread -s
 
 ${OBJECTDIR}/PocoLithp/ELisp.o: PocoLithp/ELisp.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp

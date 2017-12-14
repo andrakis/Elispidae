@@ -134,7 +134,7 @@
           </preprocessorList>
         </ccTool>
         <linkerTool>
-          <output>bin/plithp</output>
+          <output>bin/elisp</output>
           <stripSymbols>true</stripSymbols>
           <commandLine>-pthread</commandLine>
         </linkerTool>
@@ -523,7 +523,7 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <linkerTool>
-          <output>bin/plithp</output>
+          <output>bin/elisp</output>
           <stripSymbols>true</stripSymbols>
           <commandLine>-pthread -flto</commandLine>
         </linkerTool>
