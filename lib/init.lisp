@@ -1,6 +1,9 @@
 ;; Entry point for standard REPL environment
 (begin
-	(define DefaultLibraries (list lists numeric string misc))
+	;; Show a little progress when running on slow systems like OR1K.
+	(print "Elispidae starting up...")
+
+	(define DefaultLibraries (list lists numeric string misc cosmos))
 
 	;; (timing true)
 	;; (debug true)

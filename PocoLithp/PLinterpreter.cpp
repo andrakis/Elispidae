@@ -1,12 +1,17 @@
 #include "stdafx.h"
 #include "PLint_recursive.hpp"
+#include "PLint_stackless.hpp"
 
 namespace PocoLithp {
 	UnsignedInteger parseTime = 0;
 
 	Interpreter *interpreter = nullptr;
 	void SetStandardInterpreter() {
+#ifdef ELISP_STACKLESS
+		interpreter = new StacklessInterpreter();
+#else
 		interpreter = new RecursiveInterpreter();
+#endif
 	}
 	Interpreter *StandardInterpreter() {
 		return interpreter;
@@ -88,6 +93,8 @@ namespace PocoLithp {
 			}
 		} else if (!advanced && !repre && exp.tag == Lambda)
 			return "<Lambda>";
+		else if (exp.tag == Thread)
+			return exp.str();
 		else if (!advanced && !repre && exp.tag == Macro)
 			return "<Macro>";
 		else if (exp.tag == Proc)
@@ -160,8 +167,6 @@ namespace PocoLithp {
 			}
 		}
 
-		// Reset QUIT in case REPL was invoked from a script
-		SetQUIT(false);
 		return result;
 	}
 }

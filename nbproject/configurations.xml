@@ -4,7 +4,9 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>PocoLithp/ELisp.hpp</itemPath>
       <itemPath>PocoLithp/PLint_recursive.hpp</itemPath>
+      <itemPath>PocoLithp/PLint_stackless.hpp</itemPath>
       <itemPath>PocoLithp/PocoLithp.hpp</itemPath>
       <itemPath>PocoLithp/overflow.h</itemPath>
       <itemPath>PocoLithp/stdafx.h</itemPath>
@@ -85,8 +87,11 @@
           <itemPath>contrib/poco/Foundation/src/pcre_xclass.c</itemPath>
         </logicalFolder>
       </logicalFolder>
+      <itemPath>PocoLithp/ELisp.cpp</itemPath>
+      <itemPath>PocoLithp/ELthreads.cpp</itemPath>
       <itemPath>PocoLithp/PLglobals.cpp</itemPath>
       <itemPath>PocoLithp/PLint_recursive.cpp</itemPath>
+      <itemPath>PocoLithp/PLint_stackless.cpp</itemPath>
       <itemPath>PocoLithp/PLinterpreter.cpp</itemPath>
       <itemPath>PocoLithp/PLparser.cpp</itemPath>
       <itemPath>PocoLithp/PLruntime.cpp</itemPath>
@@ -121,6 +126,7 @@
           <incDir>
             <pElem>contrib/poco/Foundation/include</pElem>
             <pElem>contrib/linenoise-ng/include</pElem>
+            <pElem>contrib/Stackless/Stackless/include</pElem>
           </incDir>
           <preprocessorList>
             <Elem>READLINE_NG</Elem>
@@ -128,16 +134,26 @@
           </preprocessorList>
         </ccTool>
         <linkerTool>
-          <output>bin/plithp</output>
+          <output>bin/elisp</output>
           <stripSymbols>true</stripSymbols>
           <commandLine>-pthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="PocoLithp/ELisp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/ELisp.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/ELthreads.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_stackless.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_stackless.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -477,7 +493,7 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -492,6 +508,7 @@
           <incDir>
             <pElem>contrib/poco/Foundation/include</pElem>
             <pElem>contrib/linenoise-ng/include</pElem>
+            <pElem>contrib/Stackless/Stackless/include</pElem>
           </incDir>
           <commandLine>-flto</commandLine>
           <preprocessorList>
@@ -506,16 +523,26 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <linkerTool>
-          <output>bin/plithp</output>
+          <output>bin/elisp</output>
           <stripSymbols>true</stripSymbols>
           <commandLine>-pthread -flto</commandLine>
         </linkerTool>
       </compileType>
+      <item path="PocoLithp/ELisp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/ELisp.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/ELthreads.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_stackless.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/PLint_stackless.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PocoLithp/PLinterpreter.cpp" ex="false" tool="1" flavor2="0">
       </item>

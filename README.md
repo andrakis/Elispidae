@@ -1,9 +1,11 @@
-PocoLithp
-=========
+Elispidae (Elisp)
+=================
 
-An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++14 and using the [Poco](https://procoproject.org) library.
+***Formerly PocoLithp***
 
-It is a mix of Scheme and Common Lisp - the minimalist syntax of Scheme but without most of the advanced features of Scheme, more similar to Common Lisp.
+An implementation of [Lithp](https://github.com/andrakis/node-lithp) written in C++14 and using the [Stackless](https://github.com/andrakis/Stackless) library.
+
+It is a mix of Erlang and Common Lisp - the minimalist syntax of Scheme but without most of the advanced features of Scheme, more similar to Common Lisp.
 
 Features taken from Scheme:
 
@@ -55,7 +57,7 @@ An attempt at a much more lightweight implementation of a C++ Lithp (other attem
 What?
 -----
 
-PocoLithp implements a working and extremely fast Scheme-based interpreter. See the [tests](https://github.com/andrakis/PocoLithp/blob/master/PocoLithp/PLtests.cpp) for syntax examples.
+Elisp implements a working and extremely fast Scheme-based interpreter. See the [tests](https://github.com/andrakis/Elispidae/blob/master/PocoLithp/PLtests.cpp) for syntax examples.
 
 It supports most modern types:
 
@@ -84,6 +86,10 @@ It supports most modern types:
 How?
 ----
 
+   * Built upon the now deprecated [PocoLithp](https://github.com/andrakis/PocoLithp) project.
+
+   * [Stackless](https://github.com/andrakis/Stackless) provides microthreading and a stackless interpreter.
+
    * Uses atoms for most features (builtins, standard library functions) instead of strings. An atom is a 32 bit integer, much quicker to lookup than a string.
 
    * [Poco](https://procoproject.org) library is used for the underlying dynamic type. Some extensions to this allow for minimal coding and maximum support.
@@ -102,16 +108,16 @@ How?
 
 	  * And you can run it too: `(_eval Code)` => `Add1: 6`
 
-   * [Stackless](https://github.com/andrakis/Stackless) provides microthreading and a stackless interpreter.
-
 Status
 ------
 
-**Version: 0.62**
+**Version: 0.80**
 
-**Language compatibility level:** Scheme-ish, with tail-call-optimization and macros.
+**Language compatibility level:** Lisp-ish, with tail-call-optimization and macros.
 
-    Mainly Scheme-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`)
+    Mainly Lisp-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`).
+
+	Microthreading and message passing included.
 
 Building
 ========
@@ -127,7 +133,7 @@ This solution does not use Conan, and is the recommended way forward. It does re
 
 1. Update submodules: `git submodule update --init`
 
-2. Open the solution `PocoLithpContrib` and compile.
+2. Open the solution `Elispidae` and compile.
 
 Building (Linux):
 -----------------
@@ -155,9 +161,9 @@ Running
 
 The executable is found in the following location:
 
-* **Windows:** `bin/PocoLithp.exe` or `bin/PocoLithpContrib.exe` depending on your project.
+* **Windows:** `bin/Elispidae.exe`
 
-* **Linux:** `bin/plithp`
+* **Linux:** `bin/elisp`
 
 Two methods are available:
 
@@ -166,21 +172,25 @@ Two methods are available:
       Launch the `Debug` or `Release` configuration within Visual Studio, or
 
       Run the executable:
-      bin\PocoLithp.exe
-      bin\PocoLithpContrib.exe
-      bin\plithp
+      bin\Elispidae.exe
+      bin/elisp
 
 * **Run a file:** Run the executable
 
       Launch the `Debug - Run Sample` configuration within Visual Studio, or
 
       Run the executable:
-      bin\PocoLithp.exe samples\fac_recursive.lithp
-      bin\PocoLithpContrib.exe samples\fac_recursive.lithp
-      bin\plithp samples\fac_recursive.lithp
+      bin\Elispidae.exe lib\init.lisp
+      bin/elisp lib/init.lisp
 
 Notable Milestones
 ------------------
+
+* Project renamed from PocoLithp to Elispidae.
+
+* Microthreading implemented.
+
+* Stackless interpreter complete.
 
 * Start incorporating Stackless interpreter.
 

@@ -1,20 +1,32 @@
 #pragma once
 
 #include "stdafx.h"
+#include <Stackless.hpp>		// Ugly hack
 
-#define PLITHP_VERSION "0.62"
+#define ELISP_VERSION "0.80"
 
-#ifndef NO_STATS
-#define PLITHP_TRACK_STATS
+// Undefine to use recursive emulator
+#define ELISP_STACKLESS
+#ifdef ELISP_STACKLESS
+#define STACKLESS_DESC   " (Stackless)"
+#else
+#define STACKLESS_DESC   ""
 #endif
 
-#ifdef PLITHP_TRACK_STATS
+#ifndef NO_STATS
+#define ELISP_TRACK_STATS
+#endif
+
+#ifdef ELISP_TRACK_STATS
 #define TRACK_STATS(code) do { code; } while(0)
 #define STATS_DESC        "(stats enabled)"
 #else
 #define TRACK_STATS(code) while(0)
 #define STATS_DESC        "(no stats)"
 #endif
+
+#define APP_NAME "Elispidae "
+#define ELISP_VERSION_INFO APP_NAME ELISP_VERSION STACKLESS_DESC
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
@@ -64,17 +76,17 @@ namespace PocoLithp {
 	};
 
 #if defined(POCO_HAVE_INT64)
-#define PLITHP_INT64
+#define ELISP_INT64
 #endif
 
-#ifdef PLITHP_INT64
+#ifdef ELISP_INT64
 	typedef Poco::Int64 SignedInteger;
 	typedef Poco::UInt64 UnsignedInteger;
-	const std::string PLITHP_ARCH = "(Int64 support)";
+	const std::string ELISP_ARCH = "(Int64 support)";
 #else
 	typedef long SignedInteger;
 	typedef unsigned long UnsignedInteger;
-	const std::string PLITHP_ARCH = "(Int32 only)";
+	const std::string ELISP_ARCH = "(Int32 only)";
 #endif
 
 	enum LithpVarType {
@@ -91,7 +103,10 @@ namespace PocoLithp {
 		Proc,
 		ProcExtended,
 		Lambda,
-		Macro
+		Macro,
+
+		// Extended types
+		Thread
 	};
 
 	struct LithpEnvironment;
@@ -128,6 +143,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_lambda2;
 	extern const LithpCell sym_macro;
 	extern const LithpCell sym_begin;
+	extern const LithpCell sym_receive;
 	std::string to_string(const LithpCell &exp);
 	std::string to_string(const LithpCell &exp, bool advanced, bool repre);
 	const LithpCell booleanCell(const bool val);
@@ -161,7 +177,7 @@ namespace PocoLithp {
 			bool TIMING = false;
 			bool QUIT = false;
 
-			UnsignedInteger parseTime = 0, evalTime = 0;
+			UnsignedInteger evalTime = 0;
 			UnsignedInteger reductions = 0, depth = 0, depth_max = 0;
 	};
 
@@ -179,6 +195,7 @@ namespace PocoLithp {
 	extern UnsignedInteger parseTime;
 	extern Interpreter *interpreter;
 	Interpreter *StandardInterpreter();
+	void SetStandardInterpreter();
 	LithpCell repl(const std::string &prompt, Env_p env);
 	LithpCell eval(LithpCell x, Env_p env);
 	LithpCell evalTimed(const LithpCell &x, Env_p env);
@@ -190,6 +207,34 @@ namespace PocoLithp {
 	namespace Test {
 		int RunTests();
 	}
+
+	typedef stackless::microthreading::ThreadId LithpThreadId;
+	typedef LithpThreadId LithpThreadNode;
+	typedef LithpThreadId LithpCosmosNode;
+	struct LithpThreadReference {
+		// Thread ID as returned from thread start
+		LithpThreadId thread_id;
+		// Node ID of the interpreter, currently always 0. In the future if threading
+		// is implemented, this number will have differing values.
+		LithpThreadNode node_id;
+		// Global network (Cosmos) node id. 0 until joined to the Cosmos network.
+		LithpCosmosNode cosmos_id;
+
+		LithpThreadReference(const LithpThreadId id = 0, const LithpThreadNode node = 0, const LithpCosmosNode cosmos = 0)
+			: thread_id(id), node_id(node), cosmos_id(cosmos) {
+		}
+		LithpThreadReference(const LithpThreadReference &copy)
+			: thread_id(copy.thread_id), node_id(copy.node_id), cosmos_id(copy.cosmos_id) {
+		}
+
+		std::string str() const {
+			return std::string("<") +
+				std::to_string(cosmos_id) + std::string(".") +
+				std::to_string(node_id) + std::string(".") +
+				std::to_string(thread_id) +
+				std::string(">");
+		}
+	};
 
 	struct LithpVar {
 		typedef LithpVar(*proc_type)(const LithpCells &);
@@ -214,8 +259,17 @@ namespace PocoLithp {
 		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
 		LithpVar(proc_extended_type proc) : tag(ProcExtended), value(proc), env(0) {}
+		// Extended constructors
+		LithpVar(LithpThreadReference &tr) : tag(Thread), value(tr), env(0) {}
 
 		~LithpVar() {
+		}
+
+		// Set the value to that of another LithpVar
+		void update(const LithpVar &copy) {
+			tag = copy.tag;
+			value = copy.value;
+			env = copy.env;
 		}
 
 		std::string str() const {
@@ -241,6 +295,8 @@ namespace PocoLithp {
 				return "<Proc>";
 			case ProcExtended:
 				return "<ProcExtended>";
+			case Thread:
+				return thread_ref().str();
 			case Dict:
 				throw InvalidArgumentException("Should be handled higher up");
 			case Atom:
@@ -267,18 +323,21 @@ namespace PocoLithp {
 
 			// If we have one of the basic types, extract it and perform comparison.
 			// Only a specific few types are supported here.
-			if (a.tag == Var || a.tag == Atom || a.tag == VariableReference) {
+			if (a.tag == Atom && b.tag == Atom) {
+				return cb(a.atomid(), b.atomid());
+			}
+			if (a.tag == Var || a.tag == VariableReference) {
 				const std::type_info &rtti = a.value.type();
-				if (rtti == typeid(atomId)) {
-					return cb(a.atomid(), b.atomid());
-				} else if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
-					return cb(a.value.extract<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
+				if (rtti == typeid(UnsignedInteger) || rtti == typeid(unsigned)) {
+					return cb(a.value.convert<UnsignedInteger>(), b.value.convert<UnsignedInteger>());
 				} else if (rtti == typeid(SignedInteger) || rtti == typeid(signed)) {
-					return cb(a.value.extract<SignedInteger>(), b.value.convert<SignedInteger>());
+					return cb(a.value.convert<SignedInteger>(), b.value.convert<SignedInteger>());
 				} else if (rtti == typeid(bool)) {
-					return cb(a.value.extract<bool>(), b.value.convert<bool>());
+					return cb(a.value.convert<bool>(), b.value.convert<bool>());
 				} else if (rtti == typeid(double) || rtti == typeid(float)) {
 					return cb(a.value.convert<double>(), b.value.convert<double>());
+				} else {
+					throw InvalidArgumentException("CompareWith: no matching variable types");
 				}
 			} else if (a.tag == List) {
 				// List comparison
@@ -374,8 +433,15 @@ namespace PocoLithp {
 		// Atom behaviours
 		const atomId atomid() const {
 			if (tag != Atom && tag != VariableReference)
-				throw InvalidArgumentException("Not an atom");
+				throw InvalidArgumentException("Not an atom, tag: " + std::to_string(tag) + ", value: " + str());
 			return value.extract<atomId>();
+		}
+		
+		// Extended behaviours
+		LithpThreadReference thread_ref() const {
+			if (tag != Thread)
+				throw InvalidArgumentException("Not a thread ref");
+			return value.extract<LithpThreadReference>();
 		}
 
 		bool is_nullp() const {
@@ -395,6 +461,8 @@ namespace PocoLithp {
 			: outer_(outer) {
 			update(params, args);
 		}
+
+		typedef std::shared_ptr<LithpEnvironment> _env_p;
 
 		void update(const LithpCells &params, const LithpCells &args) {
 			LithpCellIt a = args.begin();

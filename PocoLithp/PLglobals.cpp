@@ -6,6 +6,13 @@ PocoLithp::AtomMapByName_t atomMapByName;
 typedef std::list<PocoLithp::add_environment_proc> environment_procs_t;
 environment_procs_t environment_procs;
 
+// For when you really need to dig deep into the behaviour of the interpreter.
+#if 1
+#define TRACE_DEBUG(x)
+#else
+#define TRACE_DEBUG(x) do { x; } while(0);
+#endif
+
 namespace PocoLithp {
 	const LithpCell sym_false(Atom, "false");
 	const LithpCell sym_true(Atom, "true");
@@ -20,6 +27,7 @@ namespace PocoLithp {
 	const LithpCell sym_lambda2(Atom, "#");   // Alternative to lambda
 	const LithpCell sym_macro(Atom, "macro");
 	const LithpCell sym_begin(Atom, "begin");
+	const LithpCell sym_receive(Atom, "receive");
 
 	const LithpCell booleanCell(const bool val) {
 		return val ? sym_true : sym_false;
@@ -103,11 +111,16 @@ namespace PocoLithp {
 
 	LithpCell proc_greater(const LithpCells &c)
 	{
+		TRACE_DEBUG(std::cerr << "Greater ..." << std::endl);
 		if(c.size() < 2) return sym_false;
 		LithpCell n(c[0]);
-		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i)
+		TRACE_DEBUG(std::cerr << "Greater: n=" << n.str() << ", tag: " << n.tag << std::endl);
+		for (LithpCells::const_iterator i = c.begin() + 1; i != c.end(); ++i) {
+			TRACE_DEBUG(std::cerr << "Greater: *i=" << i->str() << ", tag: " << i->tag << std::endl);
 			if (n <= *i)
 				return sym_false;
+		}
+		TRACE_DEBUG(std::cerr << "Greater: not greater" << std::endl);
 		return sym_true;
 	}
 
@@ -326,7 +339,7 @@ namespace PocoLithp {
 
 	// Invoke REPL
 	LithpCell proc_repl(const LithpCells &c, Env_p env) {
-		std::string prompt = "plithp> ";
+		std::string prompt = "Elisp> ";
 		if (c.size() == 1)
 			prompt = c[0].str();
 		return repl(prompt, env);
@@ -380,6 +393,7 @@ namespace PocoLithp {
 	const LithpCell tag_proc(Atom, "proc");
 	const LithpCell tag_list(Atom, "list");
 	const LithpCell tag_dict(Atom, "dict");
+	const LithpCell tag_thread(Atom, "thread");
 
 	// Get the tag of the given variable
 	LithpCell proc_tag(const LithpCells &c) {
@@ -403,6 +417,8 @@ namespace PocoLithp {
 			return tag_list;
 		case Dict:
 			return tag_dict;
+		case Thread:
+			return tag_thread;
 		default:
 			return getAtom("unknown");
 		}
@@ -434,6 +450,7 @@ namespace PocoLithp {
 		// IO
 		env["print"] = LithpCell(&proc_print);
 		env["getline"] = LithpCell(&proc_getline);
+		// Stackless interpreter defines this in ELthreads.cpp
 		env["repl"] = LithpCell(&proc_repl);
 		env["_eval"] = LithpCell(&proc__eval);
 		env["_eval_ctx"] = LithpCell(&proc__eval_ctx);

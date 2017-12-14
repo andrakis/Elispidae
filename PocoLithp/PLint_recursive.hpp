@@ -21,7 +21,7 @@ namespace PocoLithp {
 		LithpCell eval(LithpCell x, Env_p env);
 		// Timed evaluation. For performance sake, we prefer this to be called once.
 		LithpCell evalTimed(const LithpCell &x, Env_p env);
-		static RecursiveInterpreter *Instantiate() {
+		static Interpreter *Instantiate() {
 			return new RecursiveInterpreter();
 		}
 	};

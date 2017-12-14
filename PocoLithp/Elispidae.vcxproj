@@ -32,6 +32,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PocoLithp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>Elispidae</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -127,7 +128,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,7 +143,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,7 +158,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -172,7 +173,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -189,7 +190,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -212,7 +213,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -230,16 +231,21 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ELisp.hpp" />
     <ClInclude Include="overflow.h" />
     <ClInclude Include="PLint_recursive.hpp" />
+    <ClInclude Include="PLint_stackless.hpp" />
     <ClInclude Include="PocoLithp.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ELisp.cpp" />
+    <ClCompile Include="ELthreads.cpp" />
     <ClCompile Include="PLglobals.cpp" />
     <ClCompile Include="PLinterpreter.cpp" />
     <ClCompile Include="PLint_recursive.cpp" />
+    <ClCompile Include="PLint_stackless.cpp" />
     <ClCompile Include="PLparser.cpp" />
     <ClCompile Include="PLruntime.cpp" />
     <ClCompile Include="PLtests.cpp" />

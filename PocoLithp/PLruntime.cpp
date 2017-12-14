@@ -5,8 +5,8 @@ using namespace PocoLithp;
 // Runtime information
 LithpCell proc_banner(const LithpCells &x) {
 	return LithpCell(Var,
-		"Welcome to PocoLithp " PLITHP_VERSION " " + PLITHP_ARCH + " " + STATS_DESC + "\n"
-		"Type (q) to quit, (debug) to get / set state, (timing) to get / set state" + "\n"
+		"Welcome to " ELISP_VERSION_INFO "\n"
+		"Type (q) to quit, (debug) to get / set state, (timing) to get / set state\n"
 		"  Additional useful functions: (tests) (str expr) (str expr true) (env) (_depth) (_max_depth)\n"
 		"                             : (repl [prompt]) (_eval expr) (expl \"string\") \n"
 	);
