@@ -116,5 +116,8 @@
     <None Include="..\lib\string.lisp">
       <Filter>lib</Filter>
     </None>
+    <None Include="..\samples\threading.lisp">
+      <Filter>samples</Filter>
+    </None>
   </ItemGroup>
 </Project>

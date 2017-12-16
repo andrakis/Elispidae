@@ -6,11 +6,15 @@
 using namespace PocoLithp;
 using namespace PocoLithp::Stackless;
 
+LithpThreadReference getCurrentThreadRef() {
+	// TODO: Could get lost
+	auto thread = LithpThreadMan.getCurrentThread();
+	return LithpThreadReference(thread->thread_id);
+}
+
 // Get thread reference to current running thread
 LithpCell proc_self(const LithpCells &c) {
-	auto thread = LithpThreadMan.getCurrentThread();
-	LithpThreadReference thread_ref(thread->thread_id);
-	return LithpCell(Thread, thread_ref);
+	return LithpCell(Thread, getCurrentThreadRef());
 }
 
 // Get a list of references to all threads

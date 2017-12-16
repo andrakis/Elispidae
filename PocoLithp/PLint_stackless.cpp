@@ -9,11 +9,7 @@ using namespace stackless::timekeeping;
 // TODO: this shouldn't be needed
 unsigned stackless::microthreading::thread_counter = 0;
 
-#if 1
-#define DEBUG(m)
-#else
-#define DEBUG(m)   std::cerr << "! " << m << std::endl;
-#endif
+#define DEBUG(m)   if(GetDEBUG()) std::cerr << "! " << m << std::endl;
 
 namespace PocoLithp {
 	namespace Stackless {
@@ -93,6 +89,7 @@ namespace PocoLithp {
 
 		void LithpFrame::setExpression(const LithpCell &value) {
 			DEBUG("setExpression(" + to_string(value) + ")");
+			sleep_until = ThreadTimePoint::min();
 			resolved = false;
 			arguments.clear();
 			resolved_arguments.clear();
@@ -144,6 +141,7 @@ namespace PocoLithp {
 				return true;
 			case Var:
 			case Atom:
+			case Thread:
 				result = LithpCell(value);
 				return true;
 			case List:
@@ -221,9 +219,9 @@ namespace PocoLithp {
 						ARG("begin: requires an expression");
 						resolved_arguments = LithpCells(begin + 1, end);
 						return false;
-					} else if (first == sym_receive) { // (receive (# (Message::any)) [timeout [timeout callback]]}
-						ARG("receive: requires a callback");
-						resolved_arguments = LithpCells(begin + 1, end);
+					} else if (first == sym_receive) {
+						// (receive (Callback Message) [after Milliseconds Callback])
+						arguments = LithpCells(begin + 1, end);
 						return false;
 					}
 				}
@@ -377,9 +375,69 @@ namespace PocoLithp {
 		}
 
 		bool LithpDispatcher<instruction::Receive>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
-			std::cout << "receive!? lol\n";
-			frame.result = LithpCell(Atom, "lol");
-			return true;
+			// TODO: This line is a hack:
+			LithpCells::const_iterator end = frame.resolved_arguments.cend();
+			LithpCells::const_iterator it(args);
+
+			//                        // On_Message::func(Message::any())
+			const LithpCell &on_message = *it; ++it;
+
+			LithpCell timeout_mode = sym_infinity;
+			// Default
+			ThreadTimeUnit timeout = ThreadTimeUnit(10);
+			LithpCell on_timeout = sym_nil;
+			if (it != end) {          // Timeout_Mode::infinity | after
+				timeout_mode = *it; ++it;
+				if (it != end) {      // Timeout::integer()
+					timeout = ThreadTimeUnit(it->value.convert<UnsignedInteger>()); ++it;
+					if (it != end) {  // On_Timeout::func()
+						on_timeout = *it; ++it;
+					}
+				}
+			}
+
+			// TODO: Is this always correct? Need it to be passed in.
+			//     : Or, store it in the env.
+			auto &tm = LithpThreadMan;
+			auto thread = tm.getCurrentThread();
+			LithpCell message;
+			LithpThreadReference thread_ref(thread->thread_id);
+			if (tm.receive(message, thread_ref)) {
+				// Construct new expression:
+				//   (OnMessage (quote Message))
+				LithpCells ins;
+				ins.push_back(on_message);
+				LithpCells ins_quote;
+				ins_quote.push_back(sym_quote);
+				ins_quote.push_back(message);
+				ins.push_back(LithpCell(List, ins_quote));
+				frame.setExpression(LithpCell(List, ins));
+			} else {
+				if (timeout_mode == sym_after) {
+					ThreadTimePoint now = ThreadClock::now();
+					if (frame.sleep_until == ThreadTimePoint::min()) {
+						ThreadTimePoint target = now + timeout;
+						frame.sleep_until = target;
+					}
+					if (frame.sleep_until < now) {
+						// Timeout occurs
+						// Construct new expression:
+						//   (OnTimeout)
+						LithpCells ins;
+						ins.push_back(on_timeout);
+						frame.setExpression(LithpCell(List, ins));
+						// Skip the sleep below
+						return false;
+					}
+				}
+				// TODO: At the moment, we just sleep for a short duration
+				//       and then try again. This means a minimum wait time
+				//       between message checking if one is not present.
+				// Wait for 10ms
+				tm.thread_sleep(thread_ref, ThreadTimeUnit(10));
+			}
+
+			return false;
 		}
 
 		bool LithpFrame::dispatchCall() {

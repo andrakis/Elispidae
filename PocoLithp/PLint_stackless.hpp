@@ -98,6 +98,11 @@ namespace PocoLithp {
 			REPL
 		};
 
+		// We use steady clock for thread scheduling
+		using ThreadClock = std::chrono::steady_clock;
+		using ThreadTimePoint = std::chrono::steady_clock::time_point;
+		using ThreadTimeUnit = std::chrono::milliseconds;
+
 		// When in a message receive state
 		struct ReceiveState {
 			LithpCell on_message;  // (# (Message::any) :: any) callback on message receive
@@ -143,7 +148,7 @@ namespace PocoLithp {
 			}
 
 			bool isResolved() const { return resolved; }
-			bool isWaiting() const { return wait_state == Receive || wait_state == REPL || wait_state == Run_Wait; }
+			bool isWaiting() const { return wait_state == REPL || wait_state == Run_Wait; }
 
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
@@ -182,6 +187,8 @@ namespace PocoLithp {
 			SubframeMode subframe_mode;
 			// TODO: This is a bit of a hack to support return type parsing
 			unsigned arg_id;
+			// TODO: This is a bit of a hack to support receive sleeping
+			ThreadTimePoint sleep_until;
 		};
 
 		template<typename instruction::instruction Instruction>
@@ -237,10 +244,26 @@ namespace PocoLithp {
 		};
 
 		using namespace stackless::microthreading;
+
 		struct LithpThreadManager : public MicrothreadManager<LithpImplementation> {
 			typedef std::vector<_thread_type> Threads;
-			// TODO: This should be part of the thread, but we don't have access to it
+			// TODO: These should be part of the thread, but we don't have access to it
 			typedef std::map<ThreadId, LithpMailbox> Mailboxes;
+			// Custom type used to manage scheduling set
+			struct SchedulingInformation {
+				SchedulingInformation(const LithpThreadReference &_thread_ref, const ThreadTimePoint &_time_point)
+					: thread_ref(_thread_ref), time_point(_time_point)
+				{
+				}
+
+				bool operator < (const SchedulingInformation &other) const {
+					return time_point < other.time_point;
+				}
+
+				const LithpThreadReference thread_ref;
+				const ThreadTimePoint time_point;
+			};
+			typedef std::set<SchedulingInformation> Scheduling;
 
 			LithpThreadManager() : MicrothreadManager() {
 			}
@@ -298,19 +321,68 @@ namespace PocoLithp {
 				mailbox_it->second.pop();
 				return true;
 			}
+
+			// Sleep for duration from current time
+			void thread_sleep(const LithpThreadReference &thread_ref, const ThreadTimeUnit &duration) {
+				ThreadTimePoint now = ThreadClock::now();
+				ThreadTimePoint target = now + duration;
+				scheduling.emplace(SchedulingInformation(thread_ref, target));
+			}
 		protected:
-			void yield_process() {
-				for(;;) {
-					if (!yield_mutex.try_lock()) {
-						std::this_thread::yield();
-						std::this_thread::sleep_for(std::chrono::milliseconds(1));
-						continue;
+			bool isThreadScheduled(const _thread_type &thread) {
+				// Any scheduling information?
+				if (scheduling.empty())
+					return true;
+
+				// Find iterator for scheduling info for this thread
+				auto it = scheduling.cbegin();
+				for (; it != scheduling.cend(); ++it) {
+					const SchedulingInformation &info = *it;
+					// TODO: This deep check should be moved elsewhere
+					if (info.thread_ref.thread_id == thread.thread_id) {
+						break;
 					}
-					break;
+				}
+				// Found?
+				if(it == scheduling.cend())
+					return true;
+
+				// Check if reached schedule time
+				ThreadTimePoint now = ThreadClock::now();
+				const SchedulingInformation &info = *it;
+				if (info.time_point <= now) {
+					// Thread has reached schedule time, remove schedule info
+					scheduling.erase(it);
+					return true;
+				}
+				// Thread has not reached schedule
+				return false;
+			}
+			void yield_process(bool unwatched_resolved, int threads_run) {
+				if (threads_run == 0) {
+					// Default to 1ms sleep time
+					std::chrono::milliseconds time(1);
+					// Unless there is scheduling information
+					if (scheduling.empty() == false) {
+						// Set time to the next thread timeout
+						const SchedulingInformation &next = *scheduling.begin();
+						ThreadTimePoint now = ThreadClock::now();
+						ThreadTimePoint target = next.time_point;
+						time = std::chrono::duration_cast<ThreadTimeUnit>(target - now);
+						if (time <= std::chrono::milliseconds(0))
+							return;
+					}
+						// Acquire lock for sleeping
+						//if (!yield_mutex.try_lock()) {
+							// Expensive sleep
+							std::this_thread::yield();
+							std::this_thread::sleep_for(time);
+						//}
 				}
 			}
 		private:
 			Mailboxes mailboxes;
+			Scheduling scheduling;
 			std::mutex yield_mutex;
 		};
 		extern LithpThreadManager LithpThreadMan;

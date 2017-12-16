@@ -144,6 +144,8 @@ namespace PocoLithp {
 	extern const LithpCell sym_macro;
 	extern const LithpCell sym_begin;
 	extern const LithpCell sym_receive;
+	extern const LithpCell sym_after;
+	extern const LithpCell sym_infinity;
 	std::string to_string(const LithpCell &exp);
 	std::string to_string(const LithpCell &exp, bool advanced, bool repre);
 	const LithpCell booleanCell(const bool val);

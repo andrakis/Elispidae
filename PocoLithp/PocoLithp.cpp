@@ -83,6 +83,16 @@ int main(int argc, char *argv[])
 		evalTimed(read(std::string("(begin (print (banner)))")), global_p);
 		repl("Elisp> ", global_p);
 	}
+
+	// Run until all threads are finished
+#ifdef ELISP_STACKLESS
+	auto &tm = PocoLithp::Stackless::LithpThreadMan;
+	if (GetDEBUG())
+		std::cerr << "Waiting for " << tm.threadCount() << " threads to exit..." << std::endl;
+	while (tm.hasThreads())
+		tm.executeThreads();
+#endif
+
 	if(GetTIMING())
 		std::cerr << "Total eval time: " << GetEvalTime() << "ms, parse time: " << parseTime << "ms\n";
     return ERR_NOERROR;

@@ -28,6 +28,8 @@ namespace PocoLithp {
 	const LithpCell sym_macro(Atom, "macro");
 	const LithpCell sym_begin(Atom, "begin");
 	const LithpCell sym_receive(Atom, "receive");
+	const LithpCell sym_after(Atom, "after");
+	const LithpCell sym_infinity(Atom, "infinity");
 
 	const LithpCell booleanCell(const bool val) {
 		return val ? sym_true : sym_false;
