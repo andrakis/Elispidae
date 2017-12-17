@@ -12,4 +12,10 @@ namespace Elispidae {
 	namespace Threads {
 		void init_threads();
 	}
+
+	namespace Stdlib {
+		void init_dictionary();
+		void init_lists();
+		void init_strings();
+	}
 }

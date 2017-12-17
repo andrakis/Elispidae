@@ -388,6 +388,18 @@ namespace PocoLithp {
 		const bool isString() const {
 			return (tag == Var && value.isString());
 		}
+		bool empty() const {
+			if (isList())
+				return list().empty();
+			else if (isString())
+				return value.size() == 0;
+			else if (tag == Dict)
+				return dict().empty();
+			else if (tag == Lambda || tag == Macro)
+				return list().empty();
+			// TODO: Too lenient?
+			return false;
+		}
 		size_t size() const {
 			if (isList())
 				return list().size();

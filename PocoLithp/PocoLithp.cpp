@@ -4,7 +4,6 @@
 // TODO: Bignum support
 
 #include "stdafx.h"
-#include "ELisp.hpp"
 
 using namespace PocoLithp;
 

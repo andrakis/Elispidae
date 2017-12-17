@@ -473,13 +473,19 @@ namespace PocoLithp {
 				LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
 				return impl;
 			});
-			// execute multithreading until thread resolved
-			tm.runThreadToCompletion(thread, Multi);
-			// return frame result
-			LithpCell result(tm.getThread(thread).getResult());
-			// remove thread
-			tm.remove_thread(thread);
-			return result;
+			try {
+				// execute multithreading until thread resolved
+				tm.runThreadToCompletion(thread, Multi);
+				// return frame result
+				LithpCell result(tm.getThread(thread).getResult());
+				// remove thread
+				tm.remove_thread(thread);
+				return result;
+			} catch (...) {
+				// remove thread
+				tm.remove_thread(thread);
+				throw;
+			}
 		}
 	}
 

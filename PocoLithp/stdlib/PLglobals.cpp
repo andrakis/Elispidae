@@ -176,73 +176,6 @@ namespace PocoLithp {
 		return booleanCell(!(c[0] == sym_true));
 	}
 
-	LithpCell proc_length(const LithpCells &c) {
-		if(c.size() == 0) return LithpCell(Var, 0);
-		return LithpCell(Var, c[0].size());
-	}
-	LithpCell proc_nullp(const LithpCells &c) {
-		if(c.size() == 0) return sym_true;
-		return c[0].is_nullp() ? sym_true : sym_false;
-	}
-	LithpCell proc_head(const LithpCells &c) {
-		if(c.size() == 0) return sym_nil;
-		if(c[0].size() == 0) return sym_nil;
-		return c[0][0];
-	}
-
-	LithpCell proc_tail(const LithpCells &c)
-	{
-		if (c.size() == 0)
-			return LithpCell(List, LithpCells());
-		LithpCells result = c[0].list();
-		if(result.size() == 0)
-			return LithpCell(List, LithpCells());
-		result.erase(result.begin());
-		return LithpCell(List, result);
-	}
-
-	LithpCell proc_append(const LithpCells &c)
-	{
-		if (c.size() == 0)
-			return LithpCell(List, LithpCells());
-		else if(c.size() == 1)
-			return LithpCell(List, c[0].list());
-		LithpCells result = c[0].list();
-		const LithpCells &c1l = c[1].list();
-		for (LithpCells::const_iterator i = c1l.begin(); i != c1l.end(); ++i)
-			result.push_back(*i);
-		return LithpCell(List, result);
-	}
-
-	LithpCell proc_cons(const LithpCells &c)
-	{
-		if (c.size() == 0)
-			return LithpCell(List, LithpCells());
-		else if(c.size() == 1)
-			return LithpCell(List, c[0].list());
-		LithpCells result;
-		const LithpCells &c1l = c[1].list();
-		result.push_back(c[0]);
-		for (LithpCells::const_iterator i = c1l.begin(); i != c1l.end(); ++i)
-			result.push_back(*i);
-		return LithpCell(List, result);
-	}
-
-	LithpCell proc_list(const LithpCells &c)
-	{
-		return LithpCell(List, c);
-	}
-
-	// Explode a string into a list
-	LithpCell proc_expl(const LithpCells &c) {
-		if(c.size() == 0) return LithpCell(List, LithpCells());
-		std::string str = c[0].str();
-		LithpCells list;
-		for (auto it = str.begin(); it != str.end(); ++it)
-			list.push_back(LithpCell(Var, std::string(1, *it)));
-		return LithpCell(List, list);
-	}
-
 	// Get or set debug state
 	LithpCell proc_debug(const LithpCells &c)
 	{
@@ -281,26 +214,6 @@ namespace PocoLithp {
 	// Get environment values
 	LithpCell proc_env(const LithpCells &c, Env_p env) {
 		return LithpCell(List, env->getCompleteEnv());
-	}
-
-	// Get keys from dictionary
-	LithpCell proc_keys(const LithpCells &c) {
-		if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for keys(::dict)");
-		const LithpDict &dict = c[0].dict();
-		LithpCells keys;
-		for(auto it = dict.begin(); it != dict.end(); ++it)
-			keys.push_back(LithpCell(Atom, it->first));
-		return LithpCell(List, keys);
-	}
-
-	// Get values from dictionary
-	LithpCell proc_values(const LithpCells &c) {
-		if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for values(::dict)");
-		const LithpDict &dict = c[0].dict();
-		LithpCells values;
-		for(auto it = dict.begin(); it != dict.end(); ++it)
-			values.push_back(LithpCell(Var, it->second));
-		return LithpCell(List, values);
 	}
 
 	// Get current eval depth
@@ -367,22 +280,10 @@ namespace PocoLithp {
 	}
 
 	// Tokenize the given string
-	LithpCell proc__tokensize(const LithpCells &c) {
+	LithpCell proc__tokenize(const LithpCells &c) {
 		if(c.size() == 0) return sym_nil;
 		std::list<std::string> tokens = tokenize(c[0].str());
 		return read_from(tokens);
-	}
-
-	/** String procedures */
-
-	// Convert argument to string
-	LithpCell proc_tostring(const LithpCells &c) {
-		bool repre = false;
-		if (c.size() == 0)
-			return LithpCell(Var, std::string(""));
-		if (c.size() == 2)
-			repre = c[1] == sym_true ? true : false;
-		return LithpCell(Var, to_string(c[0], true, repre));
 	}
 
 	/** Variable procedures */
@@ -433,10 +334,6 @@ namespace PocoLithp {
 	// define the bare minimum set of primitives necessary to pass the unit tests
 	void add_globals(LithpEnvironment &env)
 	{
-		env["append"] = LithpCell(&proc_append);        env["head"] = LithpCell(&proc_head);
-		env["tail"] = LithpCell(&proc_tail);            env["cons"] = LithpCell(&proc_cons);
-		env["length"] = LithpCell(&proc_length);        env["list"] = LithpCell(&proc_list);
-		env["null?"] = LithpCell(&proc_nullp);
 		env["+"] = LithpCell(&proc_add);                env["-"] = LithpCell(&proc_sub);
 		env["*"] = LithpCell(&proc_mul);                env["/"] = LithpCell(&proc_div);
 		env[">"] = LithpCell(&proc_greater);            env["<"] = LithpCell(&proc_less);
@@ -456,23 +353,13 @@ namespace PocoLithp {
 		env["repl"] = LithpCell(&proc_repl);
 		env["_eval"] = LithpCell(&proc__eval);
 		env["_eval_ctx"] = LithpCell(&proc__eval_ctx);
-		env["_tokenize"] = LithpCell(&proc__tokensize);
+		env["_tokenize"] = LithpCell(&proc__tokenize);
 
 		// File IO
-		
-		// String
-		env["str"] = env["tostring"] = LithpCell(&proc_tostring);
 
 		// Variable information
 		env["tag"] = LithpCell(&proc_tag);
 		
-		// String functions
-		env["expl"] = LithpCell(&proc_expl);
-
-		// Dict functions
-		env["keys"] = LithpCell(&proc_keys);
-		env["values"] = LithpCell(&proc_values);
-
 		// Add any other procs
 		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)
 			(*it)(env);

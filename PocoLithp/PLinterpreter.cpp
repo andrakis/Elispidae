@@ -164,6 +164,9 @@ namespace PocoLithp {
 				partialBuffer += line;
 			} catch (const std::exception &e) {
 				std::cerr << "ERROR " << e.what() << "\n";
+				// Clear buffer on error
+				line = "";
+				partialBuffer = "";
 			}
 		}
 

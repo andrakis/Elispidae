@@ -19,6 +19,9 @@
     <Filter Include="lib">
       <UniqueIdentifier>{eda4fb66-7eb7-47f0-99b3-6e0e171a52fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\stdlib">
+      <UniqueIdentifier>{2d940747-ff3c-4cba-8455-53371080dee6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -45,6 +48,9 @@
     <ClInclude Include="ELisp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stdlib\stdafx.h">
+      <Filter>Source Files\stdlib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -54,9 +60,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PLtests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PLglobals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PLinterpreter.cpp">
@@ -77,11 +80,23 @@
     <ClCompile Include="PLint_stackless.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ELthreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ELisp.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\ELstrings.cpp">
+      <Filter>Source Files\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\ELthreads.cpp">
+      <Filter>Source Files\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\PLglobals.cpp">
+      <Filter>Source Files\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\ELlists.cpp">
+      <Filter>Source Files\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\ELdictionary.cpp">
+      <Filter>Source Files\stdlib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

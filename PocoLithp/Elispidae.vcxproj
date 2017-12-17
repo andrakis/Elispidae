@@ -162,7 +162,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -177,7 +177,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -192,7 +192,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -207,7 +207,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -222,7 +222,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -237,7 +237,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -254,7 +254,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -277,7 +277,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>READLINE_NG;POCO_STATIC ;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\contrib\poco\Foundation\include;..\contrib\linenoise-ng\include;..\contrib\Stackless\Stackless\include;.</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -301,12 +301,11 @@
     <ClInclude Include="PLint_stackless.hpp" />
     <ClInclude Include="PocoLithp.hpp" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stdlib\stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ELisp.cpp" />
-    <ClCompile Include="ELthreads.cpp" />
-    <ClCompile Include="PLglobals.cpp" />
     <ClCompile Include="PLinterpreter.cpp" />
     <ClCompile Include="PLint_recursive.cpp" />
     <ClCompile Include="PLint_stackless.cpp" />
@@ -325,6 +324,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="stdlib\ELdictionary.cpp" />
+    <ClCompile Include="stdlib\ELlists.cpp" />
+    <ClCompile Include="stdlib\ELstrings.cpp" />
+    <ClCompile Include="stdlib\ELthreads.cpp" />
+    <ClCompile Include="stdlib\PLglobals.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib\init.lisp" />
