@@ -36,8 +36,6 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/PocoLithp/ELisp.o \
-	${OBJECTDIR}/PocoLithp/ELthreads.o \
-	${OBJECTDIR}/PocoLithp/PLglobals.o \
 	${OBJECTDIR}/PocoLithp/PLint_recursive.o \
 	${OBJECTDIR}/PocoLithp/PLint_stackless.o \
 	${OBJECTDIR}/PocoLithp/PLinterpreter.o \
@@ -47,6 +45,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/PocoLithp/PLtypes.o \
 	${OBJECTDIR}/PocoLithp/PocoLithp.o \
 	${OBJECTDIR}/PocoLithp/stdafx.o \
+	${OBJECTDIR}/PocoLithp/stdlib/ELdictionary.o \
+	${OBJECTDIR}/PocoLithp/stdlib/ELlists.o \
+	${OBJECTDIR}/PocoLithp/stdlib/ELstrings.o \
+	${OBJECTDIR}/PocoLithp/stdlib/ELthreads.o \
+	${OBJECTDIR}/PocoLithp/stdlib/PLglobals.o \
 	${OBJECTDIR}/contrib/linenoise-ng/src/ConvertUTF.o \
 	${OBJECTDIR}/contrib/linenoise-ng/src/linenoise.o \
 	${OBJECTDIR}/contrib/linenoise-ng/src/wcwidth.o \
@@ -140,16 +143,6 @@ ${OBJECTDIR}/PocoLithp/ELisp.o: PocoLithp/ELisp.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/ELisp.o PocoLithp/ELisp.cpp
 
-${OBJECTDIR}/PocoLithp/ELthreads.o: PocoLithp/ELthreads.cpp
-	${MKDIR} -p ${OBJECTDIR}/PocoLithp
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/ELthreads.o PocoLithp/ELthreads.cpp
-
-${OBJECTDIR}/PocoLithp/PLglobals.o: PocoLithp/PLglobals.cpp
-	${MKDIR} -p ${OBJECTDIR}/PocoLithp
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/PLglobals.o PocoLithp/PLglobals.cpp
-
 ${OBJECTDIR}/PocoLithp/PLint_recursive.o: PocoLithp/PLint_recursive.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
@@ -194,6 +187,31 @@ ${OBJECTDIR}/PocoLithp/stdafx.o: PocoLithp/stdafx.cpp
 	${MKDIR} -p ${OBJECTDIR}/PocoLithp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdafx.o PocoLithp/stdafx.cpp
+
+${OBJECTDIR}/PocoLithp/stdlib/ELdictionary.o: PocoLithp/stdlib/ELdictionary.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp/stdlib
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdlib/ELdictionary.o PocoLithp/stdlib/ELdictionary.cpp
+
+${OBJECTDIR}/PocoLithp/stdlib/ELlists.o: PocoLithp/stdlib/ELlists.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp/stdlib
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdlib/ELlists.o PocoLithp/stdlib/ELlists.cpp
+
+${OBJECTDIR}/PocoLithp/stdlib/ELstrings.o: PocoLithp/stdlib/ELstrings.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp/stdlib
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdlib/ELstrings.o PocoLithp/stdlib/ELstrings.cpp
+
+${OBJECTDIR}/PocoLithp/stdlib/ELthreads.o: PocoLithp/stdlib/ELthreads.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp/stdlib
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdlib/ELthreads.o PocoLithp/stdlib/ELthreads.cpp
+
+${OBJECTDIR}/PocoLithp/stdlib/PLglobals.o: PocoLithp/stdlib/PLglobals.cpp
+	${MKDIR} -p ${OBJECTDIR}/PocoLithp/stdlib
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -DREADLINE_NG -D_DEBUG -Icontrib/poco/Foundation/include -Icontrib/linenoise-ng/include -Icontrib/Stackless/Stackless/include -std=c++14 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PocoLithp/stdlib/PLglobals.o PocoLithp/stdlib/PLglobals.cpp
 
 ${OBJECTDIR}/contrib/linenoise-ng/src/ConvertUTF.o: contrib/linenoise-ng/src/ConvertUTF.cpp
 	${MKDIR} -p ${OBJECTDIR}/contrib/linenoise-ng/src
