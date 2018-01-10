@@ -102,6 +102,7 @@ namespace PocoLithp {
 		List,
 		Proc,
 		ProcExtended,
+		ProcImplementation,
 		Lambda,
 		Macro,
 
@@ -144,6 +145,7 @@ namespace PocoLithp {
 	extern const LithpCell sym_macro;
 	extern const LithpCell sym_begin;
 	extern const LithpCell sym_receive;
+	extern const LithpCell sym_sleep;
 	extern const LithpCell sym_after;
 	extern const LithpCell sym_infinity;
 	std::string to_string(const LithpCell &exp);
@@ -166,7 +168,6 @@ namespace PocoLithp {
 	PocoVar parseNumber(const std::string &token);
 	LithpCell symbol(const std::string &token);
 	LithpCell read_from(std::list<std::string> &tokens);
-
 
 	class Interpreter {
 		public:
@@ -211,23 +212,28 @@ namespace PocoLithp {
 	}
 
 	typedef stackless::microthreading::ThreadId LithpThreadId;
-	typedef LithpThreadId LithpThreadNode;
-	typedef LithpThreadId LithpCosmosNode;
+	typedef LithpThreadId LithpThreadNodeId;
+	typedef LithpThreadId LithpCosmosNodeId;
+	namespace Stackless {
+		struct LithpImplementation; // defined in PLint_stackless.hpp
+	}
+
 	struct LithpThreadReference {
 		// Thread ID as returned from thread start
 		LithpThreadId thread_id;
 		// Node ID of the interpreter, currently always 0. In the future if threading
 		// is implemented, this number will have differing values.
-		LithpThreadNode node_id;
+		LithpThreadNodeId node_id;
 		// Global network (Cosmos) node id. 0 until joined to the Cosmos network.
-		LithpCosmosNode cosmos_id;
+		LithpCosmosNodeId cosmos_id;
 
-		LithpThreadReference(const LithpThreadId id = 0, const LithpThreadNode node = 0, const LithpCosmosNode cosmos = 0)
+		LithpThreadReference(const LithpThreadId id = 0, const LithpThreadNodeId node = 0, const LithpCosmosNodeId cosmos = 0)
 			: thread_id(id), node_id(node), cosmos_id(cosmos) {
 		}
 		LithpThreadReference(const LithpThreadReference &copy)
 			: thread_id(copy.thread_id), node_id(copy.node_id), cosmos_id(copy.cosmos_id) {
 		}
+		LithpThreadReference(const PocoLithp::Stackless::LithpImplementation &impl);
 
 		std::string str() const {
 			return std::string("<") +
@@ -241,6 +247,7 @@ namespace PocoLithp {
 	struct LithpVar {
 		typedef LithpVar(*proc_type)(const LithpCells &);
 		typedef LithpVar(*proc_extended_type)(const LithpCells &, Env_p);
+		typedef LithpVar(*proc_implementation_type)(const LithpCells &, Env_p, const PocoLithp::Stackless::LithpImplementation &);
 		LithpVarType tag;
 		PocoVar value;
 		Env_p env;
@@ -261,6 +268,7 @@ namespace PocoLithp {
 		LithpVar(LithpVarType _tag = Var) : tag(_tag), value(), env(0) {}
 		LithpVar(proc_type proc) : tag(Proc), value(proc), env(0) {}
 		LithpVar(proc_extended_type proc) : tag(ProcExtended), value(proc), env(0) {}
+		LithpVar(proc_implementation_type proc) : tag(ProcImplementation), value(proc), env(0) {}
 		// Extended constructors
 		LithpVar(LithpThreadReference &tr) : tag(Thread), value(tr), env(0) {}
 
@@ -297,6 +305,8 @@ namespace PocoLithp {
 				return "<Proc>";
 			case ProcExtended:
 				return "<ProcExtended>";
+			case ProcImplementation:
+				return "<ProcImplementation>";
 			case Thread:
 				return thread_ref().str();
 			case Dict:
@@ -442,6 +452,11 @@ namespace PocoLithp {
 			if (tag != ProcExtended)
 				throw InvalidArgumentException("Not a proc_extended");
 			return value.extract<proc_extended_type>();
+		}
+		proc_implementation_type proc_implementation() const {
+			if (tag != ProcImplementation)
+				throw InvalidArgumentException("Not a proc_implementation");
+			return value.extract<proc_implementation_type>();
 		}
 
 		// Atom behaviours

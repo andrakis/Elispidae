@@ -28,6 +28,7 @@ namespace PocoLithp {
 	const LithpCell sym_macro(Atom, "macro");
 	const LithpCell sym_begin(Atom, "begin");
 	const LithpCell sym_receive(Atom, "receive");
+	const LithpCell sym_sleep(Atom, "sleep");
 	const LithpCell sym_after(Atom, "after");
 	const LithpCell sym_infinity(Atom, "infinity");
 
@@ -260,25 +261,6 @@ namespace PocoLithp {
 		return repl(prompt, env);
 	}
 
-	// Call the eval function in the current environment with the tokenized
-	// arguments.
-	// It is named _eval since implementing a native  eval function is
-	// a goal of this interpreter. It would allow extending the
-	// interpreter in classic Lisp ways.
-	LithpCell proc__eval(const LithpCells &c, Env_p env) {
-		if(c.size() == 0) return sym_nil;
-		return eval(c[0], env);
-	}
-
-	// Call the eval function in the topmost environment with the tokenized
-	// arguments.
-	// This means any definitions will be defined in the topmost environment.
-	// TODO: Should a define-all or export be implemented instead?
-	LithpCell proc__eval_ctx(const LithpCells &c, Env_p env) {
-		if(c.size() == 0) return sym_nil;
-		return eval(c[0], env->getTopmost(env));
-	}
-
 	// Tokenize the given string
 	LithpCell proc__tokenize(const LithpCells &c) {
 		if(c.size() == 0) return sym_nil;
@@ -351,8 +333,6 @@ namespace PocoLithp {
 		env["getline"] = LithpCell(&proc_getline);
 		// Stackless interpreter defines this in ELthreads.cpp
 		env["repl"] = LithpCell(&proc_repl);
-		env["_eval"] = LithpCell(&proc__eval);
-		env["_eval_ctx"] = LithpCell(&proc__eval_ctx);
 		env["_tokenize"] = LithpCell(&proc__tokenize);
 
 		// File IO
