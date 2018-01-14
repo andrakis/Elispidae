@@ -101,6 +101,8 @@ namespace PocoLithp {
 			return repre ? rawstr(exp.proc()) : "<Proc>";
 		else if (exp.tag == ProcExtended)
 			return repre ? rawstr(exp.proc_extended()) : "<ProcExtended>";
+		else if (exp.tag == ProcImplementation)
+			return repre ? rawstr(exp.proc_implementation()) : "<ProcImplementation>";
 		else if (exp.tag == Dict) {
 			std::string s("{");
 			const LithpDict &dict = exp.dict();

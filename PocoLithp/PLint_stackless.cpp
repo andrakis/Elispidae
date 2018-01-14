@@ -31,6 +31,7 @@ namespace PocoLithp {
 					// Copy results
 					LithpCell res(subframe->result);
 					auto mode = subframe_mode;
+					bool was_macro = subframe->isMacro();
 					DEBUG("  subframe(" + std::string((mode == Argument ? "arg" : "proc")) + ") = " + to_string(res));
 					// Clear subframe
 					delete subframe;
@@ -45,8 +46,7 @@ namespace PocoLithp {
 						break;
 					case Procedure:
 						result = res;
-						if (exp.tag == Macro) {
-							exp.tag = Lambda;
+						if (was_macro) {
 							setExpression(result, impl);
 							return;
 						}
@@ -100,14 +100,6 @@ namespace PocoLithp {
 			if (resolveExpression(val)) {
 				arg_it = arguments.cbegin();
 				resolved_arguments.clear();
-				if (exp.tag == Macro) {
-					// Clear macro tag
-					// TODO: Not needed
-					exp.tag = Lambda;
-					// Set expression to result
-					setExpression(value, impl);
-					return;
-				}
 				resolved = true;
 				return;
 			}
@@ -347,7 +339,7 @@ namespace PocoLithp {
 				// Restore wait_state
 				frame.wait_state = Run;
 				return true;
-				// ProcImplementation: a builtin procedure in C++ that passes the frame itself.
+				// ProcImplementation: a builtin procedure in C++ that passes the implementation itself.
 			case ProcImplementation:
 				// Mark wait state to avoid re-entry into this section
 				frame.wait_state = Run_Wait;
@@ -387,6 +379,7 @@ namespace PocoLithp {
 				// create subframe
 				frame.subframe_mode = LithpFrame::Procedure;
 				frame.subframe = new LithpFrame(body, new_env);
+				frame.subframe->setMacro(proc.tag == Macro);
 				// don't move exp_it
 				return false;
 			}
@@ -437,15 +430,16 @@ namespace PocoLithp {
 				timeout = *it; ++it;
 			}
 
-			LithpThreadReference thread_ref(impl.thread_id, impl.node_id, impl.cosmos_id);
+			LithpThreadReference thread_ref(impl);
 			if (timeout == sym_infinity) {
-				//tm.thread_sleep_forever(thread_ref);
+				LithpProcessMan.thread_sleep_forever(thread_ref);
 			} else {
 				ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
-				//tm.thread_sleep_for(thread_ref, duration);
+				LithpProcessMan.thread_sleep_for(thread_ref, duration);
 			}
-			return true;// FIXME
+			return true;
 			/*
+			TODO: This code no longer belongs here, it belongs in the thread manager.
 			if (tm.receive(message, thread_ref)) {
 				// Construct new expression:
 				//   (OnMessage (quote Message))
@@ -507,20 +501,20 @@ namespace PocoLithp {
 		}
 
 		// Thread implementation
-		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
+		LithpCell eval_thread(const LithpCell &ins, Env_p env) {
 			// create thread
-			LithpThreadReference thread = tm.start(ins, env);
+			LithpThreadReference thread = LithpProcessMan.start(ins, env);
 			try {
 				// execute multithreading until thread resolved
-				tm.runThreadToCompletion(thread);
+				LithpProcessMan.runThreadToCompletion(thread);
 				// return frame result
-				LithpCell result(tm.getThread(thread).getResult());
+				LithpCell result(LithpProcessMan.getResult(thread));
 				// remove thread
-				tm.remove_thread(thread);
+				LithpProcessMan.remove_thread(thread);
 				return result;
 			} catch (...) {
 				// remove thread
-				tm.remove_thread(thread);
+				LithpProcessMan.remove_thread(thread);
 				throw;
 			}
 		}
@@ -530,8 +524,7 @@ namespace PocoLithp {
 	// Eval inner-most loop that performs the interpretation.
 	LithpCell StacklessInterpreter::eval_inner(LithpCell x, Env_p env) {
 		// This could be more efficient
-		return sym_nil;
-		//return Stackless::eval_thread(Stackless::LithpThreadMan, x, env);
+		return Stackless::eval_thread(x, env);
 	}
 
 	// Top-level eval function. Does depth tracking and exception management.

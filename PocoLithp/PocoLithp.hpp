@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define ELISP_VERSION "0.80"
+#define ELISP_VERSION "0.81"
 
 // Undefine to use recursive emulator
 #define ELISP_STACKLESS

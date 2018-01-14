@@ -89,16 +89,19 @@ int main(int argc, char *argv[])
 	}
 
 	// Run until all threads are finished
-#ifdef ELISP_STACKLES // FIXME
-	auto &tm = PocoLithp::Stackless::LithpThreadMan;
-	if (GetDEBUG())
-		std::cerr << "Waiting for " << tm.threadCount() << " threads to exit..." << std::endl;
-	while (tm.hasThreads())
-		tm.executeThreads();
+#ifdef ELISP_STACKLESS
+	if (Stackless::LithpProcessMan.hasThreads()) {
+		if (GetDEBUG())
+			std::cerr << "Waiting for " << Stackless::LithpProcessMan.threadCount() << " threads to exit..." << std::endl;
+		while (Stackless::LithpProcessMan.hasThreads())
+			Stackless::LithpProcessMan.executeThreads();
+	}
 #endif
 
 	if(GetTIMING())
 		std::cerr << "Total eval time: " << GetEvalTime() << "ms, parse time: " << parseTime << "ms\n";
+	if (GetDEBUG())
+		GETLINE("Press ENTER to quit>");
     return ERR_NOERROR;
 }
 

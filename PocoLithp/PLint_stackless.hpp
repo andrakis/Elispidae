@@ -51,6 +51,8 @@ namespace PocoLithp {
 			};
 		}
 
+		typedef std::vector<LithpThreadReference> LithpThreadReferenceList;
+
 		struct LithpInstructionConverter
 			: public InstructionConverter<LithpCell, typename instruction::instruction> {
 			static _instruction_type convert(_cell_type value) {
@@ -128,14 +130,22 @@ namespace PocoLithp {
 				subframe(nullptr),
 				subframe_mode(None),
 				arg_id(0),
-				receive_state()
+				receive_state(),
+				is_macro(false)
 			{
 			}
-
 		public:
 			LithpFrame(const LithpCell &expression, env_p environment)
 				: LithpFrame(environment) {
 				exp = expression;
+			}
+
+			void setMacro(bool macro) {
+				is_macro = macro;
+			}
+
+			bool isMacro() const {
+				return is_macro;
 			}
 
 			enum SubframeMode {
@@ -191,6 +201,7 @@ namespace PocoLithp {
 			// TODO: This is a bit of a hack to support return type parsing
 			unsigned arg_id;
 			ReceiveState receive_state;
+			bool is_macro;
 		};
 
 		template<typename instruction::instruction Instruction>
@@ -341,6 +352,9 @@ namespace PocoLithp {
 			// TODO: This needs to be removed
 			using MicrothreadManager::thread_sleep_forever;
 			using MicrothreadManager::thread_sleep_for;
+			using MicrothreadManager::threadCount;
+			using MicrothreadManager::hasThreads;
+			using MicrothreadManager::executeThreads;
 
 		protected:
 			void yield_process(bool unwatched_resolved, int threads_run) {
@@ -392,8 +406,8 @@ namespace PocoLithp {
 				const LithpThreadNodeId node_id;
 				const LithpCosmosNodeId cosmos_id;
 			};
-			typedef std::vector<LithpThreadNode> LithpThreadNodeVector;
-			LithpThreadNodeVector thread_nodes;
+			typedef std::map<LithpThreadNodeId,LithpThreadNode> LithpThreadNodeMap;
+			LithpThreadNodeMap thread_nodes;
 			LithpThreadNodeId thread_nodes_counter;
 			static const LithpThreadNodeId LocalNodeId = 0;
 
@@ -404,14 +418,42 @@ namespace PocoLithp {
 			LithpThreadNodeId allocateThreadNode() {
 				LithpThreadNodeId node_id = thread_nodes_counter++;
 				LithpThreadNode node(cosmos_id, node_id);
-				thread_nodes.push_back(node);
+				thread_nodes.emplace(node_id, node);
 				return node_id;
 			}
 
 			// TODO: This doesn't support multithreading yet
 			LithpThreadManagerPtr GetAnyThreadManager() {
 				// TODO: only gets the first element
-				return thread_nodes.begin()->ptr;
+				return thread_nodes.begin()->second.ptr;
+			}
+
+			LithpThreadManagerPtr GetThreadManagerForThread(const LithpThreadReference &thread_ref) {
+				return thread_nodes.find(thread_ref.node_id)->second.ptr;
+			}
+
+			size_t threadCount() {
+				size_t count = 0;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					count += it->second.ptr->threadCount();
+				}
+				return count;
+			}
+
+			bool hasThreads() {
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					if (it->second.ptr->hasThreads())
+						return true;
+				}
+				return false;
+			}
+
+			int executeThreads() {
+				int threads_executed = 0;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					threads_executed += it->second.ptr->executeThreads();
+				}
+				return threads_executed;
 			}
 
 			const LithpCosmosNodeId cosmos_id;
@@ -420,6 +462,13 @@ namespace PocoLithp {
 		class LithpProcessManager {
 			typedef std::map<LithpCosmosNodeId, LithpCosmosNodePtr> LithpCosmosNodeMap;
 			LithpCosmosNodeMap cosmos_nodes;
+
+			LithpCosmosNodePtr getCosmosNodeFor(const LithpThreadReference &thread_ref) {
+				return cosmos_nodes.find(thread_ref.cosmos_id)->second;
+			}
+			LithpThreadManagerPtr getThreadManagerFor(const LithpThreadReference &thread_ref) {
+				return getCosmosNodeFor(thread_ref)->GetThreadManagerForThread(thread_ref);
+			}
 		public:
 			static const LithpCosmosNodeId LocalNodeId = 0;
 
@@ -434,6 +483,49 @@ namespace PocoLithp {
 
 			LithpCosmosNodePtr GetLocalCosmosNode() {
 				return cosmos_nodes.find(LocalNodeId)->second;
+			}
+
+			void thread_sleep_for(const LithpThreadReference &thread_ref, const ThreadTimeUnit &duration) {
+				getThreadManagerFor(thread_ref)->thread_sleep_for(thread_ref.thread_id, duration);
+			}
+			void thread_sleep_forever(const LithpThreadReference &thread_ref) {
+				getThreadManagerFor(thread_ref)->thread_sleep_forever(thread_ref.thread_id);
+			}
+
+			// Start a thread on the local cosmos node, in the first available thread manager
+			LithpThreadReference start(const LithpCell &ins, Env_p env) {
+				LithpCosmosNodePtr cosmos = getCosmosNodeFor(LocalNodeId);
+				LithpThreadManagerPtr threadman = cosmos->GetAnyThreadManager();
+				return threadman->start(ins, env);
+			}
+
+			// Start a thread on the same thread manager as an existing thread
+			LithpThreadReference start(const LithpCell &ins, Env_p env, const LithpThreadReference &parent) {
+				return getThreadManagerFor(parent)->start(ins, env);
+			}
+
+			void runThreadToCompletion(const LithpThreadReference &ref) {
+				getThreadManagerFor(ref)->runThreadToCompletion(ref);
+			}
+
+			void remove_thread(const LithpThreadReference &ref) {
+				getThreadManagerFor(ref)->remove_thread(ref);
+			}
+
+			LithpCell getResult(const LithpThreadReference &ref) {
+				return getThreadManagerFor(ref)->getThread(ref).getResult();
+			}
+
+			size_t threadCount() {
+				return GetLocalCosmosNode()->threadCount();
+			}
+
+			bool hasThreads() {
+				return GetLocalCosmosNode()->hasThreads();
+			}
+
+			int executeThreads() {
+				return GetLocalCosmosNode()->executeThreads();
 			}
 		};
 
