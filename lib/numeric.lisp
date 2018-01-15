@@ -17,4 +17,6 @@
 	(define fac2 (# (N A) (begin
 		(if (<= N 0) A (fac2 (- N 1) (* N A)))
 	)))
+
+	(export % abs sum prod fac)
 )

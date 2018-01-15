@@ -47,6 +47,7 @@ namespace PocoLithp {
 					case Procedure:
 						result = res;
 						if (was_macro) {
+							DEBUG("  executing macro result");
 							setExpression(result, impl);
 							return;
 						}

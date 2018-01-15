@@ -41,4 +41,5 @@
 		))
 	)))
 
+	(export compose repeat lookup ifDefined tuple envstr)
 )

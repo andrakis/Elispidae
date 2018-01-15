@@ -275,6 +275,7 @@ namespace PocoLithp {
 	const LithpCell tag_string(Atom, "string");
 	const LithpCell tag_other(Atom, "other");
 	const LithpCell tag_lambda(Atom, "lambda");
+	const LithpCell tag_macro(Atom, "macro");
 	const LithpCell tag_proc(Atom, "proc");
 	const LithpCell tag_list(Atom, "list");
 	const LithpCell tag_dict(Atom, "dict");
@@ -296,7 +297,11 @@ namespace PocoLithp {
 			return tag_other;
 		case Lambda:
 			return tag_lambda;
+		case Macro:
+			return tag_macro;
 		case Proc:
+		case ProcExtended:
+		case ProcImplementation:
 			return tag_proc;
 		case List:
 			return tag_list;
@@ -307,6 +312,20 @@ namespace PocoLithp {
 		default:
 			return getAtom("unknown");
 		}
+	}
+
+	// Export given environment symbols to the topmost environment.
+	// @param (list atom())
+	LithpCell proc_export(const LithpCells &args, Env_p env) {
+		Env_p topmost = env->getTopmost(env);
+		unsigned count = 0;
+		for (auto it = args.cbegin(); it != args.cend(); ++it, ++count) {
+			// Expects atoms
+			if (GetDEBUG())
+				std::cerr << "!  exporting symbol: " << it->atomid() << std::endl;
+			topmost->operator[](it->atomid()) = env->operator[](it->atomid());
+		}
+		return LithpCell(Var, count);
 	}
 
 	void add_environment_runtime(add_environment_proc p) {
@@ -339,6 +358,9 @@ namespace PocoLithp {
 
 		// Variable information
 		env["tag"] = LithpCell(&proc_tag);
+
+		// Export functions
+		env["export"] = LithpCell(&proc_export);
 		
 		// Add any other procs
 		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)

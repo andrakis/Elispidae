@@ -134,5 +134,8 @@
     <None Include="..\samples\threading.lisp">
       <Filter>samples</Filter>
     </None>
+    <None Include="..\lib\cosmos.lisp">
+      <Filter>lib</Filter>
+    </None>
   </ItemGroup>
 </Project>

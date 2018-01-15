@@ -331,6 +331,7 @@
     <ClCompile Include="stdlib\PLglobals.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\lib\cosmos.lisp" />
     <None Include="..\lib\init.lisp" />
     <None Include="..\lib\lists.lisp" />
     <None Include="..\lib\misc.lisp" />
