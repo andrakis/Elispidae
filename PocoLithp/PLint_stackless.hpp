@@ -285,20 +285,11 @@ namespace PocoLithp {
 		using namespace stackless::microthreading;
 
 		struct LithpThreadManager : protected MicrothreadManager<LithpImplementation> {
-			typedef std::vector<_thread_type> Threads;
-
 			const LithpThreadNodeId node_id;
 			const LithpCosmosNodeId cosmos_id;
 
 			LithpThreadManager(const LithpThreadNodeId _node_id, const LithpCosmosNodeId _cosmos_id)
 				: MicrothreadManager(), node_id(_node_id), cosmos_id(_cosmos_id) {
-			}
-
-			Threads getThreads() {
-				Threads list;
-				for (auto it = threads.begin(); it != threads.end(); ++it)
-					list.push_back(it->second);
-				return list;
 			}
 
 			_threads_type::iterator getThreadById(const LithpThreadId thread_id, const LithpThreadNodeId node_id = 0, const LithpCosmosNodeId cosmos_id = 0) {
@@ -312,12 +303,14 @@ namespace PocoLithp {
 			// Attempt to receive a message for a thread.
 			// Returns: true on message received and copied into &message, false if nothing available.
 			bool receive(LithpCell &message, const ThreadId thread_id) {
-				auto thread = getThread(thread_id);
-				if(thread.mailbox.empty())
+				typename _threads_type::iterator thread = getThread(thread_id);
+				if (thread == threads.end())
+					return false; // Not found
+				if(thread->second.mailbox.empty())
 					return false; // No messages waiting
 				// Update message object
-				message.update(thread.mailbox.front());
-				thread.mailbox.pop();
+				message.update(thread->second.mailbox.front());
+				thread->second.mailbox.pop();
 				return true;
 			}
 			// Sleep for duration from current time
@@ -337,16 +330,26 @@ namespace PocoLithp {
 				return thread_ref;
 			}
 
+			LithpCells getThreadReferences() const {
+				LithpCells refs;
+				for (auto it = threads.cbegin(); it != threads.cend(); ++it)
+					refs.push_back(LithpCell(Thread, LithpThreadReference(it->first, node_id, cosmos_id)));
+				return refs;
+			}
+
 			void runThreadToCompletion(const LithpThreadReference &ref) {
 				MicrothreadManager::runThreadToCompletion(ref.thread_id, Multi);
 			}
 			using MicrothreadManager::_thread_type;
-			_thread_type getThread(const LithpThreadReference &ref) {
+			typename _threads_type::iterator getThread(const LithpThreadReference &ref) {
 				return MicrothreadManager::getThread(ref.thread_id);
 			}
 			void remove_thread(const LithpThreadReference &ref) {
 				MicrothreadManager::remove_thread(ref.thread_id);
 			}
+
+			using MicrothreadManager::send;
+
 			// TODO: This needs to be removed
 			using MicrothreadManager::getCurrentThread;
 			// TODO: This needs to be removed
@@ -381,7 +384,10 @@ namespace PocoLithp {
 			}
 			void deliver_message(_thread_type &thread, const _cell_type &message) {
 				// TODO: Check if thread is in receive state
-				MicrothreadManager::deliver_message(thread, message);
+				//MicrothreadManager::deliver_message(thread, message);
+				thread.mailbox.push(message);
+				if (GetDEBUG())
+					std::cerr << "! thread mailbox: " << thread.mailbox.size() << " in size" << std::endl;
 			}
 		private:
 			//Mailboxes mailboxes;
@@ -456,6 +462,19 @@ namespace PocoLithp {
 				return threads_executed;
 			}
 
+			LithpCells getThreadReferences() {
+				LithpCells refs;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					auto thread_refs = it->second.ptr->getThreadReferences();
+					refs.insert(refs.end(), thread_refs.cbegin(), thread_refs.cend());
+				}
+				return refs;
+			}
+
+			bool send(const LithpCell &message, const LithpThreadReference &thread_ref) {
+				return GetThreadManagerForThread(thread_ref)->send(message, thread_ref.thread_id);
+			}
+
 			const LithpCosmosNodeId cosmos_id;
 		};
 
@@ -513,7 +532,7 @@ namespace PocoLithp {
 			}
 
 			LithpCell getResult(const LithpThreadReference &ref) {
-				return getThreadManagerFor(ref)->getThread(ref).getResult();
+				return getThreadManagerFor(ref)->getThread(ref)->second.getResult();
 			}
 
 			size_t threadCount() {
@@ -526,6 +545,23 @@ namespace PocoLithp {
 
 			int executeThreads() {
 				return GetLocalCosmosNode()->executeThreads();
+			}
+
+			LithpCell getThreadReferences() {
+				LithpCells refs;
+				for (auto it = cosmos_nodes.begin(); it != cosmos_nodes.end(); ++it) {
+					auto thread_refs = it->second->getThreadReferences();
+					refs.insert(refs.end(), thread_refs.cbegin(), thread_refs.cend());
+				}
+				return LithpCell(List, refs);
+			}
+
+			bool send(const LithpCell &message, const LithpThreadReference &thread_ref) {
+				return getCosmosNodeFor(thread_ref)->send(message, thread_ref);
+			}
+
+			bool receive(LithpCell &message, const LithpThreadReference &thread_ref) {
+				return getThreadManagerFor(thread_ref)->receive(message, thread_ref.thread_id);
 			}
 		};
 
