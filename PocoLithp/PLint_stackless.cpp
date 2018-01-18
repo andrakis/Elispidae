@@ -12,27 +12,23 @@ namespace PocoLithp {
 	namespace Stackless {
 		LithpProcessManager LithpProcessMan;
 
-		bool LithpFrame::isWaiting(const LithpImplementation &impl) {
-			return wait_state == REPL || wait_state == Run_Wait ||
-				LithpProcessMan.isThreadSleeping(LithpThreadReference(impl));
-		}
-
 		// Frame implementation
-		void LithpFrame::execute(const LithpImplementation &impl) {
+		bool LithpFrame::execute(const LithpImplementation &impl) {
 			// TODO:HACK: Stop frames from completing before they're fully initialized
 			if (wait_state == Initialize) {
 				wait_state = Run;
 				expressions.push_back(exp);
 				exp_it = expressions.cbegin();
 				setExpression(exp, impl);
-				return;
+				return true;
 			}
 			if (isResolved())
-				return;
-			if (isWaiting(impl))
-				return;
+				return false;
+			if (isWaiting())
+				return false;
+			bool executed = false;
 			if (subframe != nullptr) {
-				subframe->execute(impl);
+				executed = subframe->execute(impl);
 				if (subframe->isResolved()) {
 					// Copy results
 					LithpCell res(subframe->result);
@@ -55,7 +51,7 @@ namespace PocoLithp {
 						if (was_macro) {
 							DEBUG("  executing macro result");
 							setExpression(result, impl);
-							return;
+							return true;
 						}
 						nextExpression(impl);
 						break;
@@ -67,8 +63,9 @@ namespace PocoLithp {
 				dispatch(impl);
 			else
 				nextArgument(impl);
+			return executed;
 #if 0 && _DEBUG
-			execute(impl);
+			return execute(impl);
 #endif
 		}
 

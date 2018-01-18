@@ -176,12 +176,12 @@ namespace PocoLithp {
 			bool deliver_message(const _cell_type &message, const LithpImplementation &impl);
 
 			bool isResolved() const { return resolved; }
-			bool isWaiting(const LithpImplementation &impl);// { return wait_state == REPL || wait_state == Run_Wait; }
+			bool isWaiting() const { return wait_state == REPL || wait_state == Run_Wait; }
 
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
 
-			void execute(const LithpImplementation &impl);
+			bool execute(const LithpImplementation &impl);
 			void nextArgument(const LithpImplementation &impl);
 			void nextExpression(const LithpImplementation &impl);
 			void setExpression(const LithpCell &value, const LithpImplementation &impl);
@@ -291,8 +291,8 @@ namespace PocoLithp {
 			LithpFrame &getCurrentFrame() {
 				return frame;
 			}
-			void executeFrame(LithpFrame &fr) {
-				fr.execute(*this);
+			bool executeFrame(LithpFrame &fr) {
+				return fr.execute(*this);
 			}
 
 			bool deliver_message(const _cell_type &message) {
@@ -379,6 +379,10 @@ namespace PocoLithp {
 			using MicrothreadManager::hasThreads;
 			using MicrothreadManager::executeThreads;
 
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				MicrothreadManager::thread_wake(thread_ref.thread_id);
+			}
+
 			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
 				auto thread_it = getThread(thread_ref);
 				if (thread_it == threads.end())
@@ -401,14 +405,14 @@ namespace PocoLithp {
 						if (time <= std::chrono::milliseconds(0))
 							return;
 					}
-						// Acquire lock for sleeping
-						//if (!yield_mutex.try_lock()) {
-							// Expensive sleep
-							std::this_thread::yield();
-							if (GetDEBUG())
-								std::cerr << "! Sleeping for " << time.count() << "ms" << std::endl;
-							std::this_thread::sleep_for(time);
-						//}
+					// Acquire lock for sleeping
+					//if (!yield_mutex.try_lock()) {
+						// Expensive sleep
+						std::this_thread::yield();
+						if (GetDEBUG())
+							std::cerr << "! Thread manager sleeping for " << time.count() << "ms" << std::endl;
+						std::this_thread::sleep_for(time);
+					//}
 				}
 			}
 			void deliver_message(_threads_iterator thread, const _cell_type &message) {
@@ -420,7 +424,6 @@ namespace PocoLithp {
 					std::cerr << "! thread mailbox: " << thread->second.mailbox.size() << " in size" << std::endl;
 			}
 		private:
-			//Mailboxes mailboxes;
 			std::mutex yield_mutex;
 		};
 
@@ -509,6 +512,11 @@ namespace PocoLithp {
 				return GetThreadManagerForThread(thread_ref)->isThreadSleeping(thread_ref);
 			}
 
+
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				GetThreadManagerForThread(thread_ref)->thread_wake(thread_ref);
+			}
+
 			const LithpCosmosNodeId cosmos_id;
 		};
 
@@ -543,6 +551,9 @@ namespace PocoLithp {
 			}
 			void thread_sleep_forever(const LithpThreadReference &thread_ref) {
 				getThreadManagerFor(thread_ref)->thread_sleep_forever(thread_ref.thread_id);
+			}
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				getThreadManagerFor(thread_ref)->thread_wake(thread_ref.thread_id);
 			}
 
 			// Start a thread on the local cosmos node, in the first available thread manager
