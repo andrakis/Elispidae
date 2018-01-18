@@ -12,6 +12,11 @@ namespace PocoLithp {
 	namespace Stackless {
 		LithpProcessManager LithpProcessMan;
 
+		bool LithpFrame::isWaiting(const LithpImplementation &impl) {
+			return wait_state == REPL || wait_state == Run_Wait ||
+				LithpProcessMan.isThreadSleeping(LithpThreadReference(impl));
+		}
+
 		// Frame implementation
 		void LithpFrame::execute(const LithpImplementation &impl) {
 			// TODO:HACK: Stop frames from completing before they're fully initialized
@@ -20,10 +25,11 @@ namespace PocoLithp {
 				expressions.push_back(exp);
 				exp_it = expressions.cbegin();
 				setExpression(exp, impl);
+				return;
 			}
 			if (isResolved())
 				return;
-			if (isWaiting())
+			if (isWaiting(impl))
 				return;
 			if (subframe != nullptr) {
 				subframe->execute(impl);
@@ -214,7 +220,7 @@ namespace PocoLithp {
 						result.tag = Lambda;
 						result.env = env;
 						return true;
-					} else if(first == sym_macro) { // (macro (var*) exp)
+					} else if (first == sym_macro) { // (macro (var*) exp)
 						result = LithpCell(value);
 						result.tag = Macro;
 						result.env = env;
@@ -227,6 +233,14 @@ namespace PocoLithp {
 						// (receive (Callback Message) [after Milliseconds Callback])
 						arguments = LithpCells(begin + 1, end);
 						return false;
+					} else if (first == sym_sleep) { // (sleep [infinity | Milliseconds])
+						if (it != end) {
+							arguments.push_back(*it);
+							return false;
+						} else {
+							resolved_arguments.push_back(sym_infinity);
+							return true;
+						}
 					}
 				}
 				// (proc exp*)
@@ -238,6 +252,28 @@ namespace PocoLithp {
 				result = value;
 				return true;
 			}
+		}
+
+		bool LithpFrame::deliver_message(const _cell_type &message, const LithpImplementation &impl) {
+			if (subframe != nullptr) {
+				// Forward to deepest frame
+				return deepestFrame().deliver_message(message, impl);
+			}
+			// We are deepest frame, check receive state
+			if (receive_state.isActive() == false || receive_state.on_message == sym_nil) {
+				// No current receive state, will be posted to mailbox
+				return false;
+			}
+			// Construct new expression:
+			//   (OnMessage (quote Message))
+			LithpCells ins;
+			ins.push_back(receive_state.on_message);
+			LithpCells ins_quote;
+			ins_quote.push_back(sym_quote);
+			ins_quote.push_back(message);
+			ins.push_back(LithpCell(List, ins_quote));
+			setExpression(LithpCell(List, ins), impl);
+			return true;
 		}
 
 		// Dispatcher implementation
@@ -410,7 +446,14 @@ namespace PocoLithp {
 				}
 			}
 
-			// Create new frame for receiving
+			LithpCell cell;
+			if (LithpProcessMan.receive(cell, LithpThreadReference(impl))) {
+				frame.receive_state = ReceiveState(on_message, on_timeout, timeout);
+				frame.deliver_message(cell, impl);
+				return false; // don't move exp_it
+			}
+
+			// Create new frame for sleeping
 			LithpCells ins_cells;
 			ins_cells.push_back(sym_sleep);
 			ins_cells.push_back(timeout);
@@ -419,6 +462,7 @@ namespace PocoLithp {
 			newframe->receive_state = ReceiveState(on_message, on_timeout, timeout);
 			frame.subframe = newframe;
 			frame.subframe_mode = LithpFrame::Procedure;
+			frame.result = sym_receive;
 			return false;
 		}
 
@@ -431,47 +475,23 @@ namespace PocoLithp {
 				timeout = *it; ++it;
 			}
 
-			LithpThreadReference thread_ref(impl);
-			if (timeout == sym_infinity) {
-				LithpProcessMan.thread_sleep_forever(thread_ref);
-			} else {
-				ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
-				LithpProcessMan.thread_sleep_for(thread_ref, duration);
-			}
-			return true;
-			/*
-			TODO: This code no longer belongs here, it belongs in the thread manager.
-			if (tm.receive(message, thread_ref)) {
-				// Construct new expression:
-				//   (OnMessage (quote Message))
-				LithpCells ins;
-				ins.push_back(on_message);
-				LithpCells ins_quote;
-				ins_quote.push_back(sym_quote);
-				ins_quote.push_back(message);
-				ins.push_back(LithpCell(List, ins_quote));
-				frame.setExpression(LithpCell(List, ins));
-				return false;
-			} else {
-				if (timeout_mode == sym_after) {
-					if (on_timeout != sym_infinity) {
-						// TODO
-						//tm.thread_sleep_for(thread->thread_id, timeout);
-						if (0 frame.sleep_until < now) {
-							// Timeout occurs
-							// Construct new expression:
-							//   (OnTimeout)
-							LithpCells ins;
-							ins.push_back(on_timeout);
-							frame.setExpression(LithpCell(List, ins));
-							// Skip the sleep below
-							return false;
-						}
-					}
+			frame.result = sym_sleep;
+			if (frame.is_sleeping == false) {
+				frame.is_sleeping = true;
+				LithpThreadReference thread_ref(impl);
+				if (timeout == sym_infinity) {
+					LithpProcessMan.thread_sleep_forever(thread_ref);
+				} else {
+					ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
+					LithpProcessMan.thread_sleep_for(thread_ref, duration);
 				}
-
+				if (GetDEBUG()) std::cerr << "! sleeping" << std::endl;
 				return false;
-			}*/
+			} else {
+				frame.is_sleeping = false;
+				if (GetDEBUG()) std::cerr << "! waking up" << std::endl;
+				return true;
+			}
 		}
 
 		bool LithpFrame::dispatchCall(const LithpImplementation &impl) {

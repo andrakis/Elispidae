@@ -35,6 +35,7 @@ namespace PocoLithp {
 
 	namespace Stackless {
 		using namespace stackless;
+		using namespace stackless::microthreading;
 		namespace instruction {
 			enum instruction {
 				Quote,
@@ -105,11 +106,22 @@ namespace PocoLithp {
 			LithpCell on_timeout;  // (# () :: any) callback on timeout
 			LithpCell timeout;     // infinite, or number of milliseconds
 
-			ReceiveState(const LithpCell &_onmessage = sym_nil,
-				         const LithpCell &_ontimeout = sym_nil,
+			ReceiveState() :
+				on_message(sym_nil), on_timeout(sym_nil), timeout(sym_nil)
+			{
+			}
+
+			ReceiveState(const LithpCell &_onmessage,
+				         const LithpCell &_ontimeout,
 				         const LithpCell &_timeout = sym_infinity) :
 				on_message(_onmessage), on_timeout(_ontimeout),
 				timeout(_timeout) {
+			}
+
+			bool isActive() const {
+				return on_message == sym_nil &&
+					on_timeout == sym_nil &&
+					timeout == sym_nil;
 			}
 		};
 
@@ -131,7 +143,8 @@ namespace PocoLithp {
 				subframe_mode(None),
 				arg_id(0),
 				receive_state(),
-				is_macro(false)
+				is_macro(false),
+				is_sleeping(false)
 			{
 			}
 		public:
@@ -160,8 +173,10 @@ namespace PocoLithp {
 				return *this;
 			}
 
+			bool deliver_message(const _cell_type &message, const LithpImplementation &impl);
+
 			bool isResolved() const { return resolved; }
-			bool isWaiting() const { return wait_state == REPL || wait_state == Run_Wait; }
+			bool isWaiting(const LithpImplementation &impl);// { return wait_state == REPL || wait_state == Run_Wait; }
 
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
@@ -202,6 +217,7 @@ namespace PocoLithp {
 			unsigned arg_id;
 			ReceiveState receive_state;
 			bool is_macro;
+			bool is_sleeping;
 		};
 
 		template<typename instruction::instruction Instruction>
@@ -277,6 +293,10 @@ namespace PocoLithp {
 			}
 			void executeFrame(LithpFrame &fr) {
 				fr.execute(*this);
+			}
+
+			bool deliver_message(const _cell_type &message) {
+				return frame.deliver_message(message, *this);
 			}
 		private:
 			LithpFrame frame;
@@ -359,6 +379,13 @@ namespace PocoLithp {
 			using MicrothreadManager::hasThreads;
 			using MicrothreadManager::executeThreads;
 
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				auto thread_it = getThread(thread_ref);
+				if (thread_it == threads.end())
+					return false;
+				return false == isThreadScheduled(thread_it);
+			}
+
 		protected:
 			void yield_process(bool unwatched_resolved, int threads_run) {
 				if (threads_run == 0) {
@@ -378,16 +405,19 @@ namespace PocoLithp {
 						//if (!yield_mutex.try_lock()) {
 							// Expensive sleep
 							std::this_thread::yield();
+							if (GetDEBUG())
+								std::cerr << "! Sleeping for " << time.count() << "ms" << std::endl;
 							std::this_thread::sleep_for(time);
 						//}
 				}
 			}
-			void deliver_message(_thread_type &thread, const _cell_type &message) {
-				// TODO: Check if thread is in receive state
-				//MicrothreadManager::deliver_message(thread, message);
-				thread.mailbox.push(message);
+			void deliver_message(_threads_iterator thread, const _cell_type &message) {
+				if (thread->second.impl->deliver_message(message))
+					return; // Message delivered
+				// Message queued
+				thread->second.mailbox.push(message);
 				if (GetDEBUG())
-					std::cerr << "! thread mailbox: " << thread.mailbox.size() << " in size" << std::endl;
+					std::cerr << "! thread mailbox: " << thread->second.mailbox.size() << " in size" << std::endl;
 			}
 		private:
 			//Mailboxes mailboxes;
@@ -473,6 +503,10 @@ namespace PocoLithp {
 
 			bool send(const LithpCell &message, const LithpThreadReference &thread_ref) {
 				return GetThreadManagerForThread(thread_ref)->send(message, thread_ref.thread_id);
+			}
+
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				return GetThreadManagerForThread(thread_ref)->isThreadSleeping(thread_ref);
 			}
 
 			const LithpCosmosNodeId cosmos_id;
@@ -562,6 +596,10 @@ namespace PocoLithp {
 
 			bool receive(LithpCell &message, const LithpThreadReference &thread_ref) {
 				return getThreadManagerFor(thread_ref)->receive(message, thread_ref.thread_id);
+			}
+
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				return getThreadManagerFor(thread_ref)->isThreadSleeping(thread_ref);
 			}
 		};
 
