@@ -472,23 +472,17 @@ namespace PocoLithp {
 				timeout = *it; ++it;
 			}
 
-			frame.result = sym_sleep;
-			if (frame.is_sleeping == false) {
-				frame.is_sleeping = true;
-				LithpThreadReference thread_ref(impl);
-				if (timeout == sym_infinity) {
-					LithpProcessMan.thread_sleep_forever(thread_ref);
-				} else {
-					ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
-					LithpProcessMan.thread_sleep_for(thread_ref, duration);
-				}
-				if (GetDEBUG()) std::cerr << "! sleeping" << std::endl;
-				return false;
+			LithpThreadReference thread_ref(impl);
+			if (timeout == sym_infinity) {
+				LithpProcessMan.thread_sleep_forever(thread_ref);
 			} else {
-				frame.is_sleeping = false;
-				if (GetDEBUG()) std::cerr << "! waking up" << std::endl;
-				return true;
+				ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
+				LithpProcessMan.thread_sleep_for(thread_ref, duration);
 			}
+			if (GetDEBUG()) std::cerr << "! sleeping" << std::endl;
+			frame.result = LithpCell(Atom, "sleeping");
+			// Don't move exp_it - it will be moved by implementation instead
+			return false;
 		}
 
 		bool LithpFrame::dispatchCall(const LithpImplementation &impl) {

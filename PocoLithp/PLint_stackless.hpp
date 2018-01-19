@@ -285,7 +285,7 @@ namespace PocoLithp {
 
 			LithpImplementation(const LithpImplementationInfo &info, env_p _env)
 				: Implementation(_env), thread_id(info.thread_id), node_id(info.node_id),
-				cosmos_id(info.cosmos_id), frame(info.ins, _env)
+				cosmos_id(info.cosmos_id), frame(info.ins, _env), is_sleeping(false)
 			{
 			}
 			LithpFrame &getCurrentFrame() {
@@ -298,8 +298,21 @@ namespace PocoLithp {
 			bool deliver_message(const _cell_type &message) {
 				return frame.deliver_message(message, *this);
 			}
+
+			void notify_sleep() {
+				if (GetDEBUG()) std::cerr << "! thread.impl: notify_sleep()" << std::endl;
+				is_sleeping = true;
+			}
+			void notify_wake() {
+				if (GetDEBUG()) std::cerr << "! thread.impl: notify_wake()" << std::endl;
+				is_sleeping = false;
+				// Advance the instruction pointer
+				getCurrentFrame().deepestFrame().nextExpression(*this);
+			}
+			bool isAsleep() const { return is_sleeping; }
 		private:
 			LithpFrame frame;
+			bool is_sleeping;
 		};
 
 		using namespace stackless::microthreading;
@@ -414,14 +427,6 @@ namespace PocoLithp {
 						std::this_thread::sleep_for(time);
 					//}
 				}
-			}
-			void deliver_message(_threads_iterator thread, const _cell_type &message) {
-				if (thread->second.impl->deliver_message(message))
-					return; // Message delivered
-				// Message queued
-				thread->second.mailbox.push(message);
-				if (GetDEBUG())
-					std::cerr << "! thread mailbox: " << thread->second.mailbox.size() << " in size" << std::endl;
 			}
 		private:
 			std::mutex yield_mutex;
