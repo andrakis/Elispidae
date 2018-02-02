@@ -111,13 +111,13 @@ How?
 Status
 ------
 
-**Version: 0.80**
+**Version: 0.81**
 
 **Language compatibility level:** Lisp-ish, with tail-call-optimization and macros.
 
-    Mainly Lisp-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`).
+   Mainly Lisp-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`).
 
-	Microthreading and message passing included.
+   Microthreading and [crude message passing](https://github.com/andrakis/Elispidae/blob/master/samples/threading.lisp) implemented. (See branch [pull request #1](https://github.com/andrakis/Elispidae/pull/1) for progress on proper message passing and thread management.)
 
 Building
 ========
@@ -185,6 +185,8 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Crude [message passing](https://github.com/andrakis/Elispidae/blob/master/samples/threading.lisp) implemented. See [pull request #1](https://github.com/andrakis/Elispidae/pull/1) for progress on proper message passing.
 
 * Project renamed from PocoLithp to Elispidae.
 
