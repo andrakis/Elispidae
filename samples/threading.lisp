@@ -39,5 +39,32 @@
 		))
 	)
 
+	(define Thread1 (spawn (# (Parent) (begin
+		(print (self) " started with parent " Parent)
+		(define Message (list hello! (self)))
+		(send Message Parent)
+		(print (self) " waiting for response...")
+		(receive
+			(# (Message) (begin
+				(print (self) "Got response " Message)
+			))
+			after 2000 (# () (begin
+				(print (self) "Didn't get reply :(")
+			))
+		)
+		(print (self) " exiting")
+	)) Self))
+
+	(print (self) "Waiting for a message...")
+	(receive
+		(# (Message) (begin
+			(define MsgContent (head Message))
+			(define MsgSender (head (tail Message)))
+			(print (self) " got message: " MsgContent " from " MsgSender)
+			(define MsgReply hi!)
+			(print (self) " sending reply: " MsgReply)
+			(send MsgReply MsgSender)
+		))
+	)
 	(print "Master thread exiting")
 )
