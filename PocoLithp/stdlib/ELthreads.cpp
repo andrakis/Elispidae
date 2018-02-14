@@ -1,3 +1,4 @@
+#include <cstdlib>      // exit()
 #include "stdafx.h"
 #include "../PLint_stackless.hpp"
 
@@ -82,6 +83,19 @@ LithpCell proc_spawn(const LithpCells &c, Env_p env) {
 	return LithpCell(Thread, thread);
 }
 
+// Force an exit and return an exit code from the application.
+// (exit Code::integer(Default=1))
+LithpCell proc_exit(const LithpCells &c) {
+	int status = 1;
+	auto it = c.cbegin();
+	if (it != c.cend())
+		status = it->value.convert<int>();
+	if (GetDEBUG())
+		GETLINE("Press ENTER to quit>");
+	LithpProcessMan.force_exit();
+	exit(status);
+}
+
 void Elispidae::Threads::init_threads() {
 	add_environment_runtime([](LithpEnvironment &env) {
 		env["self"] = LithpCell(&proc_self);
@@ -89,5 +103,6 @@ void Elispidae::Threads::init_threads() {
 		env["send"] = LithpCell(&proc_send);
 		env["flush"] = LithpCell(&proc_flush);
 		env["spawn"] = LithpCell(&proc_spawn);
+		env["exit"] = LithpCell(&proc_exit);
 	});
 }

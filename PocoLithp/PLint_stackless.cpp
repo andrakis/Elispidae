@@ -10,11 +10,15 @@ using namespace stackless::timekeeping;
 
 namespace PocoLithp {
 	namespace Stackless {
+		const bool msg_debug = false;
 		LithpProcessManager LithpProcessMan;
+
+		bool LithpImplementation::deliver_message(const _cell_type &message) {
+			return frame.deliver_message(message, *this);
+		}
 
 		// Frame implementation
 		bool LithpFrame::execute(const LithpImplementation &impl) {
-			// TODO:HACK: Stop frames from completing before they're fully initialized
 			if (wait_state == Initialize) {
 				wait_state = Run;
 				expressions.push_back(exp);
@@ -23,17 +27,16 @@ namespace PocoLithp {
 				return true;
 			}
 			if (isResolved())
-				return false;
+				return true;
 			if (isWaiting())
 				return false;
-			bool executed = false;
 			if (subframe != nullptr) {
-				executed = subframe->execute(impl);
+				const bool executed = subframe->execute(impl);
 				if (subframe->isResolved()) {
 					// Copy results
-					LithpCell res(subframe->result);
-					auto mode = subframe_mode;
-					bool was_macro = subframe->isMacro();
+					const LithpCell res(subframe->result);
+					const auto mode = subframe_mode;
+					const bool was_macro = subframe->isMacro();
 					DEBUG("  subframe(" + std::string((mode == Argument ? "arg" : "proc")) + ") = " + to_string(res));
 					// Clear subframe
 					delete subframe;
@@ -59,14 +62,12 @@ namespace PocoLithp {
 						throw new RuntimeException("Invalid subframe mode None");
 					}
 				}
+				return executed;
 			} else if (arg_it == arguments.cend())
 				dispatch(impl);
 			else
 				nextArgument(impl);
-			return executed;
-#if 0 && _DEBUG
-			return execute(impl);
-#endif
+			return true;
 		}
 
 		void LithpFrame::nextArgument(const LithpImplementation &impl) {
@@ -141,7 +142,7 @@ namespace PocoLithp {
 			}
 		}
 
-		bool LithpFrame::resolveExpression(LithpCell &value) {
+		bool LithpFrame::resolveExpression(const LithpCell &value) {
 			switch (value.tag) {
 			case VariableReference:
 				result = lookup(value);
@@ -168,7 +169,7 @@ namespace PocoLithp {
 				if (exp.tag == Atom) {
 					if (first == sym_quote) {         // (quote exp)
 						ARG("Cannot quote nothing");
-						result = *it;
+						result = LithpCell(*it);
 						return true;
 					} else if (first == sym_if) {     // (if test conseq [alt])
 						// becomes (if conseq alt test)
@@ -228,7 +229,29 @@ namespace PocoLithp {
 						return false;
 					} else if (first == sym_receive) {
 						// (receive (Callback Message) [after Milliseconds Callback])
-						arguments = LithpCells(begin + 1, end);
+						// arguments = LithpCells(begin + 1, end);
+						ARG("receive: requires a callback");
+						// Handler::(Callback Message)
+						arguments.push_back(*it); ++it;
+						if (it != end) {
+							// TimeoutMode::infinity | after
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(sym_infinity);
+						}
+						if (it != end) {
+							// Timeout::integer
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(LithpCell(Var, 0));
+						}
+						if (it != end) {
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(LithpCell(sym_nil));
+						}
+						// Final order once evaluation complete:
+						//   Handler TimeoutHandler TimeoutMode Timeout
 						return false;
 					} else if (first == sym_sleep) { // (sleep [infinity | Milliseconds])
 						if (it != end) {
@@ -256,21 +279,17 @@ namespace PocoLithp {
 				// Forward to deepest frame
 				return deepestFrame().deliver_message(message, impl);
 			}
+			if (GetDEBUG())
+				std::cerr << "!> deliver_message(" << to_string(message) << ") to " << impl.str() << std::endl;
 			// We are deepest frame, check receive state
-			if (receive_state.isActive() == false || receive_state.on_message == sym_nil) {
-				// No current receive state, will be posted to mailbox
-				return false;
+			if (receive_state.isActive() == true || receive_state.on_message != sym_nil) {
+				// Wake thread as we have a valid on_message handler.
+				// The Receive instruction will run again, and successfully pull a
+				// message.
+				LithpProcessMan.thread_wake(LithpThreadReference(impl));
 			}
-			// Construct new expression:
-			//   (OnMessage (quote Message))
-			LithpCells ins;
-			ins.push_back(receive_state.on_message);
-			LithpCells ins_quote;
-			ins_quote.push_back(sym_quote);
-			ins_quote.push_back(message);
-			ins.push_back(LithpCell(List, ins_quote));
-			setExpression(LithpCell(List, ins), impl);
-			return true;
+			// Always post message to mailbox
+			return false;
 		}
 
 		// Dispatcher implementation
@@ -423,44 +442,89 @@ namespace PocoLithp {
 		}
 
 		bool LithpDispatcher<instruction::Receive>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
+			// Gets called with arguments:
+			//   OnMessage OnTimeout TimeoutMode TimeoutValue
 			// TODO: This line is a hack:
 			LithpCells::const_iterator end = frame.resolved_arguments.cend();
 			LithpCells::const_iterator it(args);
 
 			//                        // On_Message::func(Message::any())
 			const LithpCell &on_message = *it; ++it;
-			LithpCell timeout_mode = sym_infinity;
-			LithpCell on_timeout = sym_nil;
-			LithpCell timeout = LithpCell(Var, 0);
+			LithpCell timeout_mode = *it; ++it;
+			LithpCell timeout = *it; ++it;
+			LithpCell on_timeout = *it; ++it;
+			ThreadTimeUnit timeout_in_units(0);
 
-			if (it != end) {          // Timeout_Mode::infinity | after
-				timeout_mode = *it; ++it;
-				if (it != end) {      // Timeout::integer()
-					timeout = *it; ++it;
-					if (it != end) {  // On_Timeout::func()
-						on_timeout = *it; ++it;
-					}
-				}
+			if (timeout_mode != sym_infinity) {      // Timeout::integer()
+				timeout_in_units = ThreadTimeUnit(timeout.value.convert<UnsignedInteger>());
 			}
 
-			LithpCell cell;
-			if (LithpProcessMan.receive(cell, LithpThreadReference(impl))) {
-				frame.receive_state = ReceiveState(on_message, on_timeout, timeout);
-				frame.deliver_message(cell, impl);
+			const LithpThreadReference thread_ref(impl);
+			if (msg_debug || GetDEBUG())
+				std::cerr << "@ attempt receive on " << thread_ref.str() << std::endl;
+
+			LithpCell message;
+			if (LithpProcessMan.receive(message, thread_ref)) {
+				frame.receive_state.clear();
+				// Successfully pulled a message from queue.
+				// Construct new expression:
+				//   (OnMessage (quote Message))
+				LithpCells ins;
+				ins.push_back(on_message);
+				LithpCells ins_quote;
+				ins_quote.push_back(sym_quote);
+				ins_quote.push_back(message);
+				ins.push_back(LithpCell(List, ins_quote));
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ receive got message: " << message.str() << std::endl;
+				frame.receive_state.clear();
+				frame.setExpression(LithpCell(List, ins), impl);
 				return false; // don't move exp_it
 			}
 
-			// Create new frame for sleeping
-			LithpCells ins_cells;
-			ins_cells.push_back(sym_sleep);
-			ins_cells.push_back(timeout);
-			LithpCell ins(List, ins_cells);
-			LithpFrame *newframe = new LithpFrame(ins, frame.env);
-			newframe->receive_state = ReceiveState(on_message, on_timeout, timeout);
-			frame.subframe = newframe;
-			frame.subframe_mode = LithpFrame::Procedure;
-			frame.result = sym_receive;
-			return false;
+			// No message available and/or thread has woken again but no message available.
+			if (frame.receive_state.isActive()) {
+				// We have a current receive state, meaning we've been here
+				// before. At this point we've been woken and should do timeout
+				// behaviour.
+				if (frame.receive_state.hasTimeoutHandler()) {
+					// If we have a timeout handler, run it.
+					frame.result = getAtom("handling_timeout");
+					// Construct new expression:
+					//   (OnTimeout)
+					LithpCells ins;
+					ins.push_back(on_timeout);
+					frame.setExpression(LithpCell(List, ins), impl);
+					if (msg_debug || GetDEBUG())
+						std::cerr << "@ handling timeout with: " << to_string(on_timeout) << std::endl;
+					frame.receive_state.clear();
+					return false; // don't move exp_it
+				} else {
+					// Otherwise timeout occurred and no handler
+					frame.result = getAtom("timeout");
+					if (msg_debug || GetDEBUG())
+						std::cerr << "@ timeout occurred, no handler" << std::endl;
+					frame.receive_state.clear();
+					return true;  // move exp_it
+				}
+			}
+
+			// No receive state, save it and sleep
+			frame.receive_state = ReceiveState(on_message, on_timeout, timeout);
+
+			// Put this frame to sleep for specified duration, or forever
+			// if that was specified (or no duration specified.)
+			if (timeout_mode == sym_infinity) {
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ no message, sleeping forever" << std::endl;
+				LithpProcessMan.thread_sleep_forever(thread_ref);
+			} else {
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ no message, sleeping for " << timeout.str() << std::endl;
+				LithpProcessMan.thread_sleep_for(thread_ref, timeout_in_units);
+			}
+			frame.result = getAtom("sleeping");
+			return false; // don't move exp_it
 		}
 
 		bool LithpDispatcher<instruction::Sleep>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
@@ -472,6 +536,9 @@ namespace PocoLithp {
 				timeout = *it; ++it;
 			}
 
+			if (impl.isAsleep())
+				return false;
+
 			LithpThreadReference thread_ref(impl);
 			if (timeout == sym_infinity) {
 				LithpProcessMan.thread_sleep_forever(thread_ref);
@@ -479,7 +546,7 @@ namespace PocoLithp {
 				ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
 				LithpProcessMan.thread_sleep_for(thread_ref, duration);
 			}
-			if (GetDEBUG()) std::cerr << "! sleeping" << std::endl;
+			if (msg_debug || GetDEBUG()) std::cerr << "! sleeping" << std::endl;
 			frame.result = LithpCell(Atom, "sleeping");
 			// Don't move exp_it - it will be moved by implementation instead
 			return false;

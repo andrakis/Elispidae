@@ -110,6 +110,10 @@ namespace PocoLithp {
 				on_message(sym_nil), on_timeout(sym_nil), timeout(sym_nil)
 			{
 			}
+			ReceiveState(const ReceiveState &copy) :
+				on_message(copy.on_message), on_timeout(copy.on_timeout), timeout(copy.timeout)
+			{
+			}
 
 			ReceiveState(const LithpCell &_onmessage,
 				         const LithpCell &_ontimeout,
@@ -119,9 +123,13 @@ namespace PocoLithp {
 			}
 
 			bool isActive() const {
-				return on_message == sym_nil &&
-					on_timeout == sym_nil &&
-					timeout == sym_nil;
+				return on_message != sym_nil || on_timeout != sym_nil;
+			}
+			bool hasMessageHandler() const { return on_message != sym_nil; }
+			bool hasTimeoutHandler() const { return on_timeout != sym_nil; }
+			bool hasTimeoutValue() const { return timeout != sym_nil; }
+			void clear() {
+				on_message = on_timeout = timeout = sym_nil;
 			}
 		};
 
@@ -143,8 +151,7 @@ namespace PocoLithp {
 				subframe_mode(None),
 				arg_id(0),
 				receive_state(),
-				is_macro(false),
-				is_sleeping(false)
+				is_macro(false)
 			{
 			}
 		public:
@@ -166,6 +173,12 @@ namespace PocoLithp {
 				Argument,
 				Procedure,
 			};
+
+			const LithpFrame &deepestFrame() const {
+				if (subframe != nullptr)
+					return subframe->deepestFrame();
+				return *this;
+			}
 
 			LithpFrame &deepestFrame() {
 				if (subframe != nullptr)
@@ -201,7 +214,7 @@ namespace PocoLithp {
 				return true;
 			}
 
-			bool resolveExpression(LithpCell &value);
+			bool resolveExpression(const LithpCell &value);
 
 			FrameWaitState wait_state;
 			LithpCell exp;
@@ -217,7 +230,6 @@ namespace PocoLithp {
 			unsigned arg_id;
 			ReceiveState receive_state;
 			bool is_macro;
-			bool is_sleeping;
 		};
 
 		template<typename instruction::instruction Instruction>
@@ -292,24 +304,23 @@ namespace PocoLithp {
 				return frame;
 			}
 			bool executeFrame(LithpFrame &fr) {
-				return fr.execute(*this);
+				fr.execute(*this);
+				return true;
 			}
 
-			bool deliver_message(const _cell_type &message) {
-				return frame.deliver_message(message, *this);
-			}
+			bool deliver_message(const _cell_type &message);
 
 			void notify_sleep() {
 				if (GetDEBUG()) std::cerr << "! thread.impl: notify_sleep()" << std::endl;
-				is_sleeping = true;
 			}
 			void notify_wake() {
 				if (GetDEBUG()) std::cerr << "! thread.impl: notify_wake()" << std::endl;
-				is_sleeping = false;
-				// Advance the instruction pointer
-				getCurrentFrame().deepestFrame().nextExpression(*this);
 			}
 			bool isAsleep() const { return is_sleeping; }
+
+			std::string str() const {
+				return "<Frame:" + LithpThreadReference(*this).str() + ">";
+			}
 		private:
 			LithpFrame frame;
 			bool is_sleeping;
@@ -409,7 +420,7 @@ namespace PocoLithp {
 					// Default to 1ms sleep time
 					std::chrono::milliseconds time(1);
 					// Unless there is scheduling information
-					if (scheduling.empty() == false) {
+					if (false && scheduling.empty() == false) {
 						// Set time to the next thread timeout
 						const SchedulingInformation &next = *scheduling.cbegin();
 						ThreadTimePoint now = ThreadClock::now();
@@ -616,6 +627,10 @@ namespace PocoLithp {
 
 			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
 				return getThreadManagerFor(thread_ref)->isThreadSleeping(thread_ref);
+			}
+
+			void force_exit() {
+				cosmos_nodes.clear();
 			}
 		};
 
