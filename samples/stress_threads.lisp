@@ -14,6 +14,19 @@
 	;; Uncomment for LOTS of debugging information
 	;; (debug true)
 
+	;; Useful lists functions
+	(define lists:foldl (# (Lst Acc Cb)
+		(if (= 0 (length Lst)) Acc (lists:foldl (tail Lst) (Cb (head Lst) Acc) Cb))
+	))
+	;; Filter a list using a predicate. If Predicate returns true, it is kept.
+	(define lists:filter (# (List Predicate)
+		(lists:foldl List (list)
+			(# (Ele Acc)
+				(if (Predicate Ele) (+ Acc (list Ele)) Acc)))
+	))
+	(define lists:drop (# (List Value)
+		(lists:filter List (# (Ele) (!= Ele Value)))))
+
 	;; Helper function to spawn many threads with given Code and Argument.
 	;; Returns list of thread references.
 	(define spawn-many (# (Count Code Argument)
@@ -30,7 +43,7 @@
 				(print (self) "Received message: " Message)
 				(define MsgBody (head Message))
 				(define MsgSender (head (tail Message)))
-				(send (list complete MsgBody (factorial MsgBody)) MsgSender)
+				(send (list complete MsgBody (self) (factorial MsgBody)) MsgSender)
 			))
 			after 2000 (# () (begin
 				(print (self) "Timeout")
@@ -39,22 +52,31 @@
 		(print (self) "exiting")
 	)))
 	;; Master thread send/receive loop
-	(define message-loop (# (Threads N) (begin
-		(if (> (length Threads) 0)
+	(define message-loop (# (ThreadsStarted ThreadsRunning N) (begin
+		(if (> (length ThreadsStarted) 0)
 			;; Still have threads, send a request
 			(begin
-				(define Thread (head Threads))
+				(define Thread (head ThreadsStarted))
 				(print "Requesting factorial " N "from" Thread)
 				(send (list N (self)) Thread)
-				(message-loop (tail Threads) (+ N 1))
+				(message-loop (tail ThreadsStarted) (+ (list Thread) ThreadsRunning) (+ N 1))
 			)
 			;; else, sent messages to all threads, get responses.
 			;; we time out after 2s since we don't keep track of responses remaining.
 			(begin
 				(receive
 					(# (Message) (begin
-						(print "Got a response: " Message)
-						(message-loop (list) N)
+						(print (self) "Got a response: " Message)
+						(define MsgType (head Message))
+						(define MsgParam (head (tail Message)))
+						(define MsgSender (head (tail (tail Message))))
+						(define Result (head (tail (tail (tail Message)))))
+						(print (self) "Type: " MsgType ", Param:" MsgParam ", Sender: " MsgSender ", Result:" Result)
+						(debug true)
+						(define Remaining (lists:drop ThreadsRunning MsgSender))
+						(debug false)
+						(print (self) "Requests remaining: " (length Remaining))
+						(message-loop ThreadsStarted Remaining N)
 					))
 					after 2000 (# () (begin
 						(print "No message received after 2000ms")
@@ -69,7 +91,7 @@
 	(print "Spawn many: " Threads)
 
 	;; Enter message loop
-	(message-loop Threads 2)
+	(message-loop Threads Threads 2)
 
 	(print "Master thread exiting")
 )

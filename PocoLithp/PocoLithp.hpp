@@ -258,6 +258,15 @@ namespace PocoLithp {
 		}
 		LithpThreadReference(const PocoLithp::Stackless::LithpImplementation &impl);
 
+		bool operator != (const LithpThreadReference &other) const {
+			return !(*this == other);
+		}
+		bool operator == (const LithpThreadReference &other) const {
+			return this->cosmos_id == other.cosmos_id &&
+			       this->node_id   == other.node_id &&
+			       this->thread_id == other.thread_id;
+		}
+
 		std::string str() const {
 			return std::string("<") +
 				std::to_string(cosmos_id) + std::string(".") +
@@ -391,6 +400,8 @@ namespace PocoLithp {
 				}
 				// Comparison is true if both lists are at their endpoints (length is same)
 				return (it_a == alist.end() && it_b == blist.end());
+			} else if (a.tag == Thread && b.tag == Thread) {
+				return a.thread_ref() == b.thread_ref();
 			}
 
 			// Fall back to string comparison (slow!)
