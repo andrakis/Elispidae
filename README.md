@@ -111,20 +111,20 @@ How?
 Status
 ------
 
-**Version: 0.80**
+**Version: 0.85**
 
-**Language compatibility level:** Lisp-ish, with tail-call-optimization and macros.
+**Language compatibility level:** Lisp-ish, with macros.
 
     Mainly Lisp-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`).
 
-	Microthreading and message passing included.
+	Microthreading, message passing, and scheduling is working.
+
+	Tail-call optimization is presently not working.
 
 Building
 ========
 
 * Requires Visual Studio 2015 or G++ 4.9.1 or higher.
-
-* Coming soon: CMake support
 
 Building (Visual Studio)
 ------------------------
@@ -185,6 +185,10 @@ Two methods are available:
 
 Notable Milestones
 ------------------
+
+* Completely rewrote microthread scheduling and message passing.
+
+* Fixed issue with REPL getting stuck in endless error loop.
 
 * Project renamed from PocoLithp to Elispidae.
 
