@@ -39,3 +39,5 @@ std::string stdin_getline(const std::string &); bool stdin_eof();
 #endif
 
 #include "PocoLithp.hpp"
+#include "PLint_stackless.hpp"
+#include "ELisp.hpp"

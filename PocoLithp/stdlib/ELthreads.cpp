@@ -1,29 +1,18 @@
+#include <cstdlib>      // exit()
 #include "stdafx.h"
-
-#include "PLint_stackless.hpp"
-#include "ELisp.hpp"
+#include "../PLint_stackless.hpp"
 
 using namespace PocoLithp;
 using namespace PocoLithp::Stackless;
 
-LithpThreadReference getCurrentThreadRef() {
-	// TODO: Could get lost
-	auto thread = LithpThreadMan.getCurrentThread();
-	return LithpThreadReference(thread->thread_id);
-}
-
 // Get thread reference to current running thread
-LithpCell proc_self(const LithpCells &c) {
-	return LithpCell(Thread, getCurrentThreadRef());
+LithpCell proc_self(const LithpCells &c, Env_p env, const LithpImplementation &impl) {
+	return LithpCell(Thread, LithpThreadReference(impl));
 }
 
 // Get a list of references to all threads
 LithpCell proc_threads(const LithpCells &c) {
-	LithpCells list;
-	auto threads = LithpThreadMan.getThreads();
-	for (auto it = threads.cbegin(); it != threads.cend(); ++it)
-		list.push_back(LithpCell(Thread, LithpThreadReference(it->thread_id)));
-	return LithpCell(List, list);
+	return LithpProcessMan.getThreadReferences();
 }
 
 // Send a message to a thread
@@ -38,9 +27,7 @@ LithpCell proc_send(const LithpCells &c) {
 	const LithpCell &threadref = *it; ++it;
 	if (threadref.tag != Thread)
 		throw InvalidArgumentException("(send: thread should be a threadref)");
-	// Todo: lookup by thread reference
-	LithpThreadManager &man = LithpThreadMan;
-	return man.send(message, threadref.thread_ref()) ? sym_true : sym_false;
+	return LithpProcessMan.send(message, threadref.thread_ref()) ? sym_true : sym_false;
 }
 
 // Flush messages for a given thread and return as list
@@ -55,12 +42,10 @@ LithpCell proc_flush(const LithpCells &c) {
 	UnsignedInteger limit = 0, count = 0;
 	if (it != c.cend())
 		limit = it->value.convert<UnsignedInteger>();
-	// Todo: lookup by thread reference
-	LithpThreadManager &man = LithpThreadMan;
 	LithpCells result;
 	for(;;) {
 		LithpCell message;
-		if (man.receive(message, threadref.thread_ref())) {
+		if (LithpProcessMan.receive(message, threadref.thread_ref())) {
 			result.push_back(LithpCell(message));
 		} else {
 			break;
@@ -82,20 +67,33 @@ LithpCell proc_spawn(const LithpCells &c, Env_p env) {
 	const LithpCell &lambda = *it; ++it;
 	// Get arguments (may be an empty list)
 	const LithpCells args(it, c.cend());
-	LithpThreadManager &tm = LithpThreadMan;
+	// Create new environment for thread
+	Env_p new_env(new LithpEnvironment(env));
+	// Create instruction
+	LithpCells ins_members;
+	//   lambda (instruction to execute)
+	ins_members.push_back(lambda);
+	//   arguments (may be none)
+	ins_members.insert(ins_members.end(), args.begin(), args.end());
+	// Final instruction
+	LithpCell ins(List, ins_members);
 	// Create thread
-	ThreadId thread = tm.start([&lambda, &args, env]() {
-		// Create new environment for thread
-		Env_p new_env(new LithpEnvironment(env));
-		LithpCells ins_members;
-		ins_members.push_back(lambda);
-		ins_members.insert(ins_members.end(), args.begin(), args.end());
-		LithpCell ins(List, ins_members);
-		LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
-		return impl;
-	});
+	LithpThreadReference thread = LithpProcessMan.start(ins, new_env);
 	// Create thread reference
-	return LithpCell(Thread, LithpThreadReference(thread));
+	return LithpCell(Thread, thread);
+}
+
+// Force an exit and return an exit code from the application.
+// (exit Code::integer(Default=1))
+LithpCell proc_exit(const LithpCells &c) {
+	int status = 1;
+	auto it = c.cbegin();
+	if (it != c.cend())
+		status = it->value.convert<int>();
+	if (GetDEBUG())
+		GETLINE("Press ENTER to quit>");
+	LithpProcessMan.force_exit();
+	exit(status);
 }
 
 void Elispidae::Threads::init_threads() {
@@ -105,5 +103,6 @@ void Elispidae::Threads::init_threads() {
 		env["send"] = LithpCell(&proc_send);
 		env["flush"] = LithpCell(&proc_flush);
 		env["spawn"] = LithpCell(&proc_spawn);
+		env["exit"] = LithpCell(&proc_exit);
 	});
 }

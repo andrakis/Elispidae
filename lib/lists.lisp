@@ -51,6 +51,7 @@
 			(+ Acc (if (= list (tag Element)) (flatten Element) (list Element)))
 		)))
 	)))
-	(print (flatten (list 1 2 3 (list 4 5 6) 7 8)))
+
+	(export foldl each map filter member combine zip take drop mid riff-shuffle flatten)
 )
 

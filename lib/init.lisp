@@ -5,6 +5,10 @@
 
 	(define DefaultLibraries (list lists numeric string misc cosmos))
 
+	;; Implement _eval_ctx as a macro
+	(define _eval_ctx (macro Exp Exp))
+	(define _eval (macro Exp Exp))
+
 	;; (timing true)
 	;; (debug true)
 	(define __module__ (macro () init))

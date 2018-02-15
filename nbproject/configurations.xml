@@ -87,9 +87,15 @@
           <itemPath>contrib/poco/Foundation/src/pcre_xclass.c</itemPath>
         </logicalFolder>
       </logicalFolder>
+      <logicalFolder name="f1" displayName="stdlib" projectFiles="true">
+        <itemPath>PocoLithp/stdlib/ELdictionary.cpp</itemPath>
+        <itemPath>PocoLithp/stdlib/ELlists.cpp</itemPath>
+        <itemPath>PocoLithp/stdlib/ELstrings.cpp</itemPath>
+        <itemPath>PocoLithp/stdlib/ELthreads.cpp</itemPath>
+        <itemPath>PocoLithp/stdlib/PLglobals.cpp</itemPath>
+        <itemPath>PocoLithp/stdlib/stdafx.h</itemPath>
+      </logicalFolder>
       <itemPath>PocoLithp/ELisp.cpp</itemPath>
-      <itemPath>PocoLithp/ELthreads.cpp</itemPath>
-      <itemPath>PocoLithp/PLglobals.cpp</itemPath>
       <itemPath>PocoLithp/PLint_recursive.cpp</itemPath>
       <itemPath>PocoLithp/PLint_stackless.cpp</itemPath>
       <itemPath>PocoLithp/PLinterpreter.cpp</itemPath>
@@ -143,10 +149,6 @@
       </item>
       <item path="PocoLithp/ELisp.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="PocoLithp/ELthreads.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
@@ -174,6 +176,18 @@
       <item path="PocoLithp/stdafx.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELdictionary.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELlists.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELstrings.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELthreads.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/stdafx.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="contrib/linenoise-ng/src/ConvertUTF.cpp"
             ex="false"
@@ -532,10 +546,6 @@
       </item>
       <item path="PocoLithp/ELisp.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="PocoLithp/ELthreads.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="PocoLithp/PLglobals.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="PocoLithp/PLint_recursive.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/PLint_recursive.hpp" ex="false" tool="3" flavor2="0">
@@ -563,6 +573,18 @@
       <item path="PocoLithp/stdafx.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PocoLithp/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELdictionary.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELlists.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELstrings.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/ELthreads.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/PLglobals.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PocoLithp/stdlib/stdafx.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="contrib/linenoise-ng/src/ConvertUTF.cpp"
             ex="false"

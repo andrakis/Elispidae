@@ -6,32 +6,37 @@ using namespace stackless;
 using namespace stackless::microthreading;
 using namespace stackless::timekeeping;
 
-// TODO: this shouldn't be needed
-unsigned stackless::microthreading::thread_counter = 0;
-
 #define DEBUG(m)   if(GetDEBUG()) std::cerr << "! " << m << std::endl;
 
 namespace PocoLithp {
 	namespace Stackless {
+		const bool msg_debug = false;
+		LithpProcessManager LithpProcessMan;
+
+		bool LithpImplementation::deliver_message(const _cell_type &message) {
+			return frame.deliver_message(message, *this);
+		}
+
 		// Frame implementation
-		void LithpFrame::execute() {
-			// TODO:HACK: Stop frames from completing before they're fully initialized
+		bool LithpFrame::execute(const LithpImplementation &impl) {
 			if (wait_state == Initialize) {
 				wait_state = Run;
 				expressions.push_back(exp);
 				exp_it = expressions.cbegin();
-				setExpression(exp);
+				setExpression(exp, impl);
+				return true;
 			}
 			if (isResolved())
-				return;
+				return true;
 			if (isWaiting())
-				return;
+				return false;
 			if (subframe != nullptr) {
-				subframe->execute();
+				const bool executed = subframe->execute(impl);
 				if (subframe->isResolved()) {
 					// Copy results
-					LithpCell res(subframe->result);
-					auto mode = subframe_mode;
+					const LithpCell res(subframe->result);
+					const auto mode = subframe_mode;
+					const bool was_macro = subframe->isMacro();
 					DEBUG("  subframe(" + std::string((mode == Argument ? "arg" : "proc")) + ") = " + to_string(res));
 					// Clear subframe
 					delete subframe;
@@ -42,40 +47,44 @@ namespace PocoLithp {
 					case Argument:
 						resolved_arguments.push_back(res);
 						++arg_it;
-						nextArgument();
+						nextArgument(impl);
 						break;
 					case Procedure:
 						result = res;
-						nextExpression();
+						if (was_macro) {
+							DEBUG("  executing macro result");
+							setExpression(result, impl);
+							return true;
+						}
+						nextExpression(impl);
 						break;
 					default:
 						throw new RuntimeException("Invalid subframe mode None");
 					}
 				}
+				return executed;
 			} else if (arg_it == arguments.cend())
-				dispatch();
+				dispatch(impl);
 			else
-				nextArgument();
-#if 0 && _DEBUG
-			execute();
-#endif
+				nextArgument(impl);
+			return true;
 		}
 
-		void LithpFrame::nextArgument() {
+		void LithpFrame::nextArgument(const LithpImplementation &impl) {
 			if (arg_it == arguments.cend())
-				dispatch();
+				dispatch(impl);
 			else if (resolveArgument(*arg_it, arg_id)) {
 				++arg_it;
 				++arg_id;
-				nextArgument();
+				nextArgument(impl);
 			}
 		}
 
-		void LithpFrame::nextExpression() {
+		void LithpFrame::nextExpression(const LithpImplementation &impl) {
 			if (exp_it != expressions.cend()) {
 				++exp_it;
 				if (exp_it != expressions.cend()) {
-					setExpression(*exp_it);
+					setExpression(*exp_it, impl);
 					resolved = false;
 				} else {
 					resolved = true;
@@ -87,9 +96,8 @@ namespace PocoLithp {
 			}
 		}
 
-		void LithpFrame::setExpression(const LithpCell &value) {
+		void LithpFrame::setExpression(const LithpCell &value, const LithpImplementation &impl) {
 			DEBUG("setExpression(" + to_string(value) + ")");
-			sleep_until = ThreadTimePoint::min();
 			resolved = false;
 			arguments.clear();
 			resolved_arguments.clear();
@@ -102,7 +110,7 @@ namespace PocoLithp {
 			}
 			arg_it = arguments.cbegin();
 			arg_id = 0;
-			nextArgument();
+			nextArgument(impl);
 		}
 
 		bool LithpFrame::resolveArgument(const LithpCell &value, const unsigned &id) {
@@ -134,7 +142,7 @@ namespace PocoLithp {
 			}
 		}
 
-		bool LithpFrame::resolveExpression(LithpCell &value) {
+		bool LithpFrame::resolveExpression(const LithpCell &value) {
 			switch (value.tag) {
 			case VariableReference:
 				result = lookup(value);
@@ -161,7 +169,7 @@ namespace PocoLithp {
 				if (exp.tag == Atom) {
 					if (first == sym_quote) {         // (quote exp)
 						ARG("Cannot quote nothing");
-						result = *it;
+						result = LithpCell(*it);
 						return true;
 					} else if (first == sym_if) {     // (if test conseq [alt])
 						// becomes (if conseq alt test)
@@ -210,7 +218,7 @@ namespace PocoLithp {
 						result.tag = Lambda;
 						result.env = env;
 						return true;
-					} else if(first == sym_macro) { // (macro (var*) exp)
+					} else if (first == sym_macro) { // (macro (var*) exp)
 						result = LithpCell(value);
 						result.tag = Macro;
 						result.env = env;
@@ -221,8 +229,38 @@ namespace PocoLithp {
 						return false;
 					} else if (first == sym_receive) {
 						// (receive (Callback Message) [after Milliseconds Callback])
-						arguments = LithpCells(begin + 1, end);
+						// arguments = LithpCells(begin + 1, end);
+						ARG("receive: requires a callback");
+						// Handler::(Callback Message)
+						arguments.push_back(*it); ++it;
+						if (it != end) {
+							// TimeoutMode::infinity | after
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(sym_infinity);
+						}
+						if (it != end) {
+							// Timeout::integer
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(LithpCell(Var, 0));
+						}
+						if (it != end) {
+							arguments.push_back(*it); ++it;
+						} else {
+							arguments.push_back(LithpCell(sym_nil));
+						}
+						// Final order once evaluation complete:
+						//   Handler TimeoutHandler TimeoutMode Timeout
 						return false;
+					} else if (first == sym_sleep) { // (sleep [infinity | Milliseconds])
+						if (it != end) {
+							arguments.push_back(*it);
+							return false;
+						} else {
+							resolved_arguments.push_back(sym_infinity);
+							return true;
+						}
 					}
 				}
 				// (proc exp*)
@@ -236,36 +274,54 @@ namespace PocoLithp {
 			}
 		}
 
+		bool LithpFrame::deliver_message(const _cell_type &message, const LithpImplementation &impl) {
+			if (subframe != nullptr) {
+				// Forward to deepest frame
+				return deepestFrame().deliver_message(message, impl);
+			}
+			if (GetDEBUG())
+				std::cerr << "!> deliver_message(" << to_string(message) << ") to " << impl.str() << std::endl;
+			// We are deepest frame, check receive state
+			if (receive_state.isActive() == true || receive_state.on_message != sym_nil) {
+				// Wake thread as we have a valid on_message handler.
+				// The Receive instruction will run again, and successfully pull a
+				// message.
+				LithpProcessMan.thread_wake(LithpThreadReference(impl));
+			}
+			// Always post message to mailbox
+			return false;
+		}
+
 		// Dispatcher implementation
-		bool LithpDispatcher<instruction::If>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::If>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &conseq = *it; ++it;
 			const LithpCell &alt = *it; ++it;
 			const LithpCell &test = *it; ++it;
 			const LithpCell &if_result = (test == sym_true) ? conseq : alt;
-			frame.setExpression(LithpCell(if_result));
+			frame.setExpression(LithpCell(if_result), impl);
 			// Don't move exp_it
 			return false;
 		}
 
-		bool LithpDispatcher<instruction::Begin>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Begin>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			// Update expressions to call list
 			frame.expressions.swap(frame.resolved_arguments);
 			frame.resolved_arguments.clear();
 			frame.exp_it = frame.expressions.cbegin();
-			frame.setExpression(*frame.exp_it);
+			frame.setExpression(*frame.exp_it, impl);
 			// Don't move exp_it
 			return false;
 		}
 
-		bool LithpDispatcher<instruction::Get>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Get>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &var = *it; ++it;
 			frame.result = frame.lookup(var);
 			return true;
 		}
 
-		bool LithpDispatcher<instruction::Set>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Set>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &var = *it; ++it;
 			const LithpCell &val = *it; ++it;
@@ -273,7 +329,7 @@ namespace PocoLithp {
 			return true;
 		}
 
-		bool LithpDispatcher<instruction::Define>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Define>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &var = *it; ++it;
 			const LithpCell &val = *it; ++it;
@@ -281,14 +337,14 @@ namespace PocoLithp {
 			return true;
 		}
 
-		bool LithpDispatcher<instruction::Defined>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Defined>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 			const LithpCell &var = *it; ++it;
 			frame.result = frame.env->defined(var.atomid()) ? sym_true : sym_false;
 			return true;
 		}
 
-		bool LithpDispatcher<instruction::Proc>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Proc>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 			LithpCells::const_iterator it(args);
 
 			// TODO: This is a hack to allow atoms to be returned as is
@@ -336,6 +392,16 @@ namespace PocoLithp {
 				// Restore wait_state
 				frame.wait_state = Run;
 				return true;
+				// ProcImplementation: a builtin procedure in C++ that passes the implementation itself.
+			case ProcImplementation:
+				// Mark wait state to avoid re-entry into this section
+				frame.wait_state = Run_Wait;
+				// Copy the rest of the resolved arguments to a new list,
+				// that list is passed as the arguments.
+				frame.result = proc.proc_implementation()(arguments, frame.env, impl);
+				// Restore wait_state
+				frame.wait_state = Run;
+				return true;
 				// A Lisp procedure or macro.
 			case Lambda:
 			case Macro:
@@ -366,6 +432,7 @@ namespace PocoLithp {
 				// create subframe
 				frame.subframe_mode = LithpFrame::Procedure;
 				frame.subframe = new LithpFrame(body, new_env);
+				frame.subframe->setMacro(proc.tag == Macro);
 				// don't move exp_it
 				return false;
 			}
@@ -374,35 +441,32 @@ namespace PocoLithp {
 			}
 		}
 
-		bool LithpDispatcher<instruction::Receive>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+		bool LithpDispatcher<instruction::Receive>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
+			// Gets called with arguments:
+			//   OnMessage OnTimeout TimeoutMode TimeoutValue
 			// TODO: This line is a hack:
 			LithpCells::const_iterator end = frame.resolved_arguments.cend();
 			LithpCells::const_iterator it(args);
 
 			//                        // On_Message::func(Message::any())
 			const LithpCell &on_message = *it; ++it;
+			LithpCell timeout_mode = *it; ++it;
+			LithpCell timeout = *it; ++it;
+			LithpCell on_timeout = *it; ++it;
+			ThreadTimeUnit timeout_in_units(0);
 
-			LithpCell timeout_mode = sym_infinity;
-			// Default
-			ThreadTimeUnit timeout = ThreadTimeUnit(10);
-			LithpCell on_timeout = sym_nil;
-			if (it != end) {          // Timeout_Mode::infinity | after
-				timeout_mode = *it; ++it;
-				if (it != end) {      // Timeout::integer()
-					timeout = ThreadTimeUnit(it->value.convert<UnsignedInteger>()); ++it;
-					if (it != end) {  // On_Timeout::func()
-						on_timeout = *it; ++it;
-					}
-				}
+			if (timeout_mode != sym_infinity) {      // Timeout::integer()
+				timeout_in_units = ThreadTimeUnit(timeout.value.convert<UnsignedInteger>());
 			}
 
-			// TODO: Is this always correct? Need it to be passed in.
-			//     : Or, store it in the env.
-			auto &tm = LithpThreadMan;
-			auto thread = tm.getCurrentThread();
+			const LithpThreadReference thread_ref(impl);
+			if (msg_debug || GetDEBUG())
+				std::cerr << "@ attempt receive on " << thread_ref.str() << std::endl;
+
 			LithpCell message;
-			LithpThreadReference thread_ref(thread->thread_id);
-			if (tm.receive(message, thread_ref)) {
+			if (LithpProcessMan.receive(message, thread_ref)) {
+				frame.receive_state.clear();
+				// Successfully pulled a message from queue.
 				// Construct new expression:
 				//   (OnMessage (quote Message))
 				LithpCells ins;
@@ -411,75 +475,127 @@ namespace PocoLithp {
 				ins_quote.push_back(sym_quote);
 				ins_quote.push_back(message);
 				ins.push_back(LithpCell(List, ins_quote));
-				frame.setExpression(LithpCell(List, ins));
-			} else {
-				if (timeout_mode == sym_after) {
-					ThreadTimePoint now = ThreadClock::now();
-					if (frame.sleep_until == ThreadTimePoint::min()) {
-						ThreadTimePoint target = now + timeout;
-						frame.sleep_until = target;
-					}
-					if (frame.sleep_until < now) {
-						// Timeout occurs
-						// Construct new expression:
-						//   (OnTimeout)
-						LithpCells ins;
-						ins.push_back(on_timeout);
-						frame.setExpression(LithpCell(List, ins));
-						// Skip the sleep below
-						return false;
-					}
-				}
-				// TODO: At the moment, we just sleep for a short duration
-				//       and then try again. This means a minimum wait time
-				//       between message checking if one is not present.
-				// Wait for 10ms
-				tm.thread_sleep(thread_ref, ThreadTimeUnit(10));
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ receive got message: " << message.str() << std::endl;
+				frame.receive_state.clear();
+				frame.setExpression(LithpCell(List, ins), impl);
+				return false; // don't move exp_it
 			}
 
+			// No message available and/or thread has woken again but no message available.
+			if (frame.receive_state.isActive()) {
+				// We have a current receive state, meaning we've been here
+				// before. At this point we've been woken and should do timeout
+				// behaviour.
+				if (frame.receive_state.hasTimeoutHandler()) {
+					// If we have a timeout handler, run it.
+					frame.result = getAtom("handling_timeout");
+					// Construct new expression:
+					//   (OnTimeout)
+					LithpCells ins;
+					ins.push_back(on_timeout);
+					frame.setExpression(LithpCell(List, ins), impl);
+					if (msg_debug || GetDEBUG())
+						std::cerr << "@ handling timeout with: " << to_string(on_timeout) << std::endl;
+					frame.receive_state.clear();
+					return false; // don't move exp_it
+				} else {
+					// Otherwise timeout occurred and no handler
+					frame.result = getAtom("timeout");
+					if (msg_debug || GetDEBUG())
+						std::cerr << "@ timeout occurred, no handler" << std::endl;
+					frame.receive_state.clear();
+					return true;  // move exp_it
+				}
+			}
+
+			// No receive state, save it and sleep
+			frame.receive_state = ReceiveState(on_message, on_timeout, timeout);
+
+			// Put this frame to sleep for specified duration, or forever
+			// if that was specified (or no duration specified.)
+			if (timeout_mode == sym_infinity) {
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ no message, sleeping forever" << std::endl;
+				LithpProcessMan.thread_sleep_forever(thread_ref);
+			} else {
+				if (msg_debug || GetDEBUG())
+					std::cerr << "@ no message, sleeping for " << timeout.str() << std::endl;
+				LithpProcessMan.thread_sleep_for(thread_ref, timeout_in_units);
+			}
+			frame.result = getAtom("sleeping");
+			return false; // don't move exp_it
+		}
+
+		bool LithpDispatcher<instruction::Sleep>::dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
+			// TODO: This line is a hack:
+			LithpCells::const_iterator end = frame.resolved_arguments.cend();
+			LithpCells::const_iterator it(args);
+			LithpCell timeout = sym_infinity;
+			if (it != end) {
+				timeout = *it; ++it;
+			}
+
+			if (impl.isAsleep())
+				return false;
+
+			LithpThreadReference thread_ref(impl);
+			if (timeout == sym_infinity) {
+				LithpProcessMan.thread_sleep_forever(thread_ref);
+			} else {
+				ThreadTimeUnit duration = (ThreadTimeUnit)timeout.value.convert<UnsignedInteger>();
+				LithpProcessMan.thread_sleep_for(thread_ref, duration);
+			}
+			if (msg_debug || GetDEBUG()) std::cerr << "! sleeping" << std::endl;
+			frame.result = LithpCell(Atom, "sleeping");
+			// Don't move exp_it - it will be moved by implementation instead
 			return false;
 		}
 
-		bool LithpFrame::dispatchCall() {
+		bool LithpFrame::dispatchCall(const LithpImplementation &impl) {
 			LithpCells::const_iterator it = resolved_arguments.cbegin();
 			instruction::instruction ins = LithpInstructionConverter::convert(exp);
 			switch (ins) {
 			case instruction::If:
-				return LithpDispatcher<instruction::If>::dispatch(*this, it);
+				return LithpDispatcher<instruction::If>::dispatch(*this, it, impl);
 			case instruction::Begin:
-				return LithpDispatcher<instruction::Begin>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Begin>::dispatch(*this, it, impl);
 			case instruction::Get:
-				return LithpDispatcher<instruction::Get>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Get>::dispatch(*this, it, impl);
 			case instruction::Set:
-				return LithpDispatcher<instruction::Set>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Set>::dispatch(*this, it, impl);
 			case instruction::Define:
-				return LithpDispatcher<instruction::Define>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Define>::dispatch(*this, it, impl);
 			case instruction::Defined:
-				return LithpDispatcher<instruction::Defined>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Defined>::dispatch(*this, it, impl);
 			case instruction::Proc:
-				return LithpDispatcher<instruction::Proc>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Proc>::dispatch(*this, it, impl);
 			case instruction::Receive:
-				return LithpDispatcher<instruction::Receive>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Receive>::dispatch(*this, it, impl);
+			case instruction::Sleep:
+				return LithpDispatcher<instruction::Sleep>::dispatch(*this, it, impl);
 			default:
-				return LithpDispatcher<instruction::Invalid>::dispatch(*this, it);
+				return LithpDispatcher<instruction::Invalid>::dispatch(*this, it, impl);
 			}
 		}
 
 		// Thread implementation
-		LithpThreadManager LithpThreadMan;
-		LithpCell eval_thread(LithpThreadManager &tm, const LithpCell &ins, Env_p env) {
+		LithpCell eval_thread(const LithpCell &ins, Env_p env) {
 			// create thread
-			ThreadId thread = tm.start([&ins, env]() {
-				LithpThreadManager::impl_p impl(new LithpImplementation(ins, env));
-				return impl;
-			});
-			// execute multithreading until thread resolved
-			tm.runThreadToCompletion(thread, Multi);
-			// return frame result
-			LithpCell result(tm.getThread(thread).getResult());
-			// remove thread
-			tm.remove_thread(thread);
-			return result;
+			LithpThreadReference thread = LithpProcessMan.start(ins, env);
+			try {
+				// execute multithreading until thread resolved
+				LithpProcessMan.runThreadToCompletion(thread);
+				// return frame result
+				LithpCell result(LithpProcessMan.getResult(thread));
+				// remove thread
+				LithpProcessMan.remove_thread(thread);
+				return result;
+			} catch (...) {
+				// remove thread
+				LithpProcessMan.remove_thread(thread);
+				throw;
+			}
 		}
 	}
 
@@ -487,7 +603,7 @@ namespace PocoLithp {
 	// Eval inner-most loop that performs the interpretation.
 	LithpCell StacklessInterpreter::eval_inner(LithpCell x, Env_p env) {
 		// This could be more efficient
-		return Stackless::eval_thread(Stackless::LithpThreadMan, x, env);
+		return Stackless::eval_thread(x, env);
 	}
 
 	// Top-level eval function. Does depth tracking and exception management.

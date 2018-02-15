@@ -2,7 +2,6 @@
 
 #include "stdafx.h"
 #include <Stackless.hpp>
-#include <queue>
 
 // For avoiding 100% cpu usage
 #include <chrono>
@@ -10,8 +9,6 @@
 #include <thread>
 
 namespace PocoLithp {
-	typedef std::queue<LithpCell> LithpMailbox;
-
 	class StacklessInterpreter : public Interpreter {
 	public:
 		StacklessInterpreter() : Interpreter() { }
@@ -38,6 +35,7 @@ namespace PocoLithp {
 
 	namespace Stackless {
 		using namespace stackless;
+		using namespace stackless::microthreading;
 		namespace instruction {
 			enum instruction {
 				Quote,
@@ -49,9 +47,12 @@ namespace PocoLithp {
 				Begin,
 				Proc, ProcExtended, Lambda, Macro,
 				Receive,
+				Sleep,
 				Invalid
 			};
 		}
+
+		typedef std::vector<LithpThreadReference> LithpThreadReferenceList;
 
 		struct LithpInstructionConverter
 			: public InstructionConverter<LithpCell, typename instruction::instruction> {
@@ -68,6 +69,7 @@ namespace PocoLithp {
 					if (value == sym_lambda || value == sym_lambda2) return instruction::Lambda;
 					if (value == sym_macro) return instruction::Macro;
 					if (value == sym_receive) return instruction::Receive;
+					if (value == sym_sleep) return instruction::Sleep;
 					// Fall through
 				case List:
 				case Lambda:
@@ -98,16 +100,37 @@ namespace PocoLithp {
 			REPL
 		};
 
-		// We use steady clock for thread scheduling
-		using ThreadClock = std::chrono::steady_clock;
-		using ThreadTimePoint = std::chrono::steady_clock::time_point;
-		using ThreadTimeUnit = std::chrono::milliseconds;
-
 		// When in a message receive state
 		struct ReceiveState {
 			LithpCell on_message;  // (# (Message::any) :: any) callback on message receive
 			LithpCell on_timeout;  // (# () :: any) callback on timeout
 			LithpCell timeout;     // infinite, or number of milliseconds
+
+			ReceiveState() :
+				on_message(sym_nil), on_timeout(sym_nil), timeout(sym_nil)
+			{
+			}
+			ReceiveState(const ReceiveState &copy) :
+				on_message(copy.on_message), on_timeout(copy.on_timeout), timeout(copy.timeout)
+			{
+			}
+
+			ReceiveState(const LithpCell &_onmessage,
+				         const LithpCell &_ontimeout,
+				         const LithpCell &_timeout = sym_infinity) :
+				on_message(_onmessage), on_timeout(_ontimeout),
+				timeout(_timeout) {
+			}
+
+			bool isActive() const {
+				return on_message != sym_nil || on_timeout != sym_nil;
+			}
+			bool hasMessageHandler() const { return on_message != sym_nil; }
+			bool hasTimeoutHandler() const { return on_timeout != sym_nil; }
+			bool hasTimeoutValue() const { return timeout != sym_nil; }
+			void clear() {
+				on_message = on_timeout = timeout = sym_nil;
+			}
 		};
 
 		struct LithpImplementation;
@@ -126,7 +149,9 @@ namespace PocoLithp {
 				resolved(false),
 				subframe(nullptr),
 				subframe_mode(None),
-				arg_id(0)
+				arg_id(0),
+				receive_state(),
+				is_macro(false)
 			{
 			}
 		public:
@@ -135,11 +160,25 @@ namespace PocoLithp {
 				exp = expression;
 			}
 
+			void setMacro(bool macro) {
+				is_macro = macro;
+			}
+
+			bool isMacro() const {
+				return is_macro;
+			}
+
 			enum SubframeMode {
 				None,
 				Argument,
-				Procedure
+				Procedure,
 			};
+
+			const LithpFrame &deepestFrame() const {
+				if (subframe != nullptr)
+					return subframe->deepestFrame();
+				return *this;
+			}
 
 			LithpFrame &deepestFrame() {
 				if (subframe != nullptr)
@@ -147,25 +186,27 @@ namespace PocoLithp {
 				return *this;
 			}
 
+			bool deliver_message(const _cell_type &message, const LithpImplementation &impl);
+
 			bool isResolved() const { return resolved; }
 			bool isWaiting() const { return wait_state == REPL || wait_state == Run_Wait; }
 
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
 
-			void execute();
-			void nextArgument();
-			void nextExpression();
-			void setExpression(const LithpCell &value);
+			bool execute(const LithpImplementation &impl);
+			void nextArgument(const LithpImplementation &impl);
+			void nextExpression(const LithpImplementation &impl);
+			void setExpression(const LithpCell &value, const LithpImplementation &impl);
 			bool resolveArgument(const LithpCell &value, const unsigned &id);
 			LithpCell &lookup(const LithpCell &symbol) {
 				return env->find(symbol.atomid())[symbol.atomid()];
 			}
 
-			bool dispatchCall();
-			void dispatch() {
-				if (dispatchCall())
-					nextExpression();
+			bool dispatchCall(const LithpImplementation &impl);
+			void dispatch(const LithpImplementation &impl) {
+				if (dispatchCall(impl))
+					nextExpression(impl);
 			}
 
 			inline bool checkArgument(const LithpCells::const_iterator &it, const LithpCells::const_iterator &end, const std::string &message) const {
@@ -173,7 +214,7 @@ namespace PocoLithp {
 				return true;
 			}
 
-			bool resolveExpression(LithpCell &value);
+			bool resolveExpression(const LithpCell &value);
 
 			FrameWaitState wait_state;
 			LithpCell exp;
@@ -187,95 +228,115 @@ namespace PocoLithp {
 			SubframeMode subframe_mode;
 			// TODO: This is a bit of a hack to support return type parsing
 			unsigned arg_id;
-			// TODO: This is a bit of a hack to support receive sleeping
-			ThreadTimePoint sleep_until;
+			ReceiveState receive_state;
+			bool is_macro;
 		};
 
 		template<typename instruction::instruction Instruction>
 		struct LithpDispatcher {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args) {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl) {
 				throw new RuntimeException("Instruction not implemented");
 			}
 		};
 
 		template<> struct LithpDispatcher<instruction::If> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Begin> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Get> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Set> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Define> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Defined> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
 		template<> struct LithpDispatcher<instruction::Proc> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 		template<> struct LithpDispatcher<instruction::Receive> {
-			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args);
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
+		};
+		template<> struct LithpDispatcher<instruction::Sleep> {
+			static bool dispatch(LithpFrame &frame, const LithpCells::const_iterator &args, const LithpImplementation &impl);
 		};
 
+		struct LithpImplementationInfo {
+			const LithpCell ins;
+			const LithpThreadId thread_id;
+			const LithpThreadNodeId node_id;
+			const LithpCosmosNodeId cosmos_id;
+
+			LithpImplementationInfo(const LithpCell &_ins, const LithpThreadId _thread_id,
+				const LithpThreadNodeId _node_id, const LithpCosmosNodeId _cosmos_id)
+				: ins(_ins), thread_id(_thread_id), node_id(_node_id), cosmos_id(_cosmos_id)
+			{
+			}
+
+			LithpImplementationInfo(const LithpCell &_ins, const LithpThreadReference &ref)
+				: ins(_ins), thread_id(ref.thread_id), node_id(ref.node_id), cosmos_id(ref.cosmos_id)
+			{
+			}
+		};
 		struct LithpImplementation : public Implementation<LithpEnvironment, LithpFrame> {
-			LithpImplementation(const LithpCell &ins, env_p _env)
-				: Implementation(_env), frame(ins, _env) {
+			const LithpThreadId thread_id;
+			const LithpThreadNodeId node_id;
+			const LithpCosmosNodeId cosmos_id;
+
+			LithpImplementation(const LithpImplementationInfo &info, env_p _env)
+				: Implementation(_env), thread_id(info.thread_id), node_id(info.node_id),
+				cosmos_id(info.cosmos_id), frame(info.ins, _env), is_sleeping(false)
+			{
 			}
 			LithpFrame &getCurrentFrame() {
 				return frame;
 			}
-			void executeFrame(LithpFrame &fr) {
-				fr.execute();
+			bool executeFrame(LithpFrame &fr) {
+				fr.execute(*this);
+				return true;
+			}
+
+			bool deliver_message(const _cell_type &message);
+
+			void notify_sleep() {
+				if (GetDEBUG()) std::cerr << "! thread.impl: notify_sleep()" << std::endl;
+			}
+			void notify_wake() {
+				if (GetDEBUG()) std::cerr << "! thread.impl: notify_wake()" << std::endl;
+			}
+			bool isAsleep() const { return is_sleeping; }
+
+			std::string str() const {
+				return "<Frame:" + LithpThreadReference(*this).str() + ">";
 			}
 		private:
 			LithpFrame frame;
+			bool is_sleeping;
 		};
 
 		using namespace stackless::microthreading;
 
-		struct LithpThreadManager : public MicrothreadManager<LithpImplementation> {
-			typedef std::vector<_thread_type> Threads;
-			// TODO: These should be part of the thread, but we don't have access to it
-			typedef std::map<ThreadId, LithpMailbox> Mailboxes;
-			// Custom type used to manage scheduling set
-			struct SchedulingInformation {
-				SchedulingInformation(const LithpThreadReference &_thread_ref, const ThreadTimePoint &_time_point)
-					: thread_ref(_thread_ref), time_point(_time_point)
-				{
-				}
+		struct LithpThreadManager : protected MicrothreadManager<LithpImplementation> {
+			const LithpThreadNodeId node_id;
+			const LithpCosmosNodeId cosmos_id;
 
-				bool operator < (const SchedulingInformation &other) const {
-					return time_point < other.time_point;
-				}
-
-				const LithpThreadReference thread_ref;
-				const ThreadTimePoint time_point;
-			};
-			typedef std::set<SchedulingInformation> Scheduling;
-
-			LithpThreadManager() : MicrothreadManager() {
+			LithpThreadManager(const LithpThreadNodeId _node_id, const LithpCosmosNodeId _cosmos_id)
+				: MicrothreadManager(), node_id(_node_id), cosmos_id(_cosmos_id) {
 			}
 
-			Threads getThreads() {
-				Threads list;
-				for (auto it = threads.begin(); it != threads.end(); ++it)
-					list.push_back(it->second);
-				return list;
-			}
-
-			_threads_type::iterator getThreadById(const LithpThreadId thread_id, const LithpThreadNode node_id = 0, const LithpCosmosNode cosmos_id = 0) {
+			_threads_type::iterator getThreadById(const LithpThreadId thread_id, const LithpThreadNodeId node_id = 0, const LithpCosmosNodeId cosmos_id = 0) {
 				// TODO: Only thread_id is used so far
 				return threads.find(thread_id);
 			}
@@ -283,108 +344,296 @@ namespace PocoLithp {
 				return getThreadById(ref.thread_id, ref.node_id, ref.cosmos_id);
 			}
 
-			Mailboxes::iterator getMailboxById(const LithpThreadId thread_id, const LithpThreadNode node_id = 0, const LithpCosmosNode cosmos_id = 0) {
-				Mailboxes::iterator mailbox_it = mailboxes.find(thread_id);
-				if (mailbox_it == mailboxes.end()) {
-					// Mailbox not found, create it
-					mailboxes.emplace(thread_id, LithpMailbox());
-					mailbox_it = mailboxes.find(thread_id);
-				}
-				return mailbox_it;
-			}
-			Mailboxes::iterator getMailboxById(const LithpThreadReference &ref) {
-				return getMailboxById(ref.thread_id, ref.node_id, ref.cosmos_id);
-			}
-
-			// Send a message to a thread.
-			// Returns: true on success, false on thread not existing.
-			bool send(const LithpCell &message, const LithpThreadReference &ref) {
-				auto thread_it = getThreadById(ref);
-				if (thread_it == threads.end())
-					return false; // Thread not found
-				auto mailbox_it = getMailboxById(ref);
-				mailbox_it->second.push(LithpCell(message));
-				return true;
-			}
-			
 			// Attempt to receive a message for a thread.
 			// Returns: true on message received and copied into &message, false if nothing available.
-			bool receive(LithpCell &message, const LithpThreadReference &ref) {
-				auto thread_it = getThreadById(ref);
-				if (thread_it == threads.end())
-					return false; // No thread with this id
-				auto mailbox_it = getMailboxById(ref);
-				if (mailbox_it->second.empty())
+			bool receive(LithpCell &message, const ThreadId thread_id) {
+				typename _threads_type::iterator thread = getThread(thread_id);
+				if (thread == threads.end())
+					return false; // Not found
+				if(thread->second.mailbox.empty())
 					return false; // No messages waiting
 				// Update message object
-				message.update(mailbox_it->second.front());
-				mailbox_it->second.pop();
+				message.update(thread->second.mailbox.front());
+				thread->second.mailbox.pop();
 				return true;
 			}
-
 			// Sleep for duration from current time
 			void thread_sleep(const LithpThreadReference &thread_ref, const ThreadTimeUnit &duration) {
-				ThreadTimePoint now = ThreadClock::now();
-				ThreadTimePoint target = now + duration;
-				scheduling.emplace(SchedulingInformation(thread_ref, target));
+				const ThreadId id = thread_ref.thread_id;
+				thread_sleep_for(id, duration);
 			}
+
+			LithpThreadReference start(const LithpCell &ins, Env_p env) {
+				ThreadId thread_id = thread_counter;
+				LithpThreadReference thread_ref(thread_id, node_id, cosmos_id);
+				LithpImplementationInfo info(ins, thread_ref);
+				MicrothreadManager::start([&info, env]() {
+					LithpThreadManager::impl_p impl(new LithpImplementation(info, env));
+					return impl;
+				});
+				return thread_ref;
+			}
+
+			LithpCells getThreadReferences() const {
+				LithpCells refs;
+				for (auto it = threads.cbegin(); it != threads.cend(); ++it)
+					refs.push_back(LithpCell(Thread, LithpThreadReference(it->first, node_id, cosmos_id)));
+				return refs;
+			}
+
+			void runThreadToCompletion(const LithpThreadReference &ref) {
+				MicrothreadManager::runThreadToCompletion(ref.thread_id, Multi);
+			}
+			using MicrothreadManager::_thread_type;
+			typename _threads_type::iterator getThread(const LithpThreadReference &ref) {
+				return MicrothreadManager::getThread(ref.thread_id);
+			}
+			void remove_thread(const LithpThreadReference &ref) {
+				MicrothreadManager::remove_thread(ref.thread_id);
+			}
+
+			using MicrothreadManager::send;
+
+			// TODO: This needs to be removed
+			using MicrothreadManager::getCurrentThread;
+			// TODO: This needs to be removed
+			using MicrothreadManager::thread_sleep_forever;
+			using MicrothreadManager::thread_sleep_for;
+			using MicrothreadManager::threadCount;
+			using MicrothreadManager::hasThreads;
+			using MicrothreadManager::executeThreads;
+
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				MicrothreadManager::thread_wake(thread_ref.thread_id);
+			}
+
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				auto thread_it = getThread(thread_ref);
+				if (thread_it == threads.end())
+					return false;
+				return false == isThreadScheduled(thread_it);
+			}
+
 		protected:
-			bool isThreadScheduled(const _thread_type &thread) {
-				// Any scheduling information?
-				if (scheduling.empty())
-					return true;
-
-				// Find iterator for scheduling info for this thread
-				auto it = scheduling.cbegin();
-				for (; it != scheduling.cend(); ++it) {
-					const SchedulingInformation &info = *it;
-					// TODO: This deep check should be moved elsewhere
-					if (info.thread_ref.thread_id == thread.thread_id) {
-						break;
-					}
-				}
-				// Found?
-				if(it == scheduling.cend())
-					return true;
-
-				// Check if reached schedule time
-				ThreadTimePoint now = ThreadClock::now();
-				const SchedulingInformation &info = *it;
-				if (info.time_point <= now) {
-					// Thread has reached schedule time, remove schedule info
-					scheduling.erase(it);
-					return true;
-				}
-				// Thread has not reached schedule
-				return false;
-			}
 			void yield_process(bool unwatched_resolved, int threads_run) {
 				if (threads_run == 0) {
 					// Default to 1ms sleep time
 					std::chrono::milliseconds time(1);
 					// Unless there is scheduling information
-					if (scheduling.empty() == false) {
+					if (false && scheduling.empty() == false) {
 						// Set time to the next thread timeout
-						const SchedulingInformation &next = *scheduling.begin();
+						const SchedulingInformation &next = *scheduling.cbegin();
 						ThreadTimePoint now = ThreadClock::now();
 						ThreadTimePoint target = next.time_point;
 						time = std::chrono::duration_cast<ThreadTimeUnit>(target - now);
 						if (time <= std::chrono::milliseconds(0))
 							return;
 					}
-						// Acquire lock for sleeping
-						//if (!yield_mutex.try_lock()) {
-							// Expensive sleep
-							std::this_thread::yield();
-							std::this_thread::sleep_for(time);
-						//}
+					// Acquire lock for sleeping
+					//if (!yield_mutex.try_lock()) {
+						// Expensive sleep
+						std::this_thread::yield();
+						if (GetDEBUG())
+							std::cerr << "! Thread manager sleeping for " << time.count() << "ms" << std::endl;
+						std::this_thread::sleep_for(time);
+					//}
 				}
 			}
 		private:
-			Mailboxes mailboxes;
-			Scheduling scheduling;
 			std::mutex yield_mutex;
 		};
-		extern LithpThreadManager LithpThreadMan;
+
+		class LithpCosmosNode;
+		typedef std::shared_ptr<LithpThreadManager> LithpThreadManagerPtr;
+		typedef std::shared_ptr<LithpCosmosNode> LithpCosmosNodePtr;
+
+		class LithpCosmosNode {
+		public:
+			struct LithpThreadNode {
+				// Thread node 
+				LithpThreadManagerPtr ptr;
+				// CPU mask
+				unsigned mask;
+				LithpThreadNode(LithpCosmosNodeId _cosmos_id, LithpThreadNodeId _id)
+					: ptr(new LithpThreadManager(_id, _cosmos_id)), node_id(_id), cosmos_id(_cosmos_id)
+				{
+				}
+				const LithpThreadNodeId node_id;
+				const LithpCosmosNodeId cosmos_id;
+			};
+			typedef std::map<LithpThreadNodeId,LithpThreadNode> LithpThreadNodeMap;
+			LithpThreadNodeMap thread_nodes;
+			LithpThreadNodeId thread_nodes_counter;
+			static const LithpThreadNodeId LocalNodeId = 0;
+
+			LithpCosmosNode(LithpCosmosNodeId _id) : thread_nodes(), thread_nodes_counter(0), cosmos_id(_id) {
+				allocateThreadNode();
+			}
+
+			LithpThreadNodeId allocateThreadNode() {
+				LithpThreadNodeId node_id = thread_nodes_counter++;
+				LithpThreadNode node(cosmos_id, node_id);
+				thread_nodes.emplace(node_id, node);
+				return node_id;
+			}
+
+			// TODO: This doesn't support multithreading yet
+			LithpThreadManagerPtr GetAnyThreadManager() {
+				// TODO: only gets the first element
+				return thread_nodes.begin()->second.ptr;
+			}
+
+			LithpThreadManagerPtr GetThreadManagerForThread(const LithpThreadReference &thread_ref) {
+				return thread_nodes.find(thread_ref.node_id)->second.ptr;
+			}
+
+			size_t threadCount() {
+				size_t count = 0;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					count += it->second.ptr->threadCount();
+				}
+				return count;
+			}
+
+			bool hasThreads() {
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					if (it->second.ptr->hasThreads())
+						return true;
+				}
+				return false;
+			}
+
+			int executeThreads() {
+				int threads_executed = 0;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					threads_executed += it->second.ptr->executeThreads();
+				}
+				return threads_executed;
+			}
+
+			LithpCells getThreadReferences() {
+				LithpCells refs;
+				for (auto it = thread_nodes.begin(); it != thread_nodes.end(); ++it) {
+					auto thread_refs = it->second.ptr->getThreadReferences();
+					refs.insert(refs.end(), thread_refs.cbegin(), thread_refs.cend());
+				}
+				return refs;
+			}
+
+			bool send(const LithpCell &message, const LithpThreadReference &thread_ref) {
+				return GetThreadManagerForThread(thread_ref)->send(message, thread_ref.thread_id);
+			}
+
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				return GetThreadManagerForThread(thread_ref)->isThreadSleeping(thread_ref);
+			}
+
+
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				GetThreadManagerForThread(thread_ref)->thread_wake(thread_ref);
+			}
+
+			const LithpCosmosNodeId cosmos_id;
+		};
+
+		class LithpProcessManager {
+			typedef std::map<LithpCosmosNodeId, LithpCosmosNodePtr> LithpCosmosNodeMap;
+			LithpCosmosNodeMap cosmos_nodes;
+
+			LithpCosmosNodePtr getCosmosNodeFor(const LithpThreadReference &thread_ref) {
+				return cosmos_nodes.find(thread_ref.cosmos_id)->second;
+			}
+			LithpThreadManagerPtr getThreadManagerFor(const LithpThreadReference &thread_ref) {
+				return getCosmosNodeFor(thread_ref)->GetThreadManagerForThread(thread_ref);
+			}
+		public:
+			static const LithpCosmosNodeId LocalNodeId = 0;
+
+			LithpProcessManager() : cosmos_nodes() {
+				allocateCosmosNode(LocalNodeId);
+			}
+
+			void allocateCosmosNode(LithpCosmosNodeId id) {
+				LithpCosmosNode *node = new LithpCosmosNode(id);
+				cosmos_nodes.emplace(id, LithpCosmosNodePtr(node));
+			}
+
+			LithpCosmosNodePtr GetLocalCosmosNode() {
+				return cosmos_nodes.find(LocalNodeId)->second;
+			}
+
+			void thread_sleep_for(const LithpThreadReference &thread_ref, const ThreadTimeUnit &duration) {
+				getThreadManagerFor(thread_ref)->thread_sleep_for(thread_ref.thread_id, duration);
+			}
+			void thread_sleep_forever(const LithpThreadReference &thread_ref) {
+				getThreadManagerFor(thread_ref)->thread_sleep_forever(thread_ref.thread_id);
+			}
+			void thread_wake(const LithpThreadReference &thread_ref) {
+				getThreadManagerFor(thread_ref)->thread_wake(thread_ref.thread_id);
+			}
+
+			// Start a thread on the local cosmos node, in the first available thread manager
+			LithpThreadReference start(const LithpCell &ins, Env_p env) {
+				LithpCosmosNodePtr cosmos = getCosmosNodeFor(LocalNodeId);
+				LithpThreadManagerPtr threadman = cosmos->GetAnyThreadManager();
+				return threadman->start(ins, env);
+			}
+
+			// Start a thread on the same thread manager as an existing thread
+			LithpThreadReference start(const LithpCell &ins, Env_p env, const LithpThreadReference &parent) {
+				return getThreadManagerFor(parent)->start(ins, env);
+			}
+
+			void runThreadToCompletion(const LithpThreadReference &ref) {
+				getThreadManagerFor(ref)->runThreadToCompletion(ref);
+			}
+
+			void remove_thread(const LithpThreadReference &ref) {
+				getThreadManagerFor(ref)->remove_thread(ref);
+			}
+
+			LithpCell getResult(const LithpThreadReference &ref) {
+				return getThreadManagerFor(ref)->getThread(ref)->second.getResult();
+			}
+
+			size_t threadCount() {
+				return GetLocalCosmosNode()->threadCount();
+			}
+
+			bool hasThreads() {
+				return GetLocalCosmosNode()->hasThreads();
+			}
+
+			int executeThreads() {
+				return GetLocalCosmosNode()->executeThreads();
+			}
+
+			LithpCell getThreadReferences() {
+				LithpCells refs;
+				for (auto it = cosmos_nodes.begin(); it != cosmos_nodes.end(); ++it) {
+					auto thread_refs = it->second->getThreadReferences();
+					refs.insert(refs.end(), thread_refs.cbegin(), thread_refs.cend());
+				}
+				return LithpCell(List, refs);
+			}
+
+			bool send(const LithpCell &message, const LithpThreadReference &thread_ref) {
+				return getCosmosNodeFor(thread_ref)->send(message, thread_ref);
+			}
+
+			bool receive(LithpCell &message, const LithpThreadReference &thread_ref) {
+				return getThreadManagerFor(thread_ref)->receive(message, thread_ref.thread_id);
+			}
+
+			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
+				return getThreadManagerFor(thread_ref)->isThreadSleeping(thread_ref);
+			}
+
+			void force_exit() {
+				cosmos_nodes.clear();
+			}
+		};
+
+		extern LithpProcessManager LithpProcessMan;
 	}
 }

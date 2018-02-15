@@ -20,4 +20,6 @@
 			)
 		)
 	)))
+
+	(export require)
 )

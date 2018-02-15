@@ -101,6 +101,8 @@ namespace PocoLithp {
 			return repre ? rawstr(exp.proc()) : "<Proc>";
 		else if (exp.tag == ProcExtended)
 			return repre ? rawstr(exp.proc_extended()) : "<ProcExtended>";
+		else if (exp.tag == ProcImplementation)
+			return repre ? rawstr(exp.proc_implementation()) : "<ProcImplementation>";
 		else if (exp.tag == Dict) {
 			std::string s("{");
 			const LithpDict &dict = exp.dict();
@@ -164,6 +166,9 @@ namespace PocoLithp {
 				partialBuffer += line;
 			} catch (const std::exception &e) {
 				std::cerr << "ERROR " << e.what() << "\n";
+				// Clear buffer on error
+				line = "";
+				partialBuffer = "";
 			}
 		}
 
