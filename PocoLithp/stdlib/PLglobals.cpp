@@ -328,6 +328,10 @@ namespace PocoLithp {
 		return LithpCell(Var, count);
 	}
 
+	LithpCell proc_arch(const LithpCells &args) {
+		return LithpCell(Atom, ARCH);
+	}
+
 	void add_environment_runtime(add_environment_proc p) {
 		environment_procs.push_back(p);
 	}
@@ -361,6 +365,9 @@ namespace PocoLithp {
 
 		// Export functions
 		env["export"] = LithpCell(&proc_export);
+
+		// Architecture/build information
+		env["arch"] = LithpCell(&proc_arch);
 		
 		// Add any other procs
 		for (auto it = environment_procs.begin(); it != environment_procs.end(); ++it)

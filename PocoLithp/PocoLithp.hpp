@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include <Stackless.hpp>		// Ugly hack
 
-#define ELISP_VERSION "0.83"
+#define ELISP_VERSION "0.85"
 
 // Undefine to use recursive emulator
 #define ELISP_STACKLESS
@@ -25,8 +25,31 @@
 #define STATS_DESC        "(no stats)"
 #endif
 
+// Architecture detection
+#ifdef _MSC_VER_
+#  if defined(_M_IX86)
+#    define ARCH "x86"
+#  elif defined(_M_X64) || defined(_M_AMD64)
+#    define ARCH "x64"
+#  else
+#    define ARCH "(unknown)"
+#  endif
+#elif __GNUC__
+#  if defined(__OR1K__)
+#    define ARCH "or1k"
+#  elif defined(__i386__)
+#    define ARCH "x86"
+#  elif defined(__x86_64)
+#    define ARCH "x64"
+#  else
+#    define ARCH "(unknown)"
+#  endif
+#else
+#  define ARCH "(misdetected)"
+#endif
+
 #define APP_NAME "Elispidae "
-#define ELISP_VERSION_INFO APP_NAME ELISP_VERSION STACKLESS_DESC
+#define ELISP_VERSION_INFO APP_NAME ELISP_VERSION STACKLESS_DESC " " ARCH
 
 namespace PocoLithp {
 	typedef Poco::Dynamic::Var PocoVar;
