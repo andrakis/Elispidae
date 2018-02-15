@@ -64,23 +64,23 @@
 			;; else, sent messages to all threads, get responses.
 			;; we time out after 2s since we don't keep track of responses remaining.
 			(begin
-				(receive
-					(# (Message) (begin
-						(print (self) "Got a response: " Message)
-						(define MsgType (head Message))
-						(define MsgParam (head (tail Message)))
-						(define MsgSender (head (tail (tail Message))))
-						(define Result (head (tail (tail (tail Message)))))
-						(print (self) "Type: " MsgType ", Param:" MsgParam ", Sender: " MsgSender ", Result:" Result)
-						(debug true)
-						(define Remaining (lists:drop ThreadsRunning MsgSender))
-						(debug false)
-						(print (self) "Requests remaining: " (length Remaining))
-						(message-loop ThreadsStarted Remaining N)
-					))
-					after 2000 (# () (begin
-						(print "No message received after 2000ms")
-					))
+				(if (= 0 (length ThreadsRunning))
+					(print "All requests received, done.")
+					;; else
+					(receive
+						(# (Message) (begin
+							(print (self) "Got a response: " Message)
+							(define MsgType (head Message))
+							(define MsgParam (head (tail Message)))
+							(define MsgSender (head (tail (tail Message))))
+							(define Result (head (tail (tail (tail Message)))))
+							(define Remaining (lists:drop ThreadsRunning MsgSender))
+							(message-loop ThreadsStarted Remaining N)
+						))
+						after 2000 (# () (begin
+							(print "No message received after 2000ms")
+						))
+					)
 				)
 			)
 		)
