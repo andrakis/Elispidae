@@ -26,7 +26,7 @@
 #endif
 
 // Architecture detection
-#ifdef _MSC_VER_
+#ifdef _MSC_VER
 #  if defined(_M_IX86)
 #    define ARCH "x86"
 #  elif defined(_M_X64) || defined(_M_AMD64)
