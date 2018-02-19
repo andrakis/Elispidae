@@ -7,7 +7,7 @@
 	;; because it is a much slower platform.
 	(define ThreadCount
 		(if (== or1k (arch))
-			15
+			10
 			50
 		)
 	)
@@ -24,8 +24,6 @@
 			(# (Ele Acc)
 				(if (Predicate Ele) (+ Acc (list Ele)) Acc)))
 	))
-	(define lists:drop (# (List Value)
-		(lists:filter List (# (Ele) (!= Ele Value)))))
 
 	;; Helper function to spawn many threads with given Code and Argument.
 	;; Returns list of thread references.
@@ -58,7 +56,7 @@
 			(begin
 				(define Thread (head ThreadsStarted))
 				(print "Requesting factorial " N "from" Thread)
-				(send (list N (self)) Thread)
+				(send (list (+ N 5) (self)) Thread)
 				(message-loop (tail ThreadsStarted) (+ (list Thread) ThreadsRunning) (+ N 1))
 			)
 			;; else, sent messages to all threads, get responses.

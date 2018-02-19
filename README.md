@@ -54,6 +54,10 @@ Why?
 
 An attempt at a much more lightweight implementation of a C++ Lithp (other attempt [Stackful](https://github.com/andrakis/Stackful) being rather more complicated than desired.)
 
+It aims to be reasonably fast even on slower processors - one of its intended targets is OpenRISC 1000, specifically the [JavaSript OpenRISC 1000 emulator](https://jor1k.com). Other interpreted languages are available on OpenRISC, but the performance of these languages tends to be very slow.
+
+It also aims to borrow several ideas from different programming languages, rather than trying to port them to OpenRISC.
+
 What?
 -----
 
@@ -111,15 +115,15 @@ How?
 Status
 ------
 
-**Version: 0.85**
+**Version: 0.86**
 
 **Language compatibility level:** Lisp-ish, with macros.
 
     Mainly Lisp-like syntax, mixed with Lithp (Variables are introduced, `#` is synonym for `lambda`).
 
-	Microthreading, message passing, and scheduling is working.
+    Microthreading, message passing, and scheduling is working.
 
-	Tail-call optimization is presently not working.
+    Tail-call optimization has once again been dropped. Frame optimizations are the future development target.
 
 Building
 ========
