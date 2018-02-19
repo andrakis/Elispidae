@@ -340,8 +340,10 @@
     <None Include="..\lib\string.lisp" />
     <None Include="..\README.md" />
     <None Include="..\samples\eval.lisp" />
+    <None Include="..\samples\fac.lisp" />
     <None Include="..\samples\fac_recursive.lisp" />
     <None Include="..\samples\init.lisp" />
+    <None Include="..\samples\stress_threads.lisp" />
     <None Include="..\samples\test.lisp" />
     <None Include="..\samples\threading.lisp" />
   </ItemGroup>

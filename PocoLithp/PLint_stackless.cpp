@@ -423,16 +423,28 @@ namespace PocoLithp {
 				}
 				// Body
 				const LithpCell body = proc.list()[2];
-				// Create environment parented to lambda/macro env
-				Env_p new_env(new LithpEnvironment(proc.env));
+				Env_p target_env = proc.env;
 				auto env_arg_it = arguments.cbegin();
+				if (!frame.isAtEndExpression()) {
+					// Not at end, new frame needed
+					// Create environment parented to lambda/macro env
+					target_env = Env_p(new LithpEnvironment(proc.env));
+				}
 				// assign remaining arguments to our list of argument names in
-				// new environment.
-				new_env->update(arglist, arguments);
-				// create subframe
-				frame.subframe_mode = LithpFrame::Procedure;
-				frame.subframe = new LithpFrame(body, new_env);
-				frame.subframe->setMacro(proc.tag == Macro);
+				// target environment.
+				target_env->update(arglist, arguments);
+				if (frame.isAtEndExpression()) {
+					// At end, set expression to body content
+					if (GetDEBUG()) std::cerr << "# Tail recurse!" << std::endl;
+					frame.setMacro(proc.tag == Macro);
+					frame.setExpression(body, impl);
+				} else {
+					// create subframe
+					if (GetDEBUG()) std::cerr << "# Head recurse!" << std::endl;
+					frame.subframe_mode = LithpFrame::Procedure;
+					frame.subframe = new LithpFrame(body, target_env);
+					frame.subframe->setMacro(proc.tag == Macro);
+				}
 				// don't move exp_it
 				return false;
 			}

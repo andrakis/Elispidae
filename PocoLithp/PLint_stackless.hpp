@@ -215,6 +215,10 @@ namespace PocoLithp {
 			}
 
 			bool resolveExpression(const LithpCell &value);
+			bool isAtEndExpression() const {
+				const bool at_cend_m1 = ((exp_it + 1) == expressions.cend());
+				return at_cend_m1;
+			}
 
 			FrameWaitState wait_state;
 			LithpCell exp;

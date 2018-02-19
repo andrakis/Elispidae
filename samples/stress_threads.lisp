@@ -8,7 +8,7 @@
 	(define ThreadCount
 		(if (== or1k (arch))
 			15
-			50
+			5
 		)
 	)
 	;; Uncomment for LOTS of debugging information
@@ -53,12 +53,14 @@
 	)))
 	;; Master thread send/receive loop
 	(define message-loop (# (ThreadsStarted ThreadsRunning N) (begin
+		(debug false)
 		(if (> (length ThreadsStarted) 0)
 			;; Still have threads, send a request
 			(begin
 				(define Thread (head ThreadsStarted))
 				(print "Requesting factorial " N "from" Thread)
 				(send (list N (self)) Thread)
+				(debug true)
 				(message-loop (tail ThreadsStarted) (+ (list Thread) ThreadsRunning) (+ N 1))
 			)
 			;; else, sent messages to all threads, get responses.
