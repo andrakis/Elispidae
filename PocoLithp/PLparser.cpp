@@ -100,7 +100,11 @@ namespace PocoLithp {
 		throw InvalidArgumentException("Not a number: " + token);
 	}
 
-	// Numbers become Numbers; every other token is an Atom
+	// Numbers become Numbers;
+	// 'Quoted' becomes atoms;
+	// "Quoted" becomes Var (string);
+	// Uppercase becomes VariableReference;
+	// every other token is an Atom
 	LithpCell symbol(const std::string &token)
 	{
 		if (isdig(token[0]) || (token[0] == '-' && isdig(token[1]))) {

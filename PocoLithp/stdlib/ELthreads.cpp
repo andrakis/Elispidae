@@ -83,6 +83,18 @@ LithpCell proc_spawn(const LithpCells &c, Env_p env) {
 	return LithpCell(Thread, thread);
 }
 
+// Check if a thread is still alive
+LithpCell proc_alive(const LithpCells &c) {
+	auto it = c.cbegin();
+	if (it == c.cend())
+		return LithpCell(Var, sym_false);
+	const LithpCell thread_ref = *it; ++it;
+	if (thread_ref.tag != Thread)
+		throw InvalidArgumentException("(alive?: thread should be a threadref)");
+	const bool alive = LithpProcessMan.isThreadAlive(thread_ref.thread_ref());
+	return alive ? sym_true : sym_false;
+}
+
 // Force an exit and return an exit code from the application.
 // (exit Code::integer(Default=1))
 LithpCell proc_exit(const LithpCells &c) {
@@ -104,5 +116,6 @@ void Elispidae::Threads::init_threads() {
 		env["flush"] = LithpCell(&proc_flush);
 		env["spawn"] = LithpCell(&proc_spawn);
 		env["exit"] = LithpCell(&proc_exit);
+		env["alive?"] = LithpCell(proc_alive);
 	});
 }

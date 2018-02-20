@@ -115,7 +115,7 @@ How?
 Status
 ------
 
-**Version: 0.86**
+**Version: 0.87**
 
 **Language compatibility level:** Lisp-ish, with macros.
 

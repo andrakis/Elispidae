@@ -1,0 +1,17 @@
+#!/bin/sh
+SHARED_FLAGS="-s -shared-libgcc -flto -D__EMSCRIPTEN__ -O3"
+CXXFLAGS="$SHARED_FLAGS"
+CCFLAGS="$SHARED_FLAGS"
+LDFLAGS="-O3"
+CONF=Release
+CC=or1k-linux-musl-gcc
+CXX=or1k-linux-musl-g++
+STRIP=or1k-linux-musl-strip
+STRIP_ARGS="-s -x -v -o elstripped bin/elisp"
+
+if [ "$1" = "clean" ]; then
+	make CONF="$CONF" clean
+fi
+
+make CC="$CC" CXX="$CXX" CONF="$CONF" CXXFLAGS="$CXXFLAGS" CCFLAGS="$CCFLAGS" LDFLAGS="$LDFLAGS" -j4 && $STRIP $STRIP_ARGS
+

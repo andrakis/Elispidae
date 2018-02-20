@@ -337,7 +337,6 @@ namespace PocoLithp {
 			}
 
 			_threads_type::iterator getThreadById(const LithpThreadId thread_id, const LithpThreadNodeId node_id = 0, const LithpCosmosNodeId cosmos_id = 0) {
-				// TODO: Only thread_id is used so far
 				return threads.find(thread_id);
 			}
 			_threads_type::iterator getThreadById(const LithpThreadReference &ref) {
@@ -412,6 +411,11 @@ namespace PocoLithp {
 				if (thread_it == threads.end())
 					return false;
 				return false == isThreadScheduled(thread_it);
+			}
+
+			bool isThreadAlive(const LithpThreadReference &thread_ref) {
+				auto thread_it = getThread(thread_ref);
+				return thread_it != threads.end();
 			}
 
 		protected:
@@ -528,6 +532,9 @@ namespace PocoLithp {
 				return GetThreadManagerForThread(thread_ref)->isThreadSleeping(thread_ref);
 			}
 
+			bool isThreadAlive(const LithpThreadReference &thread_ref) {
+				return GetThreadManagerForThread(thread_ref)->isThreadAlive(thread_ref);
+			}
 
 			void thread_wake(const LithpThreadReference &thread_ref) {
 				GetThreadManagerForThread(thread_ref)->thread_wake(thread_ref);
@@ -627,6 +634,10 @@ namespace PocoLithp {
 
 			bool isThreadSleeping(const LithpThreadReference &thread_ref) {
 				return getThreadManagerFor(thread_ref)->isThreadSleeping(thread_ref);
+			}
+
+			bool isThreadAlive(const LithpThreadReference &thread_ref) {
+				return getThreadManagerFor(thread_ref)->isThreadAlive(thread_ref);
 			}
 
 			void force_exit() {

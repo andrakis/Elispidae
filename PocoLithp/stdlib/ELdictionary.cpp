@@ -9,7 +9,7 @@ using namespace PocoLithp::Stackless;
 
 // Get keys from dictionary
 LithpCell proc_keys(const LithpCells &c) {
-	if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for keys(::dict)");
+	if(c.empty()) throw InvalidArgumentException("Not enough parameters for keys(::dict)");
 	const LithpDict &dict = c[0].dict();
 	LithpCells keys;
 	for(auto it = dict.begin(); it != dict.end(); ++it)
@@ -19,7 +19,7 @@ LithpCell proc_keys(const LithpCells &c) {
 
 // Get values from dictionary
 LithpCell proc_values(const LithpCells &c) {
-	if(c.size() != 1) throw InvalidArgumentException("Not enough parameters for values(::dict)");
+	if(c.empty()) throw InvalidArgumentException("Not enough parameters for values(::dict)");
 	const LithpDict &dict = c[0].dict();
 	LithpCells values;
 	for(auto it = dict.begin(); it != dict.end(); ++it)
@@ -30,7 +30,7 @@ LithpCell proc_values(const LithpCells &c) {
 
 void Elispidae::Stdlib::init_dictionary() {
 	add_environment_runtime([](LithpEnvironment &env) {
-		env["keys"] = LithpCell(&proc_keys);
-		env["values"] = LithpCell(&proc_values);
+		env["dict:keys"] = LithpCell(&proc_keys);
+		env["dict:values"] = LithpCell(&proc_values);
 	});
 }
