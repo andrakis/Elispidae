@@ -28,8 +28,16 @@
 	;; Helper function to spawn many threads with given Code and Argument.
 	;; Returns list of thread references.
 	(define spawn-many (# (Count Code Argument)
-		(+ (list (spawn Code Argument)) (if (> Count 0) (spawn-many (- Count 1) Code Argument) (list)))
+		(spawn-many2 Count Code Argument (list))
 	))
+	(define spawn-many2 (# (Count Code Argument Acc) (begin
+		(print "sm2: " Count Argument Acc)
+		(if (= 0 Count)
+			Acc
+			;; else
+			(spawn-many2 (- Count 1) Code Argument (+ Acc (list (spawn Code Argument))))
+		)
+	)))
 
 	;; Thread code, make it do something a little intensive
 	(define factorial (# (N) (fac2 N 1)))

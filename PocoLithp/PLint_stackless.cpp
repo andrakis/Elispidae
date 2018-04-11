@@ -372,39 +372,22 @@ namespace PocoLithp {
 			DEBUG("Primary proc evaluation of: " + proc.str());
 			// Primary proc evaluation
 			switch (proc.tag) {
-				// Proc: a builtin procedure in C++ that needs no environment.
-			case Proc:
+			case Proc:               // a builtin procedure in C++ that needs no environment.
+			case ProcExtended:       // a builtin procedure in C++ that passes the frame environment.
+			case ProcImplementation: // a builtin procedure in C++ that passes the implementation itself.
 				// Mark wait state to avoid re-entry into this section
 				frame.wait_state = Run_Wait;
 				// Copy the rest of the resolved arguments to a new list,
 				// that list is passed as the arguments.
-				frame.result = proc.proc()(arguments);
+				if(proc.tag == Proc) frame.result = proc.proc()(arguments);
+				else if(proc.tag == ProcExtended) frame.result = proc.proc_extended()(arguments, frame.env);
+				else if(proc.tag == ProcImplementation) frame.result = proc.proc_implementation()(arguments, frame.env, impl);
 				// Restore wait_state
 				frame.wait_state = Run;
+				// Move exp_it
 				return true;
-				// ProcExtended: a builtin procedure in C++ that passes the frame environment.
-			case ProcExtended:
-				// Mark wait state to avoid re-entry into this section
-				frame.wait_state = Run_Wait;
-				// Copy the rest of the resolved arguments to a new list,
-				// that list is passed as the arguments.
-				frame.result = proc.proc_extended()(arguments, frame.env);
-				// Restore wait_state
-				frame.wait_state = Run;
-				return true;
-				// ProcImplementation: a builtin procedure in C++ that passes the implementation itself.
-			case ProcImplementation:
-				// Mark wait state to avoid re-entry into this section
-				frame.wait_state = Run_Wait;
-				// Copy the rest of the resolved arguments to a new list,
-				// that list is passed as the arguments.
-				frame.result = proc.proc_implementation()(arguments, frame.env, impl);
-				// Restore wait_state
-				frame.wait_state = Run;
-				return true;
-				// A Lisp procedure or macro.
-			case Lambda:
-			case Macro:
+			case Lambda:  // A Lisp procedure
+			case Macro:   // or macro.
 			{
 				// (lambda|macro ArgList::list()|var() Body::list())
 				LithpCells arglist;
@@ -429,10 +412,19 @@ namespace PocoLithp {
 				// assign remaining arguments to our list of argument names in
 				// new environment.
 				new_env->update(arglist, arguments);
-				// create subframe
-				frame.subframe_mode = LithpFrame::Procedure;
-				frame.subframe = new LithpFrame(body, new_env);
-				frame.subframe->setMacro(proc.tag == Macro);
+				if (frame.subframe_mode == LithpFrame::Procedure && proc.tag == Lambda && frame.isAtEnd()) {
+					std::cerr << "@ tail recurse!" << std::endl;
+					frame.env = new_env;
+					frame.exp = body;
+					frame.subframe_mode = LithpFrame::Procedure;
+					frame.wait_state = Initialize;
+				} else {
+					// create subframe
+					std::cerr << "@! head recurse" << std::endl;
+					frame.subframe_mode = LithpFrame::Procedure;
+					frame.subframe = new LithpFrame(body, new_env);
+					frame.subframe->setMacro(proc.tag == Macro);
+				}
 				// don't move exp_it
 				return false;
 			}

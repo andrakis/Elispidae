@@ -194,6 +194,11 @@ namespace PocoLithp {
 			// TODO: no longer used
 			bool isArgumentsResolved() const { return true; }
 
+			bool isAtEnd() const {
+				const bool at_end = ((exp_it+1) == expressions.cend());
+				return at_end;
+			}
+
 			bool execute(const LithpImplementation &impl);
 			void nextArgument(const LithpImplementation &impl);
 			void nextExpression(const LithpImplementation &impl);

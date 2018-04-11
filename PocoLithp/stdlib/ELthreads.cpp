@@ -84,6 +84,7 @@ LithpCell proc_spawn(const LithpCells &c, Env_p env) {
 }
 
 // Check if a thread is still alive
+// (alive? thread_ref()) -> bool()
 LithpCell proc_alive(const LithpCells &c) {
 	auto it = c.cbegin();
 	if (it == c.cend())
