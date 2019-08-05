@@ -81,7 +81,7 @@ It supports most modern types:
 
    * **Lithp-like Lambdas:** `(# (A B C) (+ A B C))`, `(# (N) (begin (test) (+ N 1)))`
 
-   * **Macros:** `(define ifDefined (macro (Name) (_eval (list if (list defined Name) (list get! Name) none))))` - macros are simply lambdas whose arguments are not evaluated before passing, and use the environment of their callee so have access to the callees symbols. Abritrary code can be executed, such as in this snippet where an AST is created that checks if the given variable is defined, and returns its value or the atom `none`.
+   * **Macros:** `(define ifDefined (macro (Name) (_eval (list if (list defined Name) (list get! Name) none))))` - macros are simply lambdas whose arguments are not evaluated before passing, and use the environment of their callee so have access to the callees symbols. Arbitrary code can be executed, such as in this snippet where an AST is created that checks if the given variable is defined, and returns its value or the atom `none`.
 
    * **Procs:** C++ code with a signature: `LithpCell func_name(const LithpCells &args)`
 
